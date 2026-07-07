@@ -1,0 +1,40 @@
+{
+  "incident_id": "INFIOS-SAMPLE-500-LOGIN",
+  "title": "User receives HTTP 500 after login",
+  "reported_by": "sample.service.desk@example.local",
+  "affected_users": [
+    "sample.user@example.local"
+  ],
+  "affected_service": "Customer Portal",
+  "environment": "sample",
+  "symptom": "After entering valid credentials, the user is redirected to the portal landing page and receives HTTP 500 Internal Server Error.",
+  "user_impact": "One user cannot access the portal after login. Business impact is limited until more affected users are confirmed.",
+  "http_status": 500,
+  "endpoint": "/auth/callback",
+  "correlation_id": "sample-corr-20260707-091500-abc123",
+  "recent_changes": [
+    "Sample deployment completed earlier the same morning.",
+    "Sample identity provider certificate rotation planned this week."
+  ],
+  "evidence": [
+    {
+      "source": "user report",
+      "timestamp": "2026-07-07T09:15:00+02:00",
+      "detail": "User reports valid credentials are accepted, then the portal returns a generic HTTP 500 page.",
+      "confidence": "medium"
+    },
+    {
+      "source": "browser observation",
+      "timestamp": "2026-07-07T09:17:00+02:00",
+      "detail": "HTTP 500 observed on /auth/callback after successful credential submission.",
+      "confidence": "high"
+    },
+    {
+      "source": "application log sample",
+      "timestamp": "2026-07-07T09:17:03+02:00",
+      "detail": "Sample log references correlation ID sample-corr-20260707-091500-abc123 and exception while loading user profile after login.",
+      "confidence": "medium"
+    }
+  ],
+  "operator_notes": "Do not confirm root cause yet. Need application logs, dependency health, and affected-user scope."
+}
