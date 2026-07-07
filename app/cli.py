@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from app.analyzer import analyze_incident
 from app.models import IncidentInput
 from app.report_markdown import render_markdown_report
+from app.run_history import save_run_history
 
 
 def _load_incident(path: Path) -> IncidentInput:
@@ -56,6 +57,17 @@ def build_parser() -> argparse.ArgumentParser:
         default="markdown",
         help="Output format. Default: markdown.",
     )
+    analyze_parser.add_argument(
+        "--save-history",
+        action="store_true",
+        help="Save a local run-history JSON record.",
+    )
+    analyze_parser.add_argument(
+        "--history-dir",
+        type=Path,
+        default=None,
+        help="Optional run-history directory. Default: runs/history.",
+    )
 
     return parser
 
@@ -88,6 +100,18 @@ def run_analyze(args: argparse.Namespace) -> int:
         content = render_markdown_report(incident, analysis)
 
     _write_or_print(content, args.out)
+
+    if args.save_history:
+        history_path = save_run_history(
+            incident,
+            analysis,
+            source_path=incident_path,
+            output_path=args.out,
+            output_format=args.format,
+            history_dir=args.history_dir,
+        )
+        print(f"History saved: {history_path}", file=sys.stderr)
+
     return 0
 
 

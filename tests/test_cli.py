@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 from app.cli import main
@@ -47,3 +48,34 @@ def test_cli_missing_file_returns_error(capsys) -> None:
 
     assert exit_code == 2
     assert "incident file not found" in captured.err
+
+
+def test_cli_saves_run_history_record(tmp_path: Path, capsys) -> None:
+    output_path = tmp_path / "cli-503-report.md"
+    history_dir = tmp_path / "history"
+
+    exit_code = main(
+        [
+            "analyze",
+            "samples/incident-503-dependency.json",
+            "--out",
+            str(output_path),
+            "--save-history",
+            "--history-dir",
+            str(history_dir),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    history_files = list(history_dir.glob("*.json"))
+
+    assert exit_code == 0
+    assert output_path.exists()
+    assert "History saved:" in captured.err
+    assert len(history_files) == 1
+
+    record = json.loads(history_files[0].read_text(encoding="utf-8"))
+    assert record["incident_id"] == "INFIOS-SAMPLE-503-DEPENDENCY"
+    assert record["output_path"] == str(output_path)
+    assert "Dependency" in record["finding_categories"]
+    assert "No production connection" in record["support_boundary"]

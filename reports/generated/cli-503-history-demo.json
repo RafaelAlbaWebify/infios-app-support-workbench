@@ -1,0 +1,31 @@
+{
+  "run_id": "20260707T235033Z-infios-sample-503-dependency",
+  "created_at": "2026-07-07T23:50:33.373978Z",
+  "incident_id": "INFIOS-SAMPLE-503-DEPENDENCY",
+  "title": "Order submission returns HTTP 503 dependency unavailable",
+  "affected_service": "Customer Portal",
+  "environment": "sample",
+  "http_status": 503,
+  "endpoint": "/orders/submit",
+  "correlation_id": "sample-corr-20260707-113000-ghi789",
+  "source_path": "samples\\incident-503-dependency.json",
+  "output_path": "reports\\generated\\cli-503-demo.md",
+  "output_format": "markdown",
+  "finding_categories": [
+    "Dependency",
+    "Service availability",
+    "Traceability",
+    "Evidence",
+    "Recent changes"
+  ],
+  "severity_counts": {
+    "high": 2,
+    "info": 2,
+    "medium": 1
+  },
+  "likely_cause_count": 4,
+  "unknown_count": 6,
+  "missing_evidence_count": 4,
+  "safe_next_step_count": 9,
+  "support_boundary": "Local sample-safe history record. No production connection, credential collection, database modification, or auto-remediation was performed."
+}

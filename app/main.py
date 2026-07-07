@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from app.analyzer import analyze_incident
 from app.models import AnalysisResult, IncidentInput
 from app.report_markdown import render_markdown_report
+from app.run_history import list_run_history, save_run_history
 
 app = FastAPI(
     title="INFIOS Application Support Workbench",
@@ -31,6 +32,12 @@ def samples() -> dict[str, list[str]]:
     return {"samples": sorted(path.name for path in SAMPLES_DIR.glob("*.json"))}
 
 
+@app.get("/api/history")
+def history() -> dict[str, object]:
+    records = list_run_history()
+    return {"history": records, "count": len(records)}
+
+
 @app.post("/api/analyze", response_model=AnalysisResult)
 def analyze(incident: IncidentInput) -> AnalysisResult:
     return analyze_incident(incident)
@@ -41,6 +48,23 @@ def markdown_report(incident: IncidentInput) -> dict[str, str]:
     analysis = analyze_incident(incident)
     markdown = render_markdown_report(incident, analysis)
     return {"incident_id": incident.incident_id, "markdown": markdown}
+
+
+@app.post("/api/report/markdown/save")
+def markdown_report_with_history(incident: IncidentInput) -> dict[str, str]:
+    analysis = analyze_incident(incident)
+    markdown = render_markdown_report(incident, analysis)
+    history_path = save_run_history(
+        incident,
+        analysis,
+        source_path="api:/api/report/markdown/save",
+        output_format="markdown",
+    )
+    return {
+        "incident_id": incident.incident_id,
+        "markdown": markdown,
+        "history_path": str(history_path),
+    }
 
 
 def load_sample(name: str = "incident-500-login.json") -> IncidentInput:

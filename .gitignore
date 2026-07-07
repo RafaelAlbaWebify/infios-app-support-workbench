@@ -17,3 +17,6 @@ __pycache__/
 _audit/
 dist/
 build/
+runs/history/
+reports/generated/history/
+

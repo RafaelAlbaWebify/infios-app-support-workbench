@@ -4,13 +4,13 @@
 
 INFIOS is a local-first Application Support Engineering workbench.
 
-At the current stage it is an API-first/backend application with a CLI runner, not a polished frontend product. It uses FastAPI, Pydantic models, analyzer rules, sample incidents, Markdown report generation, tests, GitHub Actions CI, and terminal-based report generation.
+At the current stage it is an API-first/backend application with a CLI runner and local run history, not a polished frontend product. It uses FastAPI, Pydantic models, analyzer rules, sample incidents, Markdown report generation, tests, GitHub Actions CI, terminal-based report generation, and local JSON run records.
 
 The purpose is to demonstrate support engineering capability: turning messy application incidents into structured evidence, safe next steps, escalation notes and RCA drafts.
 
 ## How to explain it naturally
 
-> INFIOS is my Application Support Engineering workbench. I built it to practice the way I would handle messy application incidents: collect evidence, separate symptoms from possible causes, identify missing information, avoid unsafe actions, and prepare a clear escalation or RCA draft. It can run as an API backend, and I also added a CLI so I can generate reports from local sample incidents directly from the terminal.
+> INFIOS is my Application Support Engineering workbench. I built it to practice the way I would handle messy application incidents: collect evidence, separate symptoms from possible causes, identify missing information, avoid unsafe actions, and prepare a clear escalation or RCA draft. It can run as an API backend, I can use it from the terminal, and it can save a local run-history record for traceability.
 
 ## M1 - HTTP 500 after login
 
@@ -71,6 +71,14 @@ Natural explanation:
 
 > I added a CLI runner so I can analyze a local sample incident from the terminal and generate a Markdown report. This makes the tool easier to demo and also keeps the design local-first and safe, because it reads sample JSON and writes local reports only.
 
+## M5 - Local run history
+
+This milestone adds traceability to local analysis runs.
+
+Natural explanation:
+
+> I added local run history so each analysis can leave a timestamped JSON record with the incident ID, service, HTTP status, endpoint, finding categories, severity counts and report path. This mirrors support discipline: every analysis should leave enough traceability for review, handover or follow-up.
+
 ## Support boundaries
 
 INFIOS is sample-data only. It does not connect to production systems, store credentials, process real customer data, modify databases, auto-remediate issues, or claim confirmed root cause without evidence.
@@ -83,6 +91,7 @@ INFIOS is sample-data only. It does not connect to production systems, store cre
 - RCA discipline.
 - Access troubleshooting thinking.
 - Dependency and service-health triage.
+- Local evidence traceability.
 - Practical local tooling.
 - Clear support communication.
 - Practical scripting/backend capability without pretending to be a senior developer or DBA.

@@ -56,6 +56,7 @@ It does not:
 | M2.1 | Docs and report-quality cleanup | Cleaner report wording, interview notes, milestone status and support-ready explanation | Published |
 | M3 | `incident-503-dependency.json` | HTTP 503 dependency unavailable; application vs downstream dependency boundary, health evidence and dependency escalation | Published |
 | M4 | CLI runner | Analyze local incident JSON and generate Markdown or JSON output from the terminal | Published |
+| M5 | Local run history | Save timestamped local JSON records for CLI/API analysis runs | Published |
 
 <!-- INFIOS_SCENARIOS_END -->
 
@@ -86,6 +87,7 @@ reports/sample-500-login-report.md
 reports/sample-403-access-report.md
 reports/sample-503-dependency-report.md
 reports/generated/cli-503-demo.md
+reports/generated/cli-503-history-demo.json
 ```
 
 These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note and RCA draft.
@@ -98,14 +100,22 @@ Analyze a local sample incident and generate a Markdown report:
 
 ```powershell
 python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
+reports/generated/cli-503-history-demo.json
 ```
 
 After installing the project in editable mode, the console command is also available:
 
 ```powershell
 infios analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
+reports/generated/cli-503-history-demo.json
 ```
 
+
+Save a local run-history JSON record:
+
+```powershell
+python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md --save-history
+```
 The CLI can also print JSON analysis output:
 
 ```powershell
@@ -121,10 +131,11 @@ docs/interview-notes.md
 docs/milestone-status.md
 docs/sample-incident-503-dependency.md
 docs/cli-usage.md
+docs/run-history.md
 ```
 
 These notes explain what INFIOS is, how to discuss it in interviews, what each scenario demonstrates, and where the project is going next.
 
 ## Interview Explanation
 
-> INFIOS is my Application Support Engineering workbench. It is currently an API-first/backend application with a CLI runner that turns local sample incidents into structured evidence, safe next steps, escalation notes and RCA drafts. The first scenario handles HTTP 500 after login, where I keep root cause uncertain until logs and dependency evidence confirm it. The second scenario handles HTTP 403 after login, where I separate authentication from authorization and check role, group, claim and route-permission evidence before suggesting any access change. The third scenario handles HTTP 503 dependency unavailable, where I separate the main application from the failing downstream service and collect dependency health, logs and recent-change evidence before escalating.
+> INFIOS is my Application Support Engineering workbench. It is currently an API-first/backend application with a CLI runner and local run history. It turns local sample incidents into structured evidence, safe next steps, escalation notes, RCA drafts and timestamped run records. The first scenario handles HTTP 500 after login, where I keep root cause uncertain until logs and dependency evidence confirm it. The second scenario handles HTTP 403 after login, where I separate authentication from authorization and check role, group, claim and route-permission evidence before suggesting any access change. The third scenario handles HTTP 503 dependency unavailable, where I separate the main application from the failing downstream service and collect dependency health, logs and recent-change evidence before escalating.
