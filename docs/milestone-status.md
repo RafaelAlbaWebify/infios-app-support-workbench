@@ -9,6 +9,7 @@ INFIOS is an API-first Application Support Engineering workbench.
 | M1 | HTTP 500 after login | Published | Sample incident, analyzer rules, report, tests |
 | M2 | HTTP 403 after login | Published | Sample incident, authorization rules, report, tests |
 | M2.1 | Cleanup and interview proof | Published | Cleaner report wording, quality tests, interview notes, milestone status |
+| M3 | HTTP 503 dependency unavailable | Published | Sample incident, dependency/service-health rules, report, tests |
 
 ## Current capabilities
 
@@ -21,6 +22,9 @@ INFIOS is an API-first Application Support Engineering workbench.
 - Local pytest suite.
 - Sample reports for portfolio review.
 - Interview notes explaining the support reasoning.
+- HTTP 500 application failure triage.
+- HTTP 403 access/authorization triage.
+- HTTP 503 dependency/service-health triage.
 
 ## Not yet included
 
@@ -30,10 +34,10 @@ INFIOS is an API-first Application Support Engineering workbench.
 - Real log parser.
 - Real production integrations.
 - SQL evidence scenario.
-- Dependency/service outage scenario.
+- Saved incident archive.
 
 ## Next recommended milestone
 
-M3 should add an HTTP 503 dependency unavailable scenario.
+M4 should add a small CLI runner.
 
-That would expand INFIOS from login/access triage into dependency and service-health triage, which is highly relevant for Application Support Engineer and Production Support Engineer roles.
+That would make INFIOS easier to demonstrate without opening Swagger UI manually: one command could analyze a sample incident and write a Markdown report to a local output folder.

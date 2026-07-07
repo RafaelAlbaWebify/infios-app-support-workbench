@@ -45,7 +45,23 @@ I separate:
 
 Natural explanation:
 
-> In the HTTP 403 scenario, the user may be authenticated, but the application denies access to a resource. I avoid saying “login is broken” too quickly. I check roles, groups, claims, route permissions and application authorization logs before proposing any access change.
+> In the HTTP 403 scenario, the user may be authenticated, but the application denies access to a resource. I avoid saying "login is broken" too quickly. I check roles, groups, claims, route permissions and application authorization logs before proposing any access change.
+
+## M3 - HTTP 503 dependency unavailable
+
+This scenario shows that I understand dependency/service-health triage.
+
+I separate:
+
+- whether the main application is reachable;
+- which operation fails;
+- which downstream dependency is involved;
+- whether the failure is outage, timeout, health-check failure, rate limit, routing, DNS, TLS, firewall, deployment, or configuration;
+- user/business impact and blast radius.
+
+Natural explanation:
+
+> In the HTTP 503 scenario, I do not assume the whole application is down. I check whether the app is reachable and whether a specific dependency is failing. Then I collect timestamp, endpoint, correlation ID, dependency health, logs and recent changes so the escalation identifies the right owner and failure boundary.
 
 ## Support boundaries
 
@@ -58,5 +74,6 @@ INFIOS is sample-data only. It does not connect to production systems, store cre
 - Safe escalation quality.
 - RCA discipline.
 - Access troubleshooting thinking.
+- Dependency and service-health triage.
 - Clear support communication.
 - Practical scripting/backend capability without pretending to be a senior developer or DBA.

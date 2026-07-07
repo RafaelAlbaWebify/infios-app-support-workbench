@@ -49,7 +49,7 @@ One user can authenticate but cannot access the Customer Portal dashboard. Busin
 
 ## Unknowns
 
-- Exact failure point in the login or access flow.
+- Exact failure point in the login, access, or dependency flow.
 - Whether the issue affects all users or only a subset.
 - Whether the error is reproducible from another browser, device, or network.
 

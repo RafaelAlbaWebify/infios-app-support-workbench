@@ -61,6 +61,26 @@ def _is_access_denied_case(incident: IncidentInput) -> bool:
     )
 
 
+def _is_dependency_unavailable_case(incident: IncidentInput) -> bool:
+    return incident.http_status in {502, 503, 504} or _has_text(
+        incident,
+        "http 502",
+        "bad gateway",
+        "http 503",
+        "service unavailable",
+        "http 504",
+        "gateway timeout",
+        "dependency unavailable",
+        "downstream unavailable",
+        "downstream api",
+        "timeout",
+        "connection refused",
+        "circuit breaker",
+        "health check failing",
+        "queue unavailable",
+    )
+
+
 def _add_login_flow_guidance(
     incident: IncidentInput,
     findings: list[Finding],
@@ -109,6 +129,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
 
     is_http_500 = _is_http_500_case(incident)
     is_access_denied = _is_access_denied_case(incident)
+    is_dependency_unavailable = _is_dependency_unavailable_case(incident)
 
     if is_http_500:
         findings.append(
@@ -207,6 +228,73 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             ]
         )
 
+    if is_dependency_unavailable:
+        findings.append(
+            Finding(
+                category="Dependency",
+                severity="high",
+                statement="The symptom indicates the application may be reachable while a required downstream dependency is unavailable, degraded, timing out, or rejecting requests.",
+                evidence_refs=["http_status", "symptom", "endpoint"],
+            )
+        )
+
+        if incident.http_status == 503:
+            findings.append(
+                Finding(
+                    category="Service availability",
+                    severity="high",
+                    statement="HTTP 503 usually means the service or one of its dependencies is temporarily unavailable. It should be correlated with health checks, dependency logs, and recent changes.",
+                    evidence_refs=["http_status"],
+                )
+            )
+
+        if incident.http_status == 504:
+            findings.append(
+                Finding(
+                    category="Timeout",
+                    severity="high",
+                    statement="HTTP 504 usually points to a gateway or upstream timeout and should be investigated as a dependency latency or reachability issue.",
+                    evidence_refs=["http_status"],
+                )
+            )
+
+        likely_causes.extend(
+            [
+                "Downstream API, database, queue, cache, or integration service is unavailable or degraded.",
+                "Dependency timeout, connection pool exhaustion, circuit breaker opening, or rate limit affecting the request path.",
+                "Recent deployment, configuration, certificate, DNS, firewall, or routing change affecting a dependency.",
+                "Application is healthy enough to respond but cannot complete the operation because a required dependency is failing.",
+            ]
+        )
+
+        missing_evidence.extend(
+            [
+                "Dependency health-check result for the same timestamp.",
+                "Application log entry showing the downstream dependency name and failure mode.",
+                "Dependency owner/status confirmation or monitoring evidence.",
+                "Network, DNS, TLS/certificate, or firewall evidence if the dependency is external or cross-service.",
+            ]
+        )
+
+        safe_next_steps.extend(
+            [
+                "Identify the exact failing dependency, operation, endpoint, and timestamp from application logs.",
+                "Compare application health with dependency health; do not assume the frontend service itself is the root cause.",
+                "Check dependency health checks, monitoring, recent deployments, and known maintenance windows.",
+                "Review timeout, retry, circuit-breaker, queue, and connection-pool evidence before restarting anything.",
+                "Test or compare a different operation that does not use the suspected dependency, if safe sample data is available.",
+                "Escalate with impact, endpoint, correlation ID, dependency name, failure mode, and recent-change context.",
+            ]
+        )
+
+        unknowns.extend(
+            [
+                "Which dependency is failing and whether it is fully down, degraded, slow, rate-limited, or misconfigured.",
+                "Whether the issue affects all users, one operation, one region/site, or one integration path.",
+                "Whether retries, circuit breakers, queues, or cached responses are masking the real blast radius.",
+            ]
+        )
+
     _add_login_flow_guidance(
         incident,
         findings,
@@ -256,7 +344,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
 
     unknowns.extend(
         [
-            "Exact failure point in the login or access flow.",
+            "Exact failure point in the login, access, or dependency flow.",
             "Whether the issue affects all users or only a subset.",
             "Whether the error is reproducible from another browser, device, or network.",
         ]
@@ -284,10 +372,24 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         f"HTTP status: {incident.http_status or 'unknown'}. "
         f"Endpoint: {incident.endpoint or 'unknown'}. "
         f"Correlation ID: {incident.correlation_id or 'not provided'}. "
-        "Requested support: review application logs, identity/session evidence, and dependency calls around the incident timestamp, then confirm the failing component or access rule."
     )
 
-    if is_access_denied and not is_http_500:
+    if is_dependency_unavailable and not is_access_denied:
+        escalation_note += (
+            "Requested support: review application logs, dependency health, monitoring, recent changes, and connectivity evidence around the incident timestamp, then confirm the failing dependency or service boundary."
+        )
+    else:
+        escalation_note += (
+            "Requested support: review application logs, identity/session evidence, and dependency calls around the incident timestamp, then confirm the failing component or access rule."
+        )
+
+    if is_dependency_unavailable and not is_access_denied and not is_http_500:
+        rca_draft = (
+            "RCA draft: The confirmed root cause is not yet known. Current evidence shows a service-availability or dependency failure "
+            "visible to the user during a specific operation. Next RCA update should confirm the failing dependency, failure mode, blast radius, "
+            "corrective action, and preventive monitoring or resilience improvement."
+        )
+    elif is_access_denied and not is_http_500:
         rca_draft = (
             "RCA draft: The confirmed root cause is not yet known. Current evidence shows an access-control failure "
             "visible to the user during or after login. Next RCA update should confirm whether authentication succeeded, "

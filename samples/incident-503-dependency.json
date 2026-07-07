@@ -1,0 +1,46 @@
+{
+  "incident_id": "INFIOS-SAMPLE-503-DEPENDENCY",
+  "title": "Order submission returns HTTP 503 dependency unavailable",
+  "reported_by": "sample.user@example.test",
+  "affected_users": [
+    "sample.user@example.test"
+  ],
+  "affected_service": "Customer Portal",
+  "environment": "sample",
+  "symptom": "The portal loads, but submitting an order returns HTTP 503 Service Unavailable because the inventory dependency does not respond.",
+  "user_impact": "Users can open the portal but cannot submit orders. Business impact depends on whether the dependency issue affects all order submissions or only one route.",
+  "http_status": 503,
+  "endpoint": "/orders/submit",
+  "correlation_id": "sample-corr-20260707-113000-ghi789",
+  "recent_changes": [
+    "Inventory API deployment completed earlier the same morning.",
+    "A maintenance window for the inventory dependency ended 20 minutes before the first report."
+  ],
+  "evidence": [
+    {
+      "source": "user report",
+      "timestamp": "2026-07-07T11:30:00+02:00",
+      "detail": "User reports the portal loads normally, but order submission fails with HTTP 503 Service Unavailable.",
+      "confidence": "medium"
+    },
+    {
+      "source": "browser observation",
+      "timestamp": "2026-07-07T11:32:00+02:00",
+      "detail": "HTTP 503 observed on /orders/submit after clicking Submit Order.",
+      "confidence": "high"
+    },
+    {
+      "source": "application log sample",
+      "timestamp": "2026-07-07T11:32:04+02:00",
+      "detail": "Sample log references correlation ID sample-corr-20260707-113000-ghi789 and timeout while calling Inventory API.",
+      "confidence": "medium"
+    },
+    {
+      "source": "monitoring note",
+      "timestamp": "2026-07-07T11:33:00+02:00",
+      "detail": "Inventory API health check is failing intermittently after deployment.",
+      "confidence": "medium"
+    }
+  ],
+  "operator_notes": "Sample-only dependency scenario. Do not connect to real production systems."
+}
