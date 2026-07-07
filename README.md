@@ -53,6 +53,7 @@ It does not:
 |---|---|---|---|
 | M1 | `incident-500-login.json` | HTTP 500 after login; evidence-first application failure triage, safe next steps, escalation and RCA draft | Published |
 | M2 | `incident-403-after-login.json` | HTTP 403 after login; authentication vs authorization separation, role/group/claim evidence and access escalation | Published |
+| M2.1 | Docs and report-quality cleanup | Cleaner report wording, interview notes, milestone status and support-ready explanation | Published |
 
 <!-- INFIOS_SCENARIOS_END -->
 
@@ -85,10 +86,18 @@ reports/sample-403-access-report.md
 
 These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note and RCA draft.
 
+
+## Support Notes
+
+Additional portfolio support notes are included here:
+
+```text
+docs/interview-notes.md
+docs/milestone-status.md
+```
+
+These notes explain what INFIOS is, how to discuss it in interviews, what each scenario demonstrates, and where the project is going next.
+
 ## Interview Explanation
 
-> INFIOS is my Application Support Engineering workbench. I built it to practice handling messy incidents like HTTP 500 after login. The goal is not to guess the root cause, but to structure the evidence: who is affected, what changed, what logs show, what is still unknown, what safe checks should be done next, and what a good escalation to developers or a vendor should include. It reflects the way I work in production support: evidence first, clear user impact, and no risky changes without confirmation.
-
-
-
-
+> INFIOS is my Application Support Engineering workbench. It is currently an API-first/backend application that turns messy application incidents into structured evidence, safe next steps, escalation notes and RCA drafts. The first scenario handles HTTP 500 after login, where I keep root cause uncertain until logs and dependency evidence confirm it. The second scenario handles HTTP 403 after login, where I separate authentication from authorization and check role, group, claim and route-permission evidence before suggesting any access change.

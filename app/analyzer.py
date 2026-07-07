@@ -61,6 +61,40 @@ def _is_access_denied_case(incident: IncidentInput) -> bool:
     )
 
 
+def _add_login_flow_guidance(
+    incident: IncidentInput,
+    findings: list[Finding],
+    safe_next_steps: list[str],
+    *,
+    access_denied: bool,
+) -> None:
+    if not _has_text(incident, "login", "sign in", "authentication", "after login", "post-login"):
+        return
+
+    findings.append(
+        Finding(
+            category="Login flow",
+            severity="medium",
+            statement="The symptom occurs around login, so authentication, session creation, user profile loading, and post-login authorization should be separated.",
+            evidence_refs=["title", "symptom"],
+        )
+    )
+
+    if access_denied:
+        safe_next_steps.append(
+            "Map the flow stage precisely: credential validation, callback/session creation, landing page, then protected resource access."
+        )
+        return
+
+    safe_next_steps.extend(
+        [
+            "Confirm whether credentials are accepted before the error appears.",
+            "Check whether the failure happens before login, at callback, after callback, or after landing page load.",
+            "Compare one affected user with a known working user with the same role.",
+        ]
+    )
+
+
 def analyze_incident(incident: IncidentInput) -> AnalysisResult:
     findings: list[Finding] = []
     likely_causes: list[str] = []
@@ -173,22 +207,12 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             ]
         )
 
-    if _has_text(incident, "login", "sign in", "authentication", "after login", "post-login"):
-        findings.append(
-            Finding(
-                category="Login flow",
-                severity="medium",
-                statement="The symptom occurs around login, so authentication, session creation, user profile loading, and post-login authorization should be separated.",
-                evidence_refs=["title", "symptom"],
-            )
-        )
-        safe_next_steps.extend(
-            [
-                "Confirm whether credentials are accepted before the error appears.",
-                "Check whether the failure happens before login, at callback, after callback, or after landing page load.",
-                "Compare one affected user with a known working user with the same role.",
-            ]
-        )
+    _add_login_flow_guidance(
+        incident,
+        findings,
+        safe_next_steps,
+        access_denied=is_access_denied,
+    )
 
     if incident.correlation_id:
         findings.append(
@@ -288,4 +312,3 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         rca_draft=rca_draft,
         findings=findings,
     )
-

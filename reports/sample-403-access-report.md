@@ -68,9 +68,7 @@ One user can authenticate but cannot access the Customer Portal dashboard. Busin
 - Check identity provider sign-in/authentication evidence separately from application authorization evidence.
 - Verify expected group membership, app role assignment, claims, tenant/site scope, and route permission.
 - Do not add permissions or change groups until the required access model is confirmed by the application owner.
-- Confirm whether credentials are accepted before the error appears.
-- Check whether the failure happens before login, at callback, after callback, or after landing page load.
-- Compare one affected user with a known working user with the same role.
+- Map the flow stage precisely: credential validation, callback/session creation, landing page, then protected resource access.
 - Do not restart services or modify data without evidence and approval.
 - Prepare escalation with impact, timestamps, endpoint, correlation ID, reproduction steps, and collected logs.
 - Keep user-facing updates factual: impact, workaround if known, and next investigation step.
