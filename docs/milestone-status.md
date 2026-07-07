@@ -2,7 +2,7 @@
 
 ## Current status
 
-INFIOS is an API-first Application Support Engineering workbench.
+INFIOS is an API-first Application Support Engineering workbench with a CLI runner.
 
 | Milestone | Scenario | Status | Proof |
 |---|---|---|---|
@@ -10,14 +10,17 @@ INFIOS is an API-first Application Support Engineering workbench.
 | M2 | HTTP 403 after login | Published | Sample incident, authorization rules, report, tests |
 | M2.1 | Cleanup and interview proof | Published | Cleaner report wording, quality tests, interview notes, milestone status |
 | M3 | HTTP 503 dependency unavailable | Published | Sample incident, dependency/service-health rules, report, tests |
+| M4 | CLI runner | Published | `python -m app.cli`, console script entry point, CLI tests, generated CLI demo report |
 
 ## Current capabilities
 
 - FastAPI backend.
+- CLI runner.
 - Pydantic incident and analysis models.
 - Sample incident loading.
 - Evidence-first analyzer rules.
 - Markdown report generation.
+- JSON analysis output from CLI.
 - GitHub Actions CI.
 - Local pytest suite.
 - Sample reports for portfolio review.
@@ -29,7 +32,6 @@ INFIOS is an API-first Application Support Engineering workbench.
 ## Not yet included
 
 - Frontend dashboard.
-- CLI runner.
 - Local report history.
 - Real log parser.
 - Real production integrations.
@@ -38,6 +40,6 @@ INFIOS is an API-first Application Support Engineering workbench.
 
 ## Next recommended milestone
 
-M4 should add a small CLI runner.
+M5 should add local run history.
 
-That would make INFIOS easier to demonstrate without opening Swagger UI manually: one command could analyze a sample incident and write a Markdown report to a local output folder.
+That would let INFIOS save each analysis run with timestamp, input sample, generated report path, and result summary. It would make the project feel more like a practical support workbench while staying local-first and sample-safe.
