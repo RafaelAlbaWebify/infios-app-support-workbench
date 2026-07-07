@@ -16,16 +16,6 @@ The purpose is to demonstrate support engineering capability: turning messy appl
 
 This scenario shows that I understand HTTP 500 as a server-side symptom, not a confirmed root cause.
 
-I separate:
-
-- user impact;
-- login flow stage;
-- endpoint and status;
-- correlation ID;
-- application logs;
-- possible backend dependencies;
-- unknowns and missing evidence.
-
 Natural explanation:
 
 > In the HTTP 500 scenario, I do not say the database or the application is definitely broken. I treat it as an application-side failure visible to the user and prepare the evidence a developer or vendor would need: timestamp, endpoint, HTTP status, correlation ID, reproduction notes and logs.
@@ -34,15 +24,6 @@ Natural explanation:
 
 This scenario shows that I understand the difference between authentication and authorization.
 
-I separate:
-
-- successful credential validation;
-- session or token creation;
-- application role mapping;
-- group or claim evidence;
-- route/resource permission;
-- comparison with a known working user.
-
 Natural explanation:
 
 > In the HTTP 403 scenario, the user may be authenticated, but the application denies access to a resource. I avoid saying "login is broken" too quickly. I check roles, groups, claims, route permissions and application authorization logs before proposing any access change.
@@ -50,14 +31,6 @@ Natural explanation:
 ## M3 - HTTP 503 dependency unavailable
 
 This scenario shows that I understand dependency/service-health triage.
-
-I separate:
-
-- whether the main application is reachable;
-- which operation fails;
-- which downstream dependency is involved;
-- whether the failure is outage, timeout, health-check failure, rate limit, routing, DNS, TLS, firewall, deployment, or configuration;
-- user/business impact and blast radius.
 
 Natural explanation:
 
@@ -79,6 +52,14 @@ Natural explanation:
 
 > I added local run history so each analysis can leave a timestamped JSON record with the incident ID, service, HTTP status, endpoint, finding categories, severity counts and report path. This mirrors support discipline: every analysis should leave enough traceability for review, handover or follow-up.
 
+## M6 - SQL evidence scenario
+
+This milestone shows SQL-dependent application support thinking without pretending to be a DBA.
+
+Natural explanation:
+
+> I added a SQL evidence scenario because many Application Support roles involve data-dependent applications. I do not claim to be a DBA. I collect the evidence support should provide: timestamp, endpoint, correlation ID, SQL error text, stored procedure or query name, sanitized parameters, affected scope and recent changes. I also make the safety boundary explicit: no write queries, no data updates, no index or schema changes, no killing sessions and no restarts without owner approval.
+
 ## Support boundaries
 
 INFIOS is sample-data only. It does not connect to production systems, store credentials, process real customer data, modify databases, auto-remediate issues, or claim confirmed root cause without evidence.
@@ -91,6 +72,7 @@ INFIOS is sample-data only. It does not connect to production systems, store cre
 - RCA discipline.
 - Access troubleshooting thinking.
 - Dependency and service-health triage.
+- SQL/database evidence handling.
 - Local evidence traceability.
 - Practical local tooling.
 - Clear support communication.

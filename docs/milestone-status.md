@@ -2,7 +2,7 @@
 
 ## Current status
 
-INFIOS is an API-first Application Support Engineering workbench with a CLI runner and local run history.
+INFIOS is an API-first Application Support Engineering workbench with a CLI runner, local run history, and SQL evidence scenario.
 
 | Milestone | Scenario | Status | Proof |
 |---|---|---|---|
@@ -12,6 +12,7 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 | M3 | HTTP 503 dependency unavailable | Published | Sample incident, dependency/service-health rules, report, tests |
 | M4 | CLI runner | Published | `python -m app.cli`, console script entry point, CLI tests, generated CLI demo report |
 | M5 | Local run history | Published | Timestamped JSON run records, CLI history flag, API history endpoint, tests, generated history demo |
+| M6 | SQL evidence scenario | Published | Sample SQL timeout incident, SQL/database rules, report, tests, CLI history demo |
 
 ## Current capabilities
 
@@ -30,18 +31,19 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 - HTTP 500 application failure triage.
 - HTTP 403 access/authorization triage.
 - HTTP 503 dependency/service-health triage.
+- SQL/database evidence triage.
 
 ## Not yet included
 
 - Frontend dashboard.
 - Real log parser.
 - Real production integrations.
-- SQL evidence scenario.
 - Saved incident archive UI.
 - Search/filter over history records.
+- API/integration failure scenario.
 
 ## Next recommended milestone
 
-M6 should add a SQL evidence scenario.
+M7 should add a log-pattern evidence scenario.
 
-That would show stronger Application Support Engineer readiness around data-dependent applications without pretending to be a DBA: query timeout, missing row, stale reference data, failed stored procedure, or SQL connection evidence.
+That would show stronger Application Support Engineer readiness around reading application logs, identifying correlation IDs, grouping repeated errors, and preparing escalation without connecting to production systems.

@@ -81,6 +81,30 @@ def _is_dependency_unavailable_case(incident: IncidentInput) -> bool:
     )
 
 
+def _is_sql_evidence_case(incident: IncidentInput) -> bool:
+    return _has_text(
+        incident,
+        "sql",
+        "database",
+        "db",
+        "query timeout",
+        "timeout expired",
+        "stored procedure",
+        "procedure",
+        "deadlock",
+        "blocking",
+        "lock wait",
+        "connection pool",
+        "slow query",
+        "execution plan",
+        "index",
+        "table",
+        "missing row",
+        "reference data",
+        "stale data",
+    )
+
+
 def _add_login_flow_guidance(
     incident: IncidentInput,
     findings: list[Finding],
@@ -130,6 +154,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
     is_http_500 = _is_http_500_case(incident)
     is_access_denied = _is_access_denied_case(incident)
     is_dependency_unavailable = _is_dependency_unavailable_case(incident)
+    is_sql_evidence = _is_sql_evidence_case(incident)
 
     if is_http_500:
         findings.append(
@@ -295,6 +320,61 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             ]
         )
 
+    if is_sql_evidence:
+        findings.append(
+            Finding(
+                category="SQL evidence",
+                severity="high",
+                statement="The available evidence mentions SQL or database behavior. Treat this as a data-dependency support case and separate application symptoms from database evidence before claiming root cause.",
+                evidence_refs=["evidence", "operator_notes"],
+            )
+        )
+        findings.append(
+            Finding(
+                category="Database dependency",
+                severity="medium",
+                statement="Database-related symptoms should be validated with safe, read-only evidence such as error text, query/procedure name, duration, affected parameters, blocking/wait evidence, and owner confirmation.",
+                evidence_refs=["recent_changes", "evidence"],
+            )
+        )
+
+        likely_causes.extend(
+            [
+                "SQL query, stored procedure, view, or report operation is timing out or returning an application error.",
+                "Database blocking, wait contention, stale statistics, missing index, execution plan change, or data-volume change may be affecting the request.",
+                "Connection pool exhaustion, database connectivity instability, or read-only dependency degradation may be visible through the application.",
+                "Recent deployment, schema change, data load, reference-data change, or reporting configuration change may have affected the SQL path.",
+            ]
+        )
+
+        missing_evidence.extend(
+            [
+                "Exact SQL error text, error number, timeout duration, stored procedure/query name, and sanitized parameters.",
+                "Application log entry linking the correlation ID to the database operation.",
+                "Read-only database health evidence from the responsible owner, such as blocking/wait state, connection pool, job status, or report duration.",
+                "Comparison of affected versus working parameters, date ranges, user/site scope, or reference-data inputs.",
+            ]
+        )
+
+        safe_next_steps.extend(
+            [
+                "Collect the application log entry with correlation ID, SQL error text, procedure/query name, duration, and sanitized parameters.",
+                "Confirm whether the issue affects one report/query path, one date range, one site, one user group, or all users.",
+                "Compare with a known working parameter set or shorter date range using sample-safe or approved test data only.",
+                "Ask the database/application owner for read-only evidence around blocking, waits, connection pool, failed jobs, recent schema/data changes, or plan/regression indicators.",
+                "Do not run write queries, change indexes, update data, kill sessions, restart SQL services, or change connection strings without owner approval.",
+                "Escalate with impact, timestamp, endpoint, correlation ID, SQL operation name, sanitized parameters, observed duration, and missing evidence.",
+            ]
+        )
+
+        unknowns.extend(
+            [
+                "Whether the SQL evidence points to query logic, data volume, blocking/waits, connection pool pressure, stale/reference data, or an application-side handling problem.",
+                "Whether the failure is reproducible with a safe sample, smaller date range, or known working parameters.",
+                "Whether the responsible owner is application development, DBA/database platform, reporting, integration, or support configuration.",
+            ]
+        )
+
     _add_login_flow_guidance(
         incident,
         findings,
@@ -344,7 +424,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
 
     unknowns.extend(
         [
-            "Exact failure point in the login, access, or dependency flow.",
+            "Exact failure point in the login, access, dependency, or data path.",
             "Whether the issue affects all users or only a subset.",
             "Whether the error is reproducible from another browser, device, or network.",
         ]
@@ -374,7 +454,11 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         f"Correlation ID: {incident.correlation_id or 'not provided'}. "
     )
 
-    if is_dependency_unavailable and not is_access_denied:
+    if is_sql_evidence:
+        escalation_note += (
+            "Requested support: review application logs and safe read-only SQL/database evidence around the incident timestamp, including query/procedure name, sanitized parameters, timeout/error text, blocking/wait or connection-pool evidence, and recent data/schema/job changes. Do not perform write actions without owner approval."
+        )
+    elif is_dependency_unavailable and not is_access_denied:
         escalation_note += (
             "Requested support: review application logs, dependency health, monitoring, recent changes, and connectivity evidence around the incident timestamp, then confirm the failing dependency or service boundary."
         )
@@ -383,7 +467,13 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             "Requested support: review application logs, identity/session evidence, and dependency calls around the incident timestamp, then confirm the failing component or access rule."
         )
 
-    if is_dependency_unavailable and not is_access_denied and not is_http_500:
+    if is_sql_evidence:
+        rca_draft = (
+            "RCA draft: The confirmed root cause is not yet known. Current evidence shows a SQL/database-dependent operation "
+            "failing through the application. Next RCA update should confirm the exact query/procedure or database dependency, "
+            "failure mode, affected parameters, blast radius, corrective action, and preventive monitoring or validation control."
+        )
+    elif is_dependency_unavailable and not is_access_denied and not is_http_500:
         rca_draft = (
             "RCA draft: The confirmed root cause is not yet known. Current evidence shows a service-availability or dependency failure "
             "visible to the user during a specific operation. Next RCA update should confirm the failing dependency, failure mode, blast radius, "

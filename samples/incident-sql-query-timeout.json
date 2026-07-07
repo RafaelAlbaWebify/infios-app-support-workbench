@@ -1,0 +1,46 @@
+{
+  "incident_id": "INFIOS-SAMPLE-SQL-TIMEOUT",
+  "title": "Daily order report returns HTTP 500 after SQL timeout",
+  "reported_by": "sample.user@example.test",
+  "affected_users": [
+    "sample.user@example.test"
+  ],
+  "affected_service": "Order Reporting Portal",
+  "environment": "sample",
+  "symptom": "The report page loads, but generating the daily order report returns HTTP 500 after a SQL query timeout.",
+  "user_impact": "Business users cannot generate the daily order report for the selected date range. Operational impact depends on whether the issue affects one report, one site, or all reporting users.",
+  "http_status": 500,
+  "endpoint": "/reports/orders/daily",
+  "correlation_id": "sample-corr-20260708-090500-sql001",
+  "recent_changes": [
+    "A reporting deployment was completed the previous evening.",
+    "A large sample data load for order history finished before the first report."
+  ],
+  "evidence": [
+    {
+      "source": "user report",
+      "timestamp": "2026-07-08T09:05:00+02:00",
+      "detail": "User reports the daily order report fails for a large date range but the application menu still loads.",
+      "confidence": "medium"
+    },
+    {
+      "source": "browser observation",
+      "timestamp": "2026-07-08T09:07:00+02:00",
+      "detail": "HTTP 500 observed on /reports/orders/daily after clicking Generate Report.",
+      "confidence": "high"
+    },
+    {
+      "source": "application log sample",
+      "timestamp": "2026-07-08T09:07:04+02:00",
+      "detail": "Sample log references correlation ID sample-corr-20260708-090500-sql001 and SQL timeout expired while executing stored procedure sample_sp_daily_order_report.",
+      "confidence": "medium"
+    },
+    {
+      "source": "support note",
+      "timestamp": "2026-07-08T09:10:00+02:00",
+      "detail": "Smaller sample date range works; larger date range times out. No database writes or production queries were executed.",
+      "confidence": "medium"
+    }
+  ],
+  "operator_notes": "Sample-only SQL evidence scenario. Do not connect to real databases. Do not run write queries, update data, change indexes, kill sessions, or restart services."
+}
