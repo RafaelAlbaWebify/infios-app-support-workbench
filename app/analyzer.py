@@ -10,6 +10,8 @@ def _case_text(incident: IncidentInput) -> str:
             incident.symptom,
             incident.user_impact,
             incident.operator_notes or "",
+            incident.endpoint or "",
+            str(incident.http_status or ""),
             " ".join(incident.recent_changes),
             " ".join(item.detail for item in incident.evidence),
         ]
@@ -19,6 +21,44 @@ def _case_text(incident: IncidentInput) -> str:
 def _has_text(incident: IncidentInput, *needles: str) -> bool:
     haystack = _case_text(incident)
     return any(needle.lower() in haystack for needle in needles)
+
+
+def _dedupe(items: list[str]) -> list[str]:
+    return list(dict.fromkeys(items))
+
+
+def _sentence_fragment(value: str | None, fallback: str = "unknown") -> str:
+    if value is None:
+        return fallback
+    cleaned = value.strip().rstrip(".")
+    return cleaned or fallback
+
+
+def _is_http_500_case(incident: IncidentInput) -> bool:
+    return incident.http_status == 500 or _has_text(
+        incident,
+        "http 500",
+        "500 internal server error",
+        "internal server error",
+    )
+
+
+def _is_access_denied_case(incident: IncidentInput) -> bool:
+    return incident.http_status in {401, 403} or _has_text(
+        incident,
+        "http 401",
+        "401 unauthorized",
+        "unauthorized",
+        "http 403",
+        "403 forbidden",
+        "forbidden",
+        "access denied",
+        "not authorized",
+        "not authorised",
+        "permission denied",
+        "authorization",
+        "authorisation",
+    )
 
 
 def analyze_incident(incident: IncidentInput) -> AnalysisResult:
@@ -33,7 +73,10 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         "This is being treated as an Application Support case with evidence-first analysis."
     )
 
-    if incident.http_status == 500 or _has_text(incident, "http 500", "500 internal server error", "internal server error"):
+    is_http_500 = _is_http_500_case(incident)
+    is_access_denied = _is_access_denied_case(incident)
+
+    if is_http_500:
         findings.append(
             Finding(
                 category="HTTP",
@@ -58,7 +101,79 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             ]
         )
 
-    if _has_text(incident, "login", "sign in", "authentication"):
+    if is_access_denied:
+        severity = "high" if incident.http_status == 403 else "medium"
+        findings.append(
+            Finding(
+                category="Access control",
+                severity=severity,
+                statement="The symptom indicates an authentication or authorization boundary. Separate credential validation, session/token creation, role mapping, and application permission checks.",
+                evidence_refs=["http_status", "symptom", "endpoint"],
+            )
+        )
+
+        if incident.http_status == 401:
+            findings.append(
+                Finding(
+                    category="Authentication",
+                    severity="medium",
+                    statement="HTTP 401 usually means the request is not authenticated or the session/token is missing, expired, invalid, or not accepted by the application.",
+                    evidence_refs=["http_status"],
+                )
+            )
+            likely_causes.extend(
+                [
+                    "Expired, missing, or invalid session/token after login.",
+                    "Identity provider callback or application session configuration issue.",
+                    "Cookie, redirect, or token validation problem between the browser and application.",
+                ]
+            )
+
+        if incident.http_status == 403:
+            findings.append(
+                Finding(
+                    category="Authorization",
+                    severity="high",
+                    statement="HTTP 403 usually means the user is authenticated but the application denies access to the requested resource.",
+                    evidence_refs=["http_status", "endpoint"],
+                )
+            )
+            likely_causes.extend(
+                [
+                    "User is authenticated but missing the required application role, group membership, claim, or permission.",
+                    "Application role mapping or authorization rule is stale, misconfigured, or recently changed.",
+                    "The requested route or resource is restricted to a different role, tenant, site, or business unit.",
+                ]
+            )
+
+        likely_causes.extend(
+            [
+                "Mismatch between identity provider groups/claims and application authorization rules.",
+                "Recent access-control or deployment change affecting the post-login route.",
+            ]
+        )
+
+        safe_next_steps.extend(
+            [
+                "Confirm whether credentials are accepted before the access error appears.",
+                "Compare the affected user with a known working user in the same role and business context.",
+                "Collect application authorization logs around the timestamp and endpoint.",
+                "Check identity provider sign-in/authentication evidence separately from application authorization evidence.",
+                "Verify expected group membership, app role assignment, claims, tenant/site scope, and route permission.",
+                "Do not add permissions or change groups until the required access model is confirmed by the application owner.",
+            ]
+        )
+
+        missing_evidence.extend(
+            [
+                "Identity provider sign-in evidence showing whether authentication succeeded.",
+                "Application authorization log entry for the failed endpoint and user.",
+                "Expected role/group/app-permission evidence for the affected resource.",
+                "Comparison with a known working user in the same business role.",
+            ]
+        )
+
+    if _has_text(incident, "login", "sign in", "authentication", "after login", "post-login"):
         findings.append(
             Finding(
                 category="Login flow",
@@ -70,7 +185,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         safe_next_steps.extend(
             [
                 "Confirm whether credentials are accepted before the error appears.",
-                "Check whether the failure happens before login, at callback, or after landing page load.",
+                "Check whether the failure happens before login, at callback, after callback, or after landing page load.",
                 "Compare one affected user with a known working user with the same role.",
             ]
         )
@@ -111,12 +226,13 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             )
         )
 
-    if "database" not in " ".join(item.detail.lower() for item in incident.evidence):
+    evidence_text = " ".join(item.detail.lower() for item in incident.evidence)
+    if "database" not in evidence_text and is_http_500:
         missing_evidence.append("Database or dependency health evidence, if login loads profile/session data.")
 
     unknowns.extend(
         [
-            "Exact failure point in the login flow.",
+            "Exact failure point in the login or access flow.",
             "Whether the issue affects all users or only a subset.",
             "Whether the error is reproducible from another browser, device, or network.",
         ]
@@ -130,29 +246,35 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         ]
     )
 
-    likely_causes = list(dict.fromkeys(likely_causes)) or [
+    likely_causes = _dedupe(likely_causes) or [
         "The available evidence is not enough to propose a likely cause safely."
     ]
-
-    unknowns = list(dict.fromkeys(unknowns))
-    missing_evidence = list(dict.fromkeys(missing_evidence))
-    safe_next_steps = list(dict.fromkeys(safe_next_steps))
+    unknowns = _dedupe(unknowns)
+    missing_evidence = _dedupe(missing_evidence)
+    safe_next_steps = _dedupe(safe_next_steps)
 
     escalation_note = (
-        f"Please investigate incident {incident.incident_id}: {incident.title}. "
-        f"Impact: {incident.user_impact}. "
-        f"Observed symptom: {incident.symptom}. "
+        f"Please investigate incident {incident.incident_id}: {_sentence_fragment(incident.title)}. "
+        f"Impact: {_sentence_fragment(incident.user_impact)}. "
+        f"Observed symptom: {_sentence_fragment(incident.symptom)}. "
         f"HTTP status: {incident.http_status or 'unknown'}. "
         f"Endpoint: {incident.endpoint or 'unknown'}. "
         f"Correlation ID: {incident.correlation_id or 'not provided'}. "
-        "Requested support: review application logs and dependency calls around the incident timestamp and confirm the failing component."
+        "Requested support: review application logs, identity/session evidence, and dependency calls around the incident timestamp, then confirm the failing component or access rule."
     )
 
-    rca_draft = (
-        "RCA draft: The confirmed root cause is not yet known. Current evidence shows an application-side failure "
-        "visible to the user during the login flow. Next RCA update should confirm the failing component, trigger, "
-        "blast radius, resolution, and preventive action after logs and dependency evidence are reviewed."
-    )
+    if is_access_denied and not is_http_500:
+        rca_draft = (
+            "RCA draft: The confirmed root cause is not yet known. Current evidence shows an access-control failure "
+            "visible to the user during or after login. Next RCA update should confirm whether authentication succeeded, "
+            "which authorization rule denied access, the affected user scope, the corrective action, and the preventive control."
+        )
+    else:
+        rca_draft = (
+            "RCA draft: The confirmed root cause is not yet known. Current evidence shows an application-side failure "
+            "visible to the user during the login flow. Next RCA update should confirm the failing component, trigger, "
+            "blast radius, resolution, and preventive action after logs and dependency evidence are reviewed."
+        )
 
     return AnalysisResult(
         incident_id=incident.incident_id,
@@ -166,3 +288,4 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         rca_draft=rca_draft,
         findings=findings,
     )
+

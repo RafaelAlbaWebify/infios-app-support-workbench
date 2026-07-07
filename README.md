@@ -46,6 +46,16 @@ It does not:
 | POST | `/api/analyze` | Analyze an incident JSON |
 | POST | `/api/report/markdown` | Generate a Markdown report |
 
+<!-- INFIOS_SCENARIOS_START -->
+## Scenarios
+
+| Milestone | Sample | Support focus | Status |
+|---|---|---|---|
+| M1 | `incident-500-login.json` | HTTP 500 after login; evidence-first application failure triage, safe next steps, escalation and RCA draft | Published |
+| M2 | `incident-403-after-login.json` | HTTP 403 after login; authentication vs authorization separation, role/group/claim evidence and access escalation | Published |
+
+<!-- INFIOS_SCENARIOS_END -->
+
 ## Local Setup
 
 ```powershell
@@ -64,18 +74,20 @@ http://127.0.0.1:8000/docs
 ```
 
 
-## Demo Report
+## Demo Reports
 
-A generated example report is included here:
+Generated example reports are included here:
 
 ```text
 reports/sample-500-login-report.md
+reports/sample-403-access-report.md
 ```
 
-The report shows the support-ready output for the HTTP 500 after login scenario: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note and RCA draft.
+These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note and RCA draft.
 
 ## Interview Explanation
 
 > INFIOS is my Application Support Engineering workbench. I built it to practice handling messy incidents like HTTP 500 after login. The goal is not to guess the root cause, but to structure the evidence: who is affected, what changed, what logs show, what is still unknown, what safe checks should be done next, and what a good escalation to developers or a vendor should include. It reflects the way I work in production support: evidence first, clear user impact, and no risky changes without confirmation.
+
 
 

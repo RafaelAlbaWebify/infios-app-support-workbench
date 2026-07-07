@@ -45,7 +45,7 @@ One user cannot access the portal after login. Business impact is limited until 
 
 ## Unknowns
 
-- Exact failure point in the login flow.
+- Exact failure point in the login or access flow.
 - Whether the issue affects all users or only a subset.
 - Whether the error is reproducible from another browser, device, or network.
 
@@ -60,7 +60,7 @@ One user cannot access the portal after login. Business impact is limited until 
 - Check application logs around the timestamp for exception class, stack trace, and failed dependency.
 - Compare affected user scope: one user, one role, one site, or all users.
 - Confirm whether credentials are accepted before the error appears.
-- Check whether the failure happens before login, at callback, or after landing page load.
+- Check whether the failure happens before login, at callback, after callback, or after landing page load.
 - Compare one affected user with a known working user with the same role.
 - Do not restart services or modify data without evidence and approval.
 - Prepare escalation with impact, timestamps, endpoint, correlation ID, reproduction steps, and collected logs.
@@ -68,7 +68,7 @@ One user cannot access the portal after login. Business impact is limited until 
 
 ## Escalation Note
 
-Please investigate incident INFIOS-SAMPLE-500-LOGIN: User receives HTTP 500 after login. Impact: One user cannot access the portal after login. Business impact is limited until more affected users are confirmed.. Observed symptom: After entering valid credentials, the user is redirected to the portal landing page and receives HTTP 500 Internal Server Error.. HTTP status: 500. Endpoint: /auth/callback. Correlation ID: sample-corr-20260707-091500-abc123. Requested support: review application logs and dependency calls around the incident timestamp and confirm the failing component.
+Please investigate incident INFIOS-SAMPLE-500-LOGIN: User receives HTTP 500 after login. Impact: One user cannot access the portal after login. Business impact is limited until more affected users are confirmed. Observed symptom: After entering valid credentials, the user is redirected to the portal landing page and receives HTTP 500 Internal Server Error. HTTP status: 500. Endpoint: /auth/callback. Correlation ID: sample-corr-20260707-091500-abc123. Requested support: review application logs, identity/session evidence, and dependency calls around the incident timestamp, then confirm the failing component or access rule.
 
 ## RCA Draft
 

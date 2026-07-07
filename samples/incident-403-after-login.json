@@ -1,0 +1,45 @@
+{
+  "incident_id": "INFIOS-SAMPLE-403-AFTER-LOGIN",
+  "title": "User receives HTTP 403 after successful login",
+  "reported_by": "service desk",
+  "affected_users": [
+    "sample.user@example.com"
+  ],
+  "affected_service": "Customer Portal",
+  "environment": "sample",
+  "symptom": "The user enters valid credentials, login succeeds, but the portal returns HTTP 403 Forbidden when opening the dashboard.",
+  "user_impact": "One user can authenticate but cannot access the Customer Portal dashboard. Business impact is limited until role or group scope is confirmed.",
+  "http_status": 403,
+  "endpoint": "/dashboard",
+  "correlation_id": "sample-corr-20260707-104500-def456",
+  "recent_changes": [
+    "Application role mapping was updated in the sample environment earlier that morning."
+  ],
+  "evidence": [
+    {
+      "source": "user report",
+      "timestamp": "2026-07-07T10:45:00+02:00",
+      "detail": "User reports valid credentials are accepted, then the dashboard returns HTTP 403 Forbidden.",
+      "confidence": "medium"
+    },
+    {
+      "source": "browser observation",
+      "timestamp": "2026-07-07T10:47:00+02:00",
+      "detail": "HTTP 403 observed on /dashboard after successful login and redirect.",
+      "confidence": "high"
+    },
+    {
+      "source": "application log sample",
+      "timestamp": "2026-07-07T10:47:03+02:00",
+      "detail": "Sample log references correlation ID sample-corr-20260707-104500-def456 and authorization denied while checking dashboard permission.",
+      "confidence": "medium"
+    },
+    {
+      "source": "identity note",
+      "timestamp": "2026-07-07T10:49:00+02:00",
+      "detail": "Authentication appears successful; application authorization still needs role, group, or claim validation.",
+      "confidence": "medium"
+    }
+  ],
+  "operator_notes": "Treat this as an access-control investigation. Do not add permissions until the expected access model is confirmed."
+}
