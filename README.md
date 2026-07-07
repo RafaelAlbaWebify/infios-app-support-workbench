@@ -1,5 +1,7 @@
 # INFIOS - Application Support Workbench
 
+[![INFIOS CI](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/actions/workflows/ci.yml)
+
 **Incident Flow & Information Operations Support**
 
 INFIOS is a local-first Application Support Engineering workbench. It turns messy application incidents into structured evidence, safe next steps, escalation notes, RCA drafts, and Markdown reports.
@@ -61,6 +63,19 @@ Then open:
 http://127.0.0.1:8000/docs
 ```
 
+
+## Demo Report
+
+A generated example report is included here:
+
+```text
+reports/sample-500-login-report.md
+```
+
+The report shows the support-ready output for the HTTP 500 after login scenario: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note and RCA draft.
+
 ## Interview Explanation
 
 > INFIOS is my Application Support Engineering workbench. I built it to practice handling messy incidents like HTTP 500 after login. The goal is not to guess the root cause, but to structure the evidence: who is affected, what changed, what logs show, what is still unknown, what safe checks should be done next, and what a good escalation to developers or a vendor should include. It reflects the way I work in production support: evidence first, clear user impact, and no risky changes without confirmation.
+
+
