@@ -2,7 +2,7 @@
 
 ## Current status
 
-INFIOS is an API-first Application Support Engineering workbench with a CLI runner, local run history, and SQL evidence scenario.
+INFIOS is an API-first Application Support Engineering workbench with a CLI runner, local run history, SQL evidence scenario, and cleaned demo documentation.
 
 | Milestone | Scenario | Status | Proof |
 |---|---|---|---|
@@ -13,6 +13,7 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 | M4 | CLI runner | Published | `python -m app.cli`, console script entry point, CLI tests, generated CLI demo report |
 | M5 | Local run history | Published | Timestamped JSON run records, CLI history flag, API history endpoint, tests, generated history demo |
 | M6 | SQL evidence scenario | Published | Sample SQL timeout incident, SQL/database rules, report, tests, CLI history demo |
+| M6.1 | README and demo polish | Published | Clean demo commands, README quality tests, and improved demo documentation |
 
 ## Current capabilities
 
@@ -28,6 +29,7 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 - Local pytest suite.
 - Sample reports for portfolio review.
 - Interview notes explaining the support reasoning.
+- Clean demo command documentation.
 - HTTP 500 application failure triage.
 - HTTP 403 access/authorization triage.
 - HTTP 503 dependency/service-health triage.

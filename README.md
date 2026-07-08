@@ -4,11 +4,7 @@
 
 **Incident Flow & Information Operations Support**
 
-INFIOS is a local-first Application Support Engineering workbench. It turns messy application incidents into structured evidence, safe next steps, escalation notes, RCA drafts, and Markdown reports.
-
-The first MVP focuses on one realistic support scenario:
-
-> A user receives HTTP 500 after login.
+INFIOS is a local-first Application Support Engineering workbench. It turns messy application incidents into structured evidence, safe next steps, escalation notes, RCA drafts, Markdown reports, JSON analysis output, and local run-history records.
 
 ## Purpose
 
@@ -23,6 +19,9 @@ It demonstrates:
 - Safe support next steps.
 - Vendor/developer escalation quality.
 - RCA discipline without pretending to know the root cause without evidence.
+- CLI-based local tooling.
+- Local run-history traceability.
+- SQL/database evidence handling without DBA overclaiming.
 
 ## Safety Boundaries
 
@@ -34,17 +33,20 @@ It does not:
 - store credentials or secrets;
 - process real customer data;
 - modify databases;
+- run SQL queries against real systems;
 - auto-remediate issues;
 - claim confirmed root cause without evidence.
 
-## MVP API
+## API
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | GET | `/api/health` | Service health |
 | GET | `/api/samples` | List available sample incidents |
+| GET | `/api/history` | List local run-history records |
 | POST | `/api/analyze` | Analyze an incident JSON |
 | POST | `/api/report/markdown` | Generate a Markdown report |
+| POST | `/api/report/markdown/save` | Generate a Markdown report and save local run history |
 
 <!-- INFIOS_SCENARIOS_START -->
 ## Scenarios
@@ -58,6 +60,7 @@ It does not:
 | M4 | CLI runner | Analyze local incident JSON and generate Markdown or JSON output from the terminal | Published |
 | M5 | Local run history | Save timestamped local JSON records for CLI/API analysis runs | Published |
 | M6 | `incident-sql-query-timeout.json` | SQL evidence scenario; query timeout evidence, safe read-only boundaries and database-owner escalation | Published |
+| M6.1 | README and demo polish | Clean demo commands, clearer README structure, and README formatting regression tests | Published |
 
 <!-- INFIOS_SCENARIOS_END -->
 
@@ -78,6 +81,37 @@ Then open:
 http://127.0.0.1:8000/docs
 ```
 
+## Demo Commands
+
+Generate the HTTP 503 dependency report:
+
+```powershell
+python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
+```
+
+Generate the SQL timeout report:
+
+```powershell
+python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
+```
+
+Generate a SQL timeout report and save a local run-history record:
+
+```powershell
+python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md --save-history
+```
+
+Use the installed console command after `pip install -e ".[dev]"`:
+
+```powershell
+infios analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
+```
+
+Print JSON analysis output:
+
+```powershell
+python -m app.cli analyze samples/incident-403-after-login.json --format json
+```
 
 ## Demo Reports
 
@@ -87,47 +121,13 @@ Generated example reports are included here:
 reports/sample-500-login-report.md
 reports/sample-403-access-report.md
 reports/sample-503-dependency-report.md
+reports/sample-sql-query-timeout-report.md
 reports/generated/cli-503-demo.md
 reports/generated/cli-503-history-demo.json
 reports/generated/cli-sql-timeout-history-demo.json
-reports/sample-sql-query-timeout-report.md
 ```
 
-These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note and RCA draft.
-
-
-
-## CLI Usage
-
-Analyze a local sample incident and generate a Markdown report:
-
-```powershell
-python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
-reports/generated/cli-503-history-demo.json
-reports/generated/cli-sql-timeout-history-demo.json
-reports/sample-sql-query-timeout-report.md
-```
-
-After installing the project in editable mode, the console command is also available:
-
-```powershell
-infios analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
-reports/generated/cli-503-history-demo.json
-reports/generated/cli-sql-timeout-history-demo.json
-reports/sample-sql-query-timeout-report.md
-```
-
-
-Save a local run-history JSON record:
-
-```powershell
-python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md --save-history
-```
-The CLI can also print JSON analysis output:
-
-```powershell
-python -m app.cli analyze samples/incident-403-after-login.json --format json
-```
+These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note, RCA draft, and local run-history records.
 
 ## Support Notes
 
@@ -140,6 +140,7 @@ docs/sample-incident-503-dependency.md
 docs/cli-usage.md
 docs/run-history.md
 docs/sample-incident-sql-query-timeout.md
+docs/demo-commands.md
 ```
 
 These notes explain what INFIOS is, how to discuss it in interviews, what each scenario demonstrates, and where the project is going next.
