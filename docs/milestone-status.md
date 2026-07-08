@@ -2,7 +2,7 @@
 
 ## Current status
 
-INFIOS is an API-first Application Support Engineering workbench with a CLI runner, local run history, SQL evidence scenario, and cleaned demo documentation.
+INFIOS is an API-first Application Support Engineering workbench with a CLI runner, local run history, SQL evidence scenario, log-pattern evidence scenario, and cleaned demo documentation.
 
 | Milestone | Scenario | Status | Proof |
 |---|---|---|---|
@@ -14,6 +14,7 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 | M5 | Local run history | Published | Timestamped JSON run records, CLI history flag, API history endpoint, tests, generated history demo |
 | M6 | SQL evidence scenario | Published | Sample SQL timeout incident, SQL/database rules, report, tests, CLI history demo |
 | M6.1 | README and demo polish | Published | Clean demo commands, README quality tests, and improved demo documentation |
+| M7 | Log-pattern evidence scenario | Published | Sample repeated-log incident, log-pattern analyzer rules, report, tests, CLI history demo |
 
 ## Current capabilities
 
@@ -34,6 +35,7 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 - HTTP 403 access/authorization triage.
 - HTTP 503 dependency/service-health triage.
 - SQL/database evidence triage.
+- Application log-pattern evidence triage.
 
 ## Not yet included
 
@@ -46,6 +48,6 @@ INFIOS is an API-first Application Support Engineering workbench with a CLI runn
 
 ## Next recommended milestone
 
-M7 should add a log-pattern evidence scenario.
+M8 should add a simple local log parser for public-safe sample logs.
 
-That would show stronger Application Support Engineer readiness around reading application logs, identifying correlation IDs, grouping repeated errors, and preparing escalation without connecting to production systems.
+That would turn the M7 scenario into a more practical artifact: a sample log file could be parsed into repeated error signatures, correlation IDs, and a compact evidence summary.

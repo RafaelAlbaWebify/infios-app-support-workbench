@@ -105,6 +105,41 @@ def _is_sql_evidence_case(incident: IncidentInput) -> bool:
     )
 
 
+def _is_log_pattern_case(incident: IncidentInput) -> bool:
+    haystack = _case_text(incident)
+
+    log_context_terms = (
+        "application log",
+        "error log",
+        "log pattern",
+        "log sample",
+        "stack trace",
+        "traceback",
+        "exception=",
+        "exception ",
+        "error signature",
+        "same error signature",
+    )
+    pattern_terms = (
+        "repeated",
+        "multiple occurrences",
+        "same error",
+        "error signature",
+        "exception",
+        "stack trace",
+        "first seen",
+        "last seen",
+        "occurrence count",
+        "error burst",
+        "error rate",
+        "correlationid=",
+    )
+
+    has_log_context = any(term in haystack for term in log_context_terms)
+    has_pattern_signal = any(term in haystack for term in pattern_terms)
+    return has_log_context and has_pattern_signal
+
+
 def _add_login_flow_guidance(
     incident: IncidentInput,
     findings: list[Finding],
@@ -155,6 +190,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
     is_access_denied = _is_access_denied_case(incident)
     is_dependency_unavailable = _is_dependency_unavailable_case(incident)
     is_sql_evidence = _is_sql_evidence_case(incident)
+    is_log_pattern = _is_log_pattern_case(incident)
 
     if is_http_500:
         findings.append(
@@ -375,6 +411,62 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             ]
         )
 
+    if is_log_pattern:
+        findings.append(
+            Finding(
+                category="Log pattern",
+                severity="high",
+                statement="The evidence contains application log signals. Correlate timestamp, endpoint, correlation/request ID, exception text, and repeated occurrences before claiming root cause.",
+                evidence_refs=["evidence", "correlation_id"],
+            )
+        )
+        findings.append(
+            Finding(
+                category="Error clustering",
+                severity="medium",
+                statement="Repeated or similar log entries should be grouped by error signature, endpoint, correlation/request ID, deployment window, and affected scope.",
+                evidence_refs=["evidence", "recent_changes"],
+            )
+        )
+
+        likely_causes.extend(
+            [
+                "A repeated application exception may be affecting one endpoint, operation, feature flag, deployment version, or input pattern.",
+                "A recent deployment or configuration change may have introduced a recurring error signature.",
+                "A downstream dependency, data path, access rule, or application code path may be failing consistently for the same request pattern.",
+                "A noisy log symptom may be secondary; the primary failure must be confirmed by correlation ID, timestamp sequence, and owner validation.",
+            ]
+        )
+
+        missing_evidence.extend(
+            [
+                "Exact log lines around the incident timestamp, with sensitive values redacted.",
+                "Error signature or exception class grouped across repeated occurrences.",
+                "Count of repeated errors in the affected time window compared with a normal baseline.",
+                "Request/correlation IDs that link user reports, application logs, and any downstream dependency logs.",
+                "Deployment version, host/container/instance identifier, and feature flag/config state if available.",
+            ]
+        )
+
+        safe_next_steps.extend(
+            [
+                "Group log entries by timestamp, endpoint, correlation ID, exception class, message fingerprint, host/instance, and recent deployment window.",
+                "Confirm whether the same error signature appears before and after the first user report.",
+                "Compare error frequency during the incident window with a normal baseline or previous known-good period.",
+                "Separate primary failure evidence from secondary noise, retries, warnings, and follow-on errors.",
+                "Redact tokens, session IDs, personal data, and secrets before sharing logs in escalation notes.",
+                "Escalate with the shortest representative log excerpt, occurrence count, affected endpoint, correlation IDs, first/last seen timestamps, and recent-change context.",
+            ]
+        )
+
+        unknowns.extend(
+            [
+                "Whether the repeated log pattern is the primary failure or secondary noise.",
+                "Whether the pattern affects one endpoint, one user group, one host/instance, one deployment version, or all traffic.",
+                "Whether the error began after a deployment, configuration change, data change, dependency incident, or traffic pattern change.",
+            ]
+        )
+
     _add_login_flow_guidance(
         incident,
         findings,
@@ -424,7 +516,7 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
 
     unknowns.extend(
         [
-            "Exact failure point in the login, access, dependency, or data path.",
+            "Exact failure point in the login, access, dependency, data, or log sequence.",
             "Whether the issue affects all users or only a subset.",
             "Whether the error is reproducible from another browser, device, or network.",
         ]
@@ -458,6 +550,10 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         escalation_note += (
             "Requested support: review application logs and safe read-only SQL/database evidence around the incident timestamp, including query/procedure name, sanitized parameters, timeout/error text, blocking/wait or connection-pool evidence, and recent data/schema/job changes. Do not perform write actions without owner approval."
         )
+    elif is_log_pattern:
+        escalation_note += (
+            "Requested support: review the representative log pattern around the incident window, including first/last seen timestamps, occurrence count, endpoint, correlation IDs, exception signature, affected host/instance, and recent-change context. Please confirm whether the pattern is primary failure evidence or secondary noise."
+        )
     elif is_dependency_unavailable and not is_access_denied:
         escalation_note += (
             "Requested support: review application logs, dependency health, monitoring, recent changes, and connectivity evidence around the incident timestamp, then confirm the failing dependency or service boundary."
@@ -472,6 +568,12 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
             "RCA draft: The confirmed root cause is not yet known. Current evidence shows a SQL/database-dependent operation "
             "failing through the application. Next RCA update should confirm the exact query/procedure or database dependency, "
             "failure mode, affected parameters, blast radius, corrective action, and preventive monitoring or validation control."
+        )
+    elif is_log_pattern:
+        rca_draft = (
+            "RCA draft: The confirmed root cause is not yet known. Current evidence shows a repeated application log pattern "
+            "correlated with the user-visible incident. Next RCA update should confirm the representative error signature, first and last seen timestamps, "
+            "affected scope, triggering change or condition, corrective action, and monitoring or alerting improvement."
         )
     elif is_dependency_unavailable and not is_access_denied and not is_http_500:
         rca_draft = (
@@ -504,3 +606,4 @@ def analyze_incident(incident: IncidentInput) -> AnalysisResult:
         rca_draft=rca_draft,
         findings=findings,
     )
+

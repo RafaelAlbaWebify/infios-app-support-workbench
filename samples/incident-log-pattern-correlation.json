@@ -1,0 +1,47 @@
+{
+  "incident_id": "INFIOS-SAMPLE-LOG-PATTERN",
+  "title": "Checkout endpoint returns intermittent HTTP 500 with repeated log signature",
+  "reported_by": "sample.user@example.test",
+  "affected_users": [
+    "sample.user@example.test",
+    "sample.second@example.test"
+  ],
+  "affected_service": "Customer Portal",
+  "environment": "sample",
+  "symptom": "Checkout intermittently returns HTTP 500. Application logs show the same exception signature repeated during the incident window.",
+  "user_impact": "Some users cannot complete checkout. Impact depends on whether the repeated error pattern affects one endpoint, one deployment instance, one user segment, or all checkout traffic.",
+  "http_status": 500,
+  "endpoint": "/checkout/submit",
+  "correlation_id": "sample-corr-20260708-101500-log001",
+  "recent_changes": [
+    "Checkout service deployment completed 35 minutes before the first report.",
+    "Feature flag sample-checkout-discount-flow was enabled for a small sample cohort."
+  ],
+  "evidence": [
+    {
+      "source": "user report",
+      "timestamp": "2026-07-08T10:15:00+02:00",
+      "detail": "User reports checkout fails intermittently after clicking Submit Order.",
+      "confidence": "medium"
+    },
+    {
+      "source": "browser observation",
+      "timestamp": "2026-07-08T10:17:00+02:00",
+      "detail": "HTTP 500 observed on /checkout/submit with correlation ID sample-corr-20260708-101500-log001.",
+      "confidence": "high"
+    },
+    {
+      "source": "application log sample",
+      "timestamp": "2026-07-08T10:17:04+02:00",
+      "detail": "ERROR CheckoutController correlationId=sample-corr-20260708-101500-log001 exception=SamplePaymentMappingException message='sample payment mapping missing for discount flow'.",
+      "confidence": "medium"
+    },
+    {
+      "source": "log pattern note",
+      "timestamp": "2026-07-08T10:20:00+02:00",
+      "detail": "Same error signature repeated 18 times between 10:14 and 10:20 on instance checkout-sample-02 after deployment.",
+      "confidence": "medium"
+    }
+  ],
+  "operator_notes": "Sample-only log evidence scenario. Redact tokens, session IDs, personal data, and secrets before sharing any real log excerpts."
+}

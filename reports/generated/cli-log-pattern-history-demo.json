@@ -1,0 +1,32 @@
+{
+  "run_id": "20260708T003514Z-infios-sample-log-pattern",
+  "created_at": "2026-07-08T00:35:14.936970Z",
+  "incident_id": "INFIOS-SAMPLE-LOG-PATTERN",
+  "title": "Checkout endpoint returns intermittent HTTP 500 with repeated log signature",
+  "affected_service": "Customer Portal",
+  "environment": "sample",
+  "http_status": 500,
+  "endpoint": "/checkout/submit",
+  "correlation_id": "sample-corr-20260708-101500-log001",
+  "source_path": "samples\\incident-log-pattern-correlation.json",
+  "output_path": "reports\\generated\\cli-log-pattern-demo.md",
+  "output_format": "markdown",
+  "finding_categories": [
+    "HTTP",
+    "Log pattern",
+    "Error clustering",
+    "Traceability",
+    "Evidence",
+    "Recent changes"
+  ],
+  "severity_counts": {
+    "high": 2,
+    "medium": 2,
+    "info": 2
+  },
+  "likely_cause_count": 7,
+  "unknown_count": 6,
+  "missing_evidence_count": 6,
+  "safe_next_step_count": 13,
+  "support_boundary": "Local sample-safe history record. No production connection, credential collection, database modification, or auto-remediation was performed."
+}

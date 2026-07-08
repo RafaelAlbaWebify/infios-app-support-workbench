@@ -38,10 +38,16 @@ python -m app.cli analyze samples/incident-503-dependency.json --out reports/gen
 python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
 ```
 
+## Generate a log-pattern evidence report
+
+```powershell
+python -m app.cli analyze samples/incident-log-pattern-correlation.json --out reports/generated/cli-log-pattern-demo.md
+```
+
 ## Generate report plus local history
 
 ```powershell
-python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md --save-history
+python -m app.cli analyze samples/incident-log-pattern-correlation.json --out reports/generated/cli-log-pattern-demo.md --save-history
 ```
 
 ## Use the installed console command
@@ -58,4 +64,4 @@ python -m app.cli analyze samples/incident-403-after-login.json --format json
 
 ## Safety reminder
 
-All commands use local sample JSON files. They do not connect to production systems, collect credentials, modify databases, run SQL queries against real systems, restart services, change permissions, or auto-remediate incidents.
+All commands use local sample JSON files. They do not connect to production systems, collect credentials, collect production log dumps, modify databases, run SQL queries against real systems, restart services, change permissions, or auto-remediate incidents.

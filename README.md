@@ -22,6 +22,7 @@ It demonstrates:
 - CLI-based local tooling.
 - Local run-history traceability.
 - SQL/database evidence handling without DBA overclaiming.
+- Application log-pattern evidence handling.
 
 ## Safety Boundaries
 
@@ -32,6 +33,7 @@ It does not:
 - connect to production systems;
 - store credentials or secrets;
 - process real customer data;
+- collect production log dumps;
 - modify databases;
 - run SQL queries against real systems;
 - auto-remediate issues;
@@ -61,6 +63,7 @@ It does not:
 | M5 | Local run history | Save timestamped local JSON records for CLI/API analysis runs | Published |
 | M6 | `incident-sql-query-timeout.json` | SQL evidence scenario; query timeout evidence, safe read-only boundaries and database-owner escalation | Published |
 | M6.1 | README and demo polish | Clean demo commands, clearer README structure, and README formatting regression tests | Published |
+| M7 | `incident-log-pattern-correlation.json` | Log-pattern evidence scenario; repeated error signatures, correlation IDs, time windows and redacted escalation | Published |
 
 <!-- INFIOS_SCENARIOS_END -->
 
@@ -95,10 +98,16 @@ Generate the SQL timeout report:
 python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
 ```
 
-Generate a SQL timeout report and save a local run-history record:
+Generate the log-pattern report:
 
 ```powershell
-python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md --save-history
+python -m app.cli analyze samples/incident-log-pattern-correlation.json --out reports/generated/cli-log-pattern-demo.md
+```
+
+Generate a log-pattern report and save a local run-history record:
+
+```powershell
+python -m app.cli analyze samples/incident-log-pattern-correlation.json --out reports/generated/cli-log-pattern-demo.md --save-history
 ```
 
 Use the installed console command after `pip install -e ".[dev]"`:
@@ -122,9 +131,11 @@ reports/sample-500-login-report.md
 reports/sample-403-access-report.md
 reports/sample-503-dependency-report.md
 reports/sample-sql-query-timeout-report.md
+reports/sample-log-pattern-report.md
 reports/generated/cli-503-demo.md
 reports/generated/cli-503-history-demo.json
 reports/generated/cli-sql-timeout-history-demo.json
+reports/generated/cli-log-pattern-history-demo.json
 ```
 
 These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note, RCA draft, and local run-history records.
@@ -140,6 +151,7 @@ docs/sample-incident-503-dependency.md
 docs/cli-usage.md
 docs/run-history.md
 docs/sample-incident-sql-query-timeout.md
+docs/sample-incident-log-pattern.md
 docs/demo-commands.md
 ```
 
@@ -147,4 +159,4 @@ These notes explain what INFIOS is, how to discuss it in interviews, what each s
 
 ## Interview Explanation
 
-> INFIOS is my Application Support Engineering workbench. It is currently an API-first/backend application with a CLI runner and local run history. It turns local sample incidents into structured evidence, safe next steps, escalation notes, RCA drafts and timestamped run records. The scenarios cover HTTP 500 application failure, HTTP 403 authorization failure, HTTP 503 dependency unavailable, and SQL query timeout evidence. The SQL scenario is deliberately safe: it structures database-related evidence and escalation without running write queries, changing data, changing indexes, killing sessions, or pretending to be a DBA.
+> INFIOS is my Application Support Engineering workbench. It is currently an API-first/backend application with a CLI runner and local run history. It turns local sample incidents into structured evidence, safe next steps, escalation notes, RCA drafts and timestamped run records. The scenarios cover HTTP 500 application failure, HTTP 403 authorization failure, HTTP 503 dependency unavailable, SQL query timeout evidence, and repeated log-pattern evidence. The log scenario is deliberately safe: it structures representative redacted log evidence without collecting production log dumps, secrets, tokens, session IDs, or personal data.

@@ -14,51 +14,31 @@ The purpose is to demonstrate support engineering capability: turning messy appl
 
 ## M1 - HTTP 500 after login
 
-This scenario shows that I understand HTTP 500 as a server-side symptom, not a confirmed root cause.
-
-Natural explanation:
-
 > In the HTTP 500 scenario, I do not say the database or the application is definitely broken. I treat it as an application-side failure visible to the user and prepare the evidence a developer or vendor would need: timestamp, endpoint, HTTP status, correlation ID, reproduction notes and logs.
 
 ## M2 - HTTP 403 after login
-
-This scenario shows that I understand the difference between authentication and authorization.
-
-Natural explanation:
 
 > In the HTTP 403 scenario, the user may be authenticated, but the application denies access to a resource. I avoid saying "login is broken" too quickly. I check roles, groups, claims, route permissions and application authorization logs before proposing any access change.
 
 ## M3 - HTTP 503 dependency unavailable
 
-This scenario shows that I understand dependency/service-health triage.
-
-Natural explanation:
-
 > In the HTTP 503 scenario, I do not assume the whole application is down. I check whether the app is reachable and whether a specific dependency is failing. Then I collect timestamp, endpoint, correlation ID, dependency health, logs and recent changes so the escalation identifies the right owner and failure boundary.
 
 ## M4 - CLI runner
-
-This milestone shows that INFIOS is becoming a usable local tool, not only an API backend.
-
-Natural explanation:
 
 > I added a CLI runner so I can analyze a local sample incident from the terminal and generate a Markdown report. This makes the tool easier to demo and also keeps the design local-first and safe, because it reads sample JSON and writes local reports only.
 
 ## M5 - Local run history
 
-This milestone adds traceability to local analysis runs.
-
-Natural explanation:
-
 > I added local run history so each analysis can leave a timestamped JSON record with the incident ID, service, HTTP status, endpoint, finding categories, severity counts and report path. This mirrors support discipline: every analysis should leave enough traceability for review, handover or follow-up.
 
 ## M6 - SQL evidence scenario
 
-This milestone shows SQL-dependent application support thinking without pretending to be a DBA.
-
-Natural explanation:
-
 > I added a SQL evidence scenario because many Application Support roles involve data-dependent applications. I do not claim to be a DBA. I collect the evidence support should provide: timestamp, endpoint, correlation ID, SQL error text, stored procedure or query name, sanitized parameters, affected scope and recent changes. I also make the safety boundary explicit: no write queries, no data updates, no index or schema changes, no killing sessions and no restarts without owner approval.
+
+## M7 - Log-pattern evidence scenario
+
+> I added a log-pattern scenario because Application Support work often depends on reading logs without jumping to conclusions. I group repeated errors by timestamp, endpoint, correlation ID, exception signature, host or instance, and recent deployment window. Then I escalate with a short representative log excerpt, occurrence count, first/last seen timestamps, and the uncertainty: whether the pattern is the primary failure or secondary noise.
 
 ## Support boundaries
 
@@ -73,6 +53,7 @@ INFIOS is sample-data only. It does not connect to production systems, store cre
 - Access troubleshooting thinking.
 - Dependency and service-health triage.
 - SQL/database evidence handling.
+- Application log-pattern evidence handling.
 - Local evidence traceability.
 - Practical local tooling.
 - Clear support communication.
