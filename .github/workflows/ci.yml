@@ -18,9 +18,17 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
+        shell: bash
         run: |
-          python -m pip install -U pip
-          pip install -e ".[dev]"
+          if ! python -m pip install -U pip > install.log 2>&1; then
+            tail -n 120 install.log
+            exit 1
+          fi
+          if ! pip install -e ".[dev]" >> install.log 2>&1; then
+            tail -n 160 install.log
+            exit 1
+          fi
+          echo "Dependencies installed successfully."
 
       - name: Run tests
         shell: bash
