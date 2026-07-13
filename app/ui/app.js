@@ -3,12 +3,14 @@ const state = {
   evidenceType: null,
 };
 
-const caseForm = document.querySelector('#case-form');
+const dashboardPanel = document.querySelector('#dashboard-panel');
 const createPanel = document.querySelector('#create-panel');
 const casePanel = document.querySelector('#case-panel');
+const caseForm = document.querySelector('#case-form');
 const formError = document.querySelector('#form-error');
 const evidenceEditor = document.querySelector('#evidence-editor');
 const evidenceError = document.querySelector('#evidence-error');
+const dashboardError = document.querySelector('#dashboard-error');
 
 function showError(element, message) {
   element.textContent = message;
@@ -38,6 +40,134 @@ async function api(path, options = {}) {
   return response.json();
 }
 
+function setActivePanel(panel) {
+  dashboardPanel.hidden = panel !== dashboardPanel;
+  createPanel.hidden = panel !== createPanel;
+  casePanel.hidden = panel !== casePanel;
+}
+
+function setProgress(index) {
+  document.querySelectorAll('#progress-steps li').forEach((item, itemIndex) => {
+    item.classList.toggle('active', itemIndex === index);
+  });
+}
+
+function formatValue(value) {
+  if (!value || value === 'unknown') return 'Unknown';
+  return value.replaceAll('_', ' ');
+}
+
+function formatDate(value) {
+  if (!value) return 'Unknown time';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Unknown time' : date.toLocaleString();
+}
+
+async function loadCases() {
+  clearError(dashboardError);
+  document.querySelector('#save-state').textContent = 'Loading recent cases…';
+  try {
+    const response = await api('/api/cases?limit=20');
+    const list = document.querySelector('#recent-cases');
+    if (!response.cases || response.cases.length === 0) {
+      list.className = 'case-list empty-state';
+      list.textContent = 'No cases found. Start a new incident to create the first one.';
+      document.querySelector('#save-state').textContent = 'No saved incidents';
+      return;
+    }
+
+    list.className = 'case-list';
+    list.innerHTML = '';
+    response.cases.forEach((supportCase) => {
+      const card = document.createElement('article');
+      card.className = 'case-card';
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `Open incident ${supportCase.title}`);
+
+      const content = document.createElement('div');
+      const title = document.createElement('h3');
+      title.textContent = supportCase.title;
+      const meta = document.createElement('p');
+      meta.className = 'muted';
+      meta.textContent = `${supportCase.application} · ${formatValue(supportCase.affected_scope)} · ${formatValue(supportCase.impact)}`;
+      const updated = document.createElement('p');
+      updated.className = 'case-updated';
+      updated.textContent = `Updated ${formatDate(supportCase.updated_at)}`;
+      content.append(title, meta, updated);
+
+      const status = document.createElement('span');
+      status.className = 'status-badge';
+      status.textContent = formatValue(supportCase.status);
+      card.append(content, status);
+
+      const open = () => openCase(supportCase.case_id);
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          open();
+        }
+      });
+      list.append(card);
+    });
+    document.querySelector('#save-state').textContent = `${response.count} saved incident${response.count === 1 ? '' : 's'}`;
+  } catch (error) {
+    showError(dashboardError, error.message);
+    document.querySelector('#save-state').textContent = 'Could not load incidents';
+  }
+}
+
+async function openCase(caseId) {
+  document.querySelector('#save-state').textContent = 'Opening incident…';
+  try {
+    const supportCase = await api(`/api/cases/${caseId}`);
+    state.caseId = supportCase.case_id;
+    populateCaseHeader(supportCase);
+    setActivePanel(casePanel);
+    setProgress(2);
+    await Promise.all([loadEvidence(), loadSummary()]);
+    document.querySelector('#save-state').textContent = `Opened ${supportCase.case_id}`;
+  } catch (error) {
+    showError(dashboardError, error.message);
+    setActivePanel(dashboardPanel);
+  }
+}
+
+function populateCaseHeader(supportCase) {
+  document.querySelector('#case-title').textContent = supportCase.title;
+  document.querySelector('#case-context').textContent = `${supportCase.application} · ${formatValue(supportCase.affected_scope)} · ${formatValue(supportCase.impact)}`;
+  document.querySelector('#case-status').textContent = formatValue(supportCase.status);
+  document.querySelector('#workspace-status').textContent = 'Current incident';
+}
+
+document.querySelector('#new-incident').addEventListener('click', () => {
+  state.caseId = null;
+  caseForm.reset();
+  clearError(formError);
+  setActivePanel(createPanel);
+  setProgress(0);
+  document.querySelector('#workspace-status').textContent = 'New incident';
+  document.querySelector('#save-state').textContent = 'Not saved yet';
+  document.querySelector('#application').focus();
+});
+
+document.querySelector('#cancel-create').addEventListener('click', async () => {
+  setActivePanel(dashboardPanel);
+  setProgress(0);
+  document.querySelector('#workspace-status').textContent = 'Dashboard';
+  await loadCases();
+});
+
+document.querySelector('#back-dashboard').addEventListener('click', async () => {
+  evidenceEditor.hidden = true;
+  clearEvidenceForm();
+  setActivePanel(dashboardPanel);
+  setProgress(0);
+  document.querySelector('#workspace-status').textContent = 'Dashboard';
+  await loadCases();
+});
+
 caseForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   clearError(formError);
@@ -60,15 +190,11 @@ caseForm.addEventListener('submit', async (event) => {
       body: JSON.stringify(payload),
     });
     state.caseId = supportCase.case_id;
-    document.querySelector('#case-title').textContent = supportCase.title;
-    document.querySelector('#case-context').textContent = `${supportCase.application} · ${supportCase.affected_scope} · ${supportCase.impact}`;
-    document.querySelector('#case-status').textContent = supportCase.status.replaceAll('_', ' ');
+    populateCaseHeader(supportCase);
     document.querySelector('#save-state').textContent = `Saved as ${supportCase.case_id}`;
-    createPanel.hidden = true;
-    casePanel.hidden = false;
-    document.querySelectorAll('#progress-steps li')[0].classList.remove('active');
-    document.querySelectorAll('#progress-steps li')[2].classList.add('active');
-    await loadEvidence();
+    setActivePanel(casePanel);
+    setProgress(2);
+    await Promise.all([loadEvidence(), loadSummary()]);
   } catch (error) {
     showError(formError, error.message);
   } finally {
@@ -119,7 +245,7 @@ document.querySelector('#save-evidence').addEventListener('click', async () => {
     evidenceEditor.hidden = true;
     clearEvidenceForm();
     document.querySelector('#save-state').textContent = 'Evidence saved';
-    await loadEvidence();
+    await Promise.all([loadEvidence(), loadSummary()]);
   } catch (error) {
     showError(evidenceError, error.message);
   } finally {
@@ -153,10 +279,10 @@ async function loadEvidence() {
     card.className = 'evidence-card';
     const header = document.createElement('header');
     const title = document.createElement('strong');
-    title.textContent = item.evidence_type.replaceAll('_', ' ');
+    title.textContent = formatValue(item.evidence_type);
     const certainty = document.createElement('span');
     certainty.className = 'muted';
-    certainty.textContent = item.certainty.replaceAll('_', ' ');
+    certainty.textContent = formatValue(item.certainty);
     header.append(title, certainty);
 
     const source = document.createElement('p');
@@ -168,19 +294,23 @@ async function loadEvidence() {
   });
 }
 
+async function loadSummary() {
+  const summary = await api(`/api/cases/${state.caseId}/summary`);
+  document.querySelector('#next-action').textContent = summary.next_recommended_action;
+  const complete = summary.escalation_readiness.filter((item) => item.complete).length;
+  document.querySelector('#known-summary').textContent = `${summary.evidence.length} evidence item(s), ${summary.observations.length} evidence-backed observation(s), and ${complete}/${summary.escalation_readiness.length} escalation checks complete.`;
+  return summary;
+}
+
 document.querySelector('#refresh-summary').addEventListener('click', async () => {
   if (!state.caseId) return;
   const button = document.querySelector('#refresh-summary');
   button.disabled = true;
   button.textContent = 'Reviewing…';
   try {
-    const summary = await api(`/api/cases/${state.caseId}/summary`);
-    document.querySelector('#next-action').textContent = summary.next_recommended_action;
-    const complete = summary.escalation_readiness.filter((item) => item.complete).length;
-    document.querySelector('#known-summary').textContent = `${summary.evidence.length} evidence item(s), ${summary.observations.length} evidence-backed observation(s), and ${complete}/${summary.escalation_readiness.length} escalation checks complete.`;
+    await loadSummary();
     document.querySelector('#save-state').textContent = 'Guidance refreshed';
-    document.querySelectorAll('#progress-steps li').forEach((item) => item.classList.remove('active'));
-    document.querySelectorAll('#progress-steps li')[3].classList.add('active');
+    setProgress(3);
   } catch (error) {
     document.querySelector('#known-summary').textContent = error.message;
   } finally {
@@ -188,3 +318,5 @@ document.querySelector('#refresh-summary').addEventListener('click', async () =>
     button.textContent = 'Review case guidance';
   }
 });
+
+loadCases();
