@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from app.analyzer import analyze_incident
 from app.api.actions import router as actions_router
 from app.api.cases import router as cases_router
+from app.api.escalations import router as escalations_router
 from app.api.evidence import router as evidence_router
 from app.api.explanations import router as explanations_router
 from app.api.lifecycle import router as lifecycle_router
@@ -31,6 +32,7 @@ app.include_router(actions_router)
 app.include_router(timeline_router)
 app.include_router(lifecycle_router)
 app.include_router(explanations_router)
+app.include_router(escalations_router)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
