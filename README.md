@@ -6,15 +6,17 @@
 
 INFIOS is a local-first Application Support Engineering workbench. It helps support teams turn fragmented application incidents into structured cases containing evidence, traceable observations, guided checks, diagnostic actions, escalation context, and cautious RCA material.
 
+## Current development status
+
+The persistent investigation workflow is being developed on the draft pull-request branch `architecture/investigation-workbench`. The `main` branch remains the published compatibility baseline until the new slice is reviewed and merged.
+
 ## Purpose
 
 This repository is designed both as portfolio proof for Application Support Engineer, Software Support Engineer, Technical Support Engineer II, and Production Support Engineer roles, and as the foundation of a practical incident-investigation tool for L1 and L2 support teams.
 
 INFIOS is not an autonomous root-cause engine. It preserves the distinction between reported information, technically confirmed observations, possible explanations, completed diagnostic actions, and unresolved unknowns.
 
-## Current persistent workflow
-
-The investigation-workbench branch supports:
+## Persistent investigation workflow
 
 ```text
 Create case
