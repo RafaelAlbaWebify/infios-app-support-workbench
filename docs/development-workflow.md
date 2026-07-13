@@ -22,7 +22,8 @@ Reduce repeated manual PowerShell, ZIP, upload, and interpretation loops. GitHub
 GitHub Actions should progressively cover:
 
 - package installation;
-- unit tests;
+- domain invariants;
+- SQLite repository behaviour with temporary databases;
 - API integration tests;
 - CLI smoke tests;
 - database migration tests;
@@ -31,6 +32,19 @@ GitHub Actions should progressively cover:
 - static checks;
 - secret and unsafe-pattern checks;
 - deterministic sample workflow tests.
+
+## Current automated persistence proof
+
+The SQLite case repository is tested entirely in GitHub Actions. Tests create isolated temporary databases and verify:
+
+- save and reload without data loss;
+- update without duplicate case records;
+- ordering by latest update;
+- bounded list queries;
+- unknown-case behaviour;
+- invalid limit rejection.
+
+No user-machine setup, PowerShell script, ZIP export, or manual database inspection is required for this proof.
 
 ## What should remain local/manual
 
