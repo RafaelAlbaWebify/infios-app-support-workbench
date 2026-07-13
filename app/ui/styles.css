@@ -24,6 +24,7 @@ body {
 }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
+button:disabled { cursor: wait; opacity: .65; }
 
 .topbar {
   display: flex;
@@ -46,7 +47,7 @@ button { cursor: pointer; }
   font-weight: 700;
 }
 .mode-pill { background: rgba(255,255,255,.12); }
-.status-badge { background: #e8f0ff; color: #1649a6; }
+.status-badge { background: #e8f0ff; color: #1649a6; text-transform: capitalize; }
 
 .layout {
   display: grid;
@@ -160,6 +161,28 @@ button, .text-link {
 .evidence-card p { margin: 6px 0; color: var(--muted); white-space: pre-wrap; }
 .footer-actions { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--border); }
 
+.case-list { display: grid; gap: 12px; }
+.case-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.case-card:hover, .case-card:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 8px 22px rgba(23, 33, 43, .08);
+  transform: translateY(-1px);
+}
+.case-card h3 { margin: 0 0 7px; }
+.case-card p { margin: 4px 0; }
+.case-updated { color: var(--muted); font-size: 12px; }
+
 @media (max-width: 850px) {
   .layout { grid-template-columns: 1fr; width: min(100% - 24px, 760px); }
   .sidebar { position: static; }
@@ -173,6 +196,6 @@ button, .text-link {
   .layout { margin-top: 18px; }
   .panel, .sidebar { border-radius: 14px; }
   .choice-grid, .button-grid, .two-column, .summary-grid { grid-template-columns: 1fr; }
-  .case-heading, .section-heading { display: block; }
-  .case-heading .status-badge { margin-top: 10px; }
+  .case-heading, .section-heading, .case-card { display: block; }
+  .case-heading .status-badge, .case-card .status-badge { margin-top: 10px; }
 }
