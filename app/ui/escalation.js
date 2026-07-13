@@ -58,8 +58,7 @@ async function loadEscalationReadiness() {
 
 function renderExistingEscalations(escalations) {
   if (!escalations.length) return;
-  const latest = escalations[escalations.length - 1];
-  renderEscalation(latest);
+  renderEscalation(escalations[0]);
 }
 
 function renderEscalation(packageData) {
@@ -84,8 +83,12 @@ function renderEscalation(packageData) {
   copy.className = 'secondary';
   copy.textContent = 'Copy handover text';
   copy.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(packageData.report_text);
-    copy.textContent = 'Copied';
+    try {
+      await navigator.clipboard.writeText(packageData.report_text);
+      copy.textContent = 'Copied';
+    } catch (_) {
+      copy.textContent = 'Select and copy the report';
+    }
   });
   preview.append(heading, missing, report, copy);
 }
