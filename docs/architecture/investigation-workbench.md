@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed target architecture for the next major development phase. The existing scenario analyzer remains the verified compatibility baseline until replacement behaviour is covered by tests.
+Implementation in progress on the architecture branch. The existing scenario analyzer remains the verified compatibility baseline until replacement behaviour is covered by tests.
 
 ## Product purpose
 
@@ -56,13 +56,7 @@ Use a modular monolith. Keep domain and application logic independent from FastA
 ```text
 app/
   domain/
-    cases.py
-    evidence.py
-    observations.py
-    explanations.py
-    actions.py
-    timeline.py
-    escalation.py
+    models.py
   application/
     create_case.py
     add_evidence.py
@@ -74,9 +68,7 @@ app/
     base.py
     post_login_feature_failure.py
   persistence/
-    database.py
-    models.py
-    repositories.py
+    sqlite_case_repository.py
   reporting/
     escalation_markdown.py
   api/
@@ -178,7 +170,28 @@ The existing HTTP, access, dependency, SQL, and log scenario knowledge should be
 
 ## Persistence
 
-Use SQLite for local-first persistent cases. Introduce schema migrations and repository interfaces. JSON and Markdown remain supported as import/export formats, not the primary mutable case store.
+The first persistence implementation uses SQLite through Python's standard-library `sqlite3` module. It deliberately avoids adding an ORM before the domain and workflows stabilize.
+
+The case repository stores:
+
+- indexed case identity and operational metadata for ordering and later filtering;
+- the complete validated `SupportCase` object as JSON;
+- an explicit persistence schema version.
+
+This hybrid design keeps domain models independent from SQL while providing durable local storage and a clear migration path.
+
+Verified persistence behaviour includes:
+
+- save and reload without data loss;
+- update by case ID without duplicate records;
+- latest-update ordering;
+- bounded list queries;
+- explicit unknown-case behaviour;
+- automatic database-directory creation.
+
+Evidence, observations, diagnostic actions, explanations, timeline events, and escalation packages will gain separate repository boundaries as their application workflows are introduced.
+
+JSON and Markdown remain supported as import/export formats, not the primary mutable case store.
 
 ## Compatibility strategy
 
