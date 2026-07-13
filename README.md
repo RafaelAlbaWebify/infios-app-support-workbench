@@ -4,68 +4,105 @@
 
 **Incident Flow & Information Operations Support**
 
-INFIOS is a local-first Application Support Engineering workbench. It turns messy application incidents into structured evidence, safe next steps, escalation notes, RCA drafts, Markdown reports, JSON analysis output, and local run-history records.
+INFIOS is a local-first Application Support Engineering workbench. It helps support teams turn fragmented application incidents into structured cases containing evidence, traceable observations, guided checks, diagnostic actions, possible explanations, escalation packages, recovery validation, and cautious RCA material.
+
+## Current development status
+
+The persistent investigation workflow is being developed on the draft pull-request branch `architecture/investigation-workbench`. The `main` branch remains the published compatibility baseline until the new slice is reviewed and merged.
 
 ## Purpose
 
-This repository is designed as portfolio proof for Application Support Engineer, Software Support Engineer, Technical Support Engineer II, and Production Support Engineer roles.
+This repository is designed both as portfolio proof for Application Support Engineer, Software Support Engineer, Technical Support Engineer II, and Production Support Engineer roles, and as the foundation of a practical incident-investigation tool for L1 and L2 support teams.
 
-It demonstrates:
+INFIOS is not an autonomous root-cause engine. It preserves the distinction between reported information, technically confirmed observations, possible explanations, completed diagnostic actions, recovery validation, and unresolved unknowns.
 
-- HTTP/API incident interpretation.
-- Evidence-first troubleshooting.
-- User impact analysis.
-- Missing evidence identification.
-- Safe support next steps.
-- Vendor/developer escalation quality.
-- RCA discipline without pretending to know the root cause without evidence.
-- CLI-based local tooling.
-- Local run-history traceability.
-- SQL/database evidence handling without DBA overclaiming.
-- Application log-pattern evidence handling.
+## Persistent investigation workflow
 
-## Safety Boundaries
+```text
+Create case
+→ add evidence
+→ create evidence-backed observations
+→ evaluate a guided playbook
+→ create/start/complete diagnostic actions
+→ track possible explanations
+→ generate an L2 escalation package
+→ validate recovery with supporting evidence
+→ review the complete case summary and timeline
+```
 
-INFIOS is local-first and sample-data only.
+### Case endpoints
 
-It does not:
+- `POST /api/cases`
+- `GET /api/cases`
+- `GET /api/cases/{case_id}`
+- `POST /api/cases/{case_id}/status`
+- `GET /api/cases/{case_id}/summary`
 
-- connect to production systems;
-- store credentials or secrets;
-- process real customer data;
-- collect production log dumps;
-- modify databases;
-- run SQL queries against real systems;
-- auto-remediate issues;
-- claim confirmed root cause without evidence.
+### Evidence endpoints
 
-## API
+- `POST /api/cases/{case_id}/evidence`
+- `GET /api/cases/{case_id}/evidence`
+- `GET /api/cases/{case_id}/evidence/{evidence_id}`
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| GET | `/api/health` | Service health |
-| GET | `/api/samples` | List available sample incidents |
-| GET | `/api/history` | List local run-history records |
-| POST | `/api/analyze` | Analyze an incident JSON |
-| POST | `/api/report/markdown` | Generate a Markdown report |
-| POST | `/api/report/markdown/save` | Generate a Markdown report and save local run history |
+### Observation endpoints
 
-<!-- INFIOS_SCENARIOS_START -->
-## Scenarios
+- `POST /api/cases/{case_id}/observations`
+- `GET /api/cases/{case_id}/observations`
+- `GET /api/cases/{case_id}/observations/{observation_id}`
 
-| Milestone | Sample | Support focus | Status |
-|---|---|---|---|
-| M1 | `incident-500-login.json` | HTTP 500 after login; evidence-first application failure triage, safe next steps, escalation and RCA draft | Published |
-| M2 | `incident-403-after-login.json` | HTTP 403 after login; authentication vs authorization separation, role/group/claim evidence and access escalation | Published |
-| M2.1 | Docs and report-quality cleanup | Cleaner report wording, interview notes, milestone status and support-ready explanation | Published |
-| M3 | `incident-503-dependency.json` | HTTP 503 dependency unavailable; application vs downstream dependency boundary, health evidence and dependency escalation | Published |
-| M4 | CLI runner | Analyze local incident JSON and generate Markdown or JSON output from the terminal | Published |
-| M5 | Local run history | Save timestamped local JSON records for CLI/API analysis runs | Published |
-| M6 | `incident-sql-query-timeout.json` | SQL evidence scenario; query timeout evidence, safe read-only boundaries and database-owner escalation | Published |
-| M6.1 | README and demo polish | Clean demo commands, clearer README structure, and README formatting regression tests | Published |
-| M7 | `incident-log-pattern-correlation.json` | Log-pattern evidence scenario; repeated error signatures, correlation IDs, time windows and redacted escalation | Published |
+### Guided playbook endpoint
 
-<!-- INFIOS_SCENARIOS_END -->
+- `GET /api/cases/{case_id}/playbooks/post-login-feature-failure`
+
+### Diagnostic-action endpoints
+
+- `POST /api/cases/{case_id}/actions`
+- `GET /api/cases/{case_id}/actions`
+- `GET /api/cases/{case_id}/actions/{action_id}`
+- `POST /api/cases/{case_id}/actions/{action_id}/start`
+- `POST /api/cases/{case_id}/actions/{action_id}/complete`
+
+### Possible-explanation endpoints
+
+- `POST /api/cases/{case_id}/explanations`
+- `GET /api/cases/{case_id}/explanations`
+- `GET /api/cases/{case_id}/explanations/{explanation_id}`
+- `POST /api/cases/{case_id}/explanations/{explanation_id}/status`
+
+### Escalation endpoints
+
+- `POST /api/cases/{case_id}/escalations`
+- `GET /api/cases/{case_id}/escalations`
+- `GET /api/cases/{case_id}/escalations/{package_id}`
+
+### Recovery-validation endpoints
+
+- `POST /api/cases/{case_id}/recovery-validations`
+- `GET /api/cases/{case_id}/recovery-validations`
+- `GET /api/cases/{case_id}/recovery-validations/{validation_id}`
+
+### Timeline endpoint
+
+- `GET /api/cases/{case_id}/timeline`
+
+The timeline includes case creation, evidence, observations, diagnostic-action starts and completions, generated escalation packages, and recovery-validation outcomes.
+
+## Safety principles
+
+- Sample or sanitized data only.
+- No production credentials or unrestricted production logs.
+- No automated remediation.
+- No SQL writes or production configuration changes.
+- Restart/write actions cannot be represented as L1-safe.
+- Every factual observation must reference evidence from the same case.
+- Possible explanations must reference same-case observations and actions.
+- Pattern matching can propose explanations but cannot confirm root cause.
+- A confirmed explanation requires explicit operator confirmation and supporting observations.
+- A passed recovery validation requires supporting evidence from the same case.
+
+## Legacy compatibility
+
+The original scenario analyzer, CLI, sample incidents, Markdown reports, JSON output, and local run history remain available while the persistent workbench is developed alongside them.
 
 ## Local Setup
 
@@ -98,19 +135,13 @@ Generate the SQL timeout report:
 python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
 ```
 
-Generate the log-pattern report:
-
-```powershell
-python -m app.cli analyze samples/incident-log-pattern-correlation.json --out reports/generated/cli-log-pattern-demo.md
-```
-
-Generate a log-pattern report and save a local run-history record:
+Generate the log-pattern report and save local run history:
 
 ```powershell
 python -m app.cli analyze samples/incident-log-pattern-correlation.json --out reports/generated/cli-log-pattern-demo.md --save-history
 ```
 
-Use the installed console command after `pip install -e ".[dev]"`:
+Use the installed command after setup:
 
 ```powershell
 infios analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
@@ -124,7 +155,7 @@ python -m app.cli analyze samples/incident-403-after-login.json --format json
 
 ## Demo Reports
 
-Generated example reports are included here:
+Generated example reports remain available under `reports/`, including:
 
 ```text
 reports/sample-500-login-report.md
@@ -138,25 +169,12 @@ reports/generated/cli-sql-timeout-history-demo.json
 reports/generated/cli-log-pattern-history-demo.json
 ```
 
-These reports show support-ready outputs for HTTP/API incidents: incident summary, user impact, evidence table, likely causes not confirmed, unknowns, missing evidence, safe next steps, escalation note, RCA draft, and local run-history records.
+These reports demonstrate incident summaries, user impact, evidence tables, unconfirmed possible causes, missing evidence, safe next steps, escalation notes, RCA drafts, and local run-history records.
 
 ## Support Notes
 
-Additional portfolio support notes are included here:
+Additional portfolio and workflow documentation is available under `docs/`, including the architecture, development workflow, CLI usage, run history, sample incidents, demo commands, milestone status, and interview notes.
 
-```text
-docs/interview-notes.md
-docs/milestone-status.md
-docs/sample-incident-503-dependency.md
-docs/cli-usage.md
-docs/run-history.md
-docs/sample-incident-sql-query-timeout.md
-docs/sample-incident-log-pattern.md
-docs/demo-commands.md
-```
+## Development verification
 
-These notes explain what INFIOS is, how to discuss it in interviews, what each scenario demonstrates, and where the project is going next.
-
-## Interview Explanation
-
-> INFIOS is my Application Support Engineering workbench. It is currently an API-first/backend application with a CLI runner and local run history. It turns local sample incidents into structured evidence, safe next steps, escalation notes, RCA drafts and timestamped run records. The scenarios cover HTTP 500 application failure, HTTP 403 authorization failure, HTTP 503 dependency unavailable, SQL query timeout evidence, and repeated log-pattern evidence. The log scenario is deliberately safe: it structures representative redacted log evidence without collecting production log dumps, secrets, tokens, session IDs, or personal data.
+GitHub Actions installs the package and runs the complete automated test suite for every pull-request update. CI uploads `pytest.log` as a short-lived artifact, making failures directly inspectable. Repository-native CI is the default proof loop; local PowerShell and manual testing are reserved for Windows-specific packaging and later usability or visual validation.

@@ -18,9 +18,41 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
+        shell: bash
         run: |
-          python -m pip install -U pip
-          pip install -e ".[dev]"
+          if ! python -m pip install -U pip > install.log 2>&1; then
+            tail -n 120 install.log
+            exit 1
+          fi
+          if ! pip install -e ".[dev]" >> install.log 2>&1; then
+            tail -n 160 install.log
+            exit 1
+          fi
+          echo "Dependencies installed successfully."
 
       - name: Run tests
-        run: pytest -q
+        id: tests
+        shell: bash
+        continue-on-error: true
+        run: pytest -q > pytest.log 2>&1
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-log
+          path: pytest.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Report test result
+        if: steps.tests.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "Pytest failed. Showing the final 160 lines:"
+          tail -n 160 pytest.log
+          exit 1
+
+      - name: Show passing summary
+        if: steps.tests.outcome == 'success'
+        run: cat pytest.log

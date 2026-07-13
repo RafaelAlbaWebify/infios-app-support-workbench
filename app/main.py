@@ -6,6 +6,17 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app.analyzer import analyze_incident
+from app.api.actions import router as actions_router
+from app.api.cases import router as cases_router
+from app.api.escalations import router as escalations_router
+from app.api.evidence import router as evidence_router
+from app.api.explanations import router as explanations_router
+from app.api.lifecycle import router as lifecycle_router
+from app.api.observations import router as observations_router
+from app.api.playbooks import router as playbooks_router
+from app.api.recovery import router as recovery_router
+from app.api.summary import router as summary_router
+from app.api.timeline import router as timeline_router
 from app.models import AnalysisResult, IncidentInput
 from app.report_markdown import render_markdown_report
 from app.run_history import list_run_history, save_run_history
@@ -15,6 +26,17 @@ app = FastAPI(
     version="0.1.0",
     description="Local-first Application Support workbench for incident evidence, escalation notes, and RCA drafts.",
 )
+app.include_router(cases_router)
+app.include_router(evidence_router)
+app.include_router(observations_router)
+app.include_router(playbooks_router)
+app.include_router(actions_router)
+app.include_router(timeline_router)
+app.include_router(lifecycle_router)
+app.include_router(explanations_router)
+app.include_router(escalations_router)
+app.include_router(recovery_router)
+app.include_router(summary_router)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
