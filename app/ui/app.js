@@ -112,7 +112,8 @@ document.querySelector('#save-evidence').addEventListener('click', async () => {
         content,
         certainty: document.querySelector('#evidence-certainty').value,
         sensitivity: 'internal',
-        redaction_status: 'review_required',
+        redacted: false,
+        notes: 'Redaction review required before external sharing.',
       }),
     });
     evidenceEditor.hidden = true;
@@ -139,7 +140,7 @@ async function loadEvidence() {
   const response = await api(`/api/cases/${state.caseId}/evidence`);
   const list = document.querySelector('#evidence-list');
   document.querySelector('#evidence-count').textContent = `${response.count} item${response.count === 1 ? '' : 's'}`;
-  if (!response.items || response.items.length === 0) {
+  if (!response.evidence || response.evidence.length === 0) {
     list.className = 'empty-state';
     list.textContent = 'No evidence has been added yet.';
     return;
@@ -147,7 +148,7 @@ async function loadEvidence() {
 
   list.className = '';
   list.innerHTML = '';
-  response.items.forEach((item) => {
+  response.evidence.forEach((item) => {
     const card = document.createElement('article');
     card.className = 'evidence-card';
     const header = document.createElement('header');
