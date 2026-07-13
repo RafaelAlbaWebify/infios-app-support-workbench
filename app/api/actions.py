@@ -68,7 +68,7 @@ def create_action(
             status=ActionStatus.RECOMMENDED,
         )
     except ValidationError as exc:
-        raise HTTPException(status_code=422, detail=exc.errors()) from exc
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     return action_repository.save(action)
 
 
