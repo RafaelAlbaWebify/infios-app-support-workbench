@@ -2,7 +2,7 @@
 
 ## Status
 
-Implementation in progress on the architecture branch. The existing scenario analyzer remains the verified compatibility baseline until replacement behaviour is covered by tests.
+Active implementation architecture. The existing scenario analyzer remains the compatibility baseline while the persistent investigation workflow is developed alongside it.
 
 ## Product purpose
 
@@ -18,6 +18,19 @@ INFIOS is a local-first Application Incident Investigation Workbench for L1 and 
 - recovery validation and cautious RCA notes.
 
 INFIOS does not claim autonomous root-cause determination and does not replace monitoring, log search, API clients, SQL tools, ITSM systems, or engineer judgement.
+
+## Implemented persistent slice
+
+The current branch now supports:
+
+1. creating, listing, and retrieving support cases;
+2. adding, listing, and retrieving case-linked evidence;
+3. creating evidence-backed observations whose references are validated against the same case;
+4. evaluating the first guided post-login feature-failure playbook;
+5. creating, starting, completing, listing, and retrieving diagnostic actions;
+6. enforcing action safety and recorded-result invariants;
+7. persisting these records in local SQLite storage;
+8. verifying all workflows through GitHub Actions.
 
 ## Primary users
 
@@ -41,11 +54,13 @@ The first slice covers a post-login application feature failure:
 2. Record impact and affected scope.
 3. Confirm where the login flow succeeds or fails.
 4. Add error, screenshot, HTTP/API, log, SQL/data, change, or reproduction evidence.
-5. Follow safe guided checks.
-6. Record action results.
-7. Build an evidence-linked timeline.
-8. Generate an L2 escalation package.
-9. Persist and reopen the case.
+5. Convert evidence into traceable observations.
+6. Evaluate the post-login feature-failure playbook.
+7. Create and execute safe diagnostic actions.
+8. Record action results.
+9. Build an evidence-linked timeline.
+10. Generate an L2 escalation package.
+11. Persist and reopen the case.
 
 The first slice must work with sample or sanitized data and must not connect to production systems.
 
@@ -56,142 +71,51 @@ Use a modular monolith. Keep domain and application logic independent from FastA
 ```text
 app/
   domain/
-    models.py
   application/
-    create_case.py
-    add_evidence.py
-    analyze_case.py
-    start_action.py
-    complete_action.py
-    generate_escalation.py
   playbooks/
-    base.py
-    post_login_feature_failure.py
   persistence/
-    sqlite_case_repository.py
   reporting/
-    escalation_markdown.py
   api/
-    cases.py
-    evidence.py
-    actions.py
-    reports.py
   cli/
   ui/
 ```
 
-## Core domain concepts
+## Core domain rules
 
-### SupportCase
+- Every observation must reference one or more evidence records.
+- Evidence references must exist and belong to the same case.
+- Reported information must not be silently promoted to technically confirmed information.
+- Keyword or pattern matching can propose explanations but can never confirm root cause.
+- A confirmed explanation requires explicit operator confirmation and supporting observations.
+- Every diagnostic action has a safety level.
+- Write or restart actions cannot be classified as L1-safe.
+- A completed diagnostic action requires a recorded result.
+- A recent change, SQL error, or timeout is evidence, not proof of causation.
 
-Represents the complete investigation lifecycle.
+## First playbook
 
-Minimum fields:
+`post-login-feature-failure` evaluates stored case context, evidence, and observations. It returns:
 
-- case ID;
-- title;
-- application/service;
-- environment;
-- status;
-- severity;
-- business impact;
-- affected scope;
-- owner;
-- created and updated timestamps.
-
-### EvidenceItem
-
-An immutable record of information supplied or collected during the investigation.
-
-Minimum fields:
-
-- evidence ID;
-- case ID;
-- evidence type;
-- source;
-- observed and collected timestamps;
-- content or structured payload;
-- certainty;
-- sensitivity classification;
-- redaction status;
-- attachment reference.
-
-### Observation
-
-A normalized factual statement derived from one or more evidence items. Every observation must reference its supporting evidence IDs.
-
-### PossibleExplanation
-
-An explicitly unconfirmed explanation with supporting observations, contradicting observations, validation actions, and status.
-
-Allowed states:
-
-- proposed;
-- supported;
-- weakened;
-- ruled out;
-- confirmed.
-
-Confirmation must be a deliberate evidence-backed action. Keyword matching alone can never confirm root cause.
-
-### DiagnosticAction
-
-A recommended or completed investigation step containing purpose, safety classification, expected result, actual result, conclusion, operator, timestamps, and linked evidence.
-
-Safety levels:
-
-- L1 safe;
-- approved runbook required;
-- escalation required.
-
-### TimelineEvent
-
-A chronological event linked to evidence, actions, changes, escalation, or recovery validation. Approximate timestamps must remain explicitly approximate.
-
-### EscalationPackage
-
-A generated projection of the current case for a specific recipient such as L2 Application Support, Development, DBA, Infrastructure, Identity, Vendor, or the next shift.
-
-## Playbook contract
-
-A playbook must return structured guidance rather than directly writing a root-cause conclusion.
-
-It should provide:
-
-- applicability reasons;
-- evidence already available;
+- whether the playbook applies and why;
+- technically confirmed or reproduced observation IDs;
 - missing evidence;
-- safe diagnostic actions;
-- possible explanations;
+- L1-safe guided checks;
+- possible explanations labelled as unconfirmed;
 - escalation criteria;
-- safety warnings.
+- safety and redaction warnings.
 
-The existing HTTP, access, dependency, SQL, and log scenario knowledge should be migrated into separate playbooks incrementally.
+The playbook does not modify systems and does not produce a confirmed root cause.
 
 ## Persistence
 
-The first persistence implementation uses SQLite through Python's standard-library `sqlite3` module. It deliberately avoids adding an ORM before the domain and workflows stabilize.
+SQLite is used through repository classes built on Python's standard `sqlite3` module. The current implementation uses separate tables and repositories for:
 
-The case repository stores:
+- support cases;
+- evidence;
+- observations;
+- diagnostic actions.
 
-- indexed case identity and operational metadata for ordering and later filtering;
-- the complete validated `SupportCase` object as JSON;
-- an explicit persistence schema version.
-
-This hybrid design keeps domain models independent from SQL while providing durable local storage and a clear migration path.
-
-Verified persistence behaviour includes:
-
-- save and reload without data loss;
-- update by case ID without duplicate records;
-- latest-update ordering;
-- bounded list queries;
-- explicit unknown-case behaviour;
-- automatic database-directory creation.
-
-Evidence, observations, diagnostic actions, explanations, timeline events, and escalation packages will gain separate repository boundaries as their application workflows are introduced.
-
-JSON and Markdown remain supported as import/export formats, not the primary mutable case store.
+Validated domain objects are stored as JSON payloads with selected indexed metadata columns. This avoids premature ORM coupling while preserving a clear migration path.
 
 ## Compatibility strategy
 
@@ -207,7 +131,7 @@ Migration rules:
 
 ## Safety boundaries
 
-The first releases must remain:
+The first releases remain:
 
 - local-first;
 - sample/sanitized-data only;
@@ -219,14 +143,12 @@ The first releases must remain:
 
 The system must never present a recommendation as authorization to perform a risky action.
 
-## Acceptance principles
+## Next implementation boundary
 
-A feature is not complete unless automated proof verifies that:
+The next coherent work is:
 
-- every observation references evidence;
-- reported information is not silently promoted to confirmed fact;
-- every action has a safety level;
-- completed actions retain results;
-- cases survive application restart;
-- reports distinguish facts, reported information, explanations, and unknowns;
-- no generated output claims confirmed root cause without explicit evidence-backed confirmation.
+1. automatic timeline projections from evidence and diagnostic actions;
+2. persistent possible explanations with support/contradiction references;
+3. L2 escalation generation based on current stored case state;
+4. case status transitions and recovery validation;
+5. a simple guided UI only after the backend vertical slice is complete.
