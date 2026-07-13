@@ -2,35 +2,31 @@
 
 ## Status
 
-Active implementation architecture. The existing scenario analyzer remains the compatibility baseline while the persistent investigation workflow is developed alongside it.
+Implemented backend foundation for the first persistent investigation slice. The original scenario analyzer remains available as a compatibility path while the case-oriented workbench is developed alongside it.
 
 ## Product purpose
 
-INFIOS is a local-first Application Incident Investigation Workbench for L1 and L2 support teams. It helps technicians turn fragmented incident information into a traceable investigation containing:
-
-- business impact and affected scope;
-- user reports and reproduction results;
-- HTTP/API, log, SQL/data, monitoring, dependency, and change evidence;
-- confirmed observations separated from possible explanations;
-- safe diagnostic actions and their results;
-- an evidence-backed timeline;
-- role-specific escalation packages;
-- recovery validation and cautious RCA notes.
+INFIOS is a local-first Application Incident Investigation Workbench for L1 and L2 support teams. It turns fragmented incident information into a traceable investigation containing business impact, evidence, observations, guided checks, diagnostic actions, possible explanations, escalation packages, recovery validation, timelines, and cautious RCA material.
 
 INFIOS does not claim autonomous root-cause determination and does not replace monitoring, log search, API clients, SQL tools, ITSM systems, or engineer judgement.
 
-## Implemented persistent slice
+## Implemented first vertical slice
 
-The current branch now supports:
+The backend now supports a post-login application feature-failure workflow:
 
-1. creating, listing, and retrieving support cases;
-2. adding, listing, and retrieving case-linked evidence;
-3. creating evidence-backed observations whose references are validated against the same case;
-4. evaluating the first guided post-login feature-failure playbook;
-5. creating, starting, completing, listing, and retrieving diagnostic actions;
-6. enforcing action safety and recorded-result invariants;
-7. persisting these records in local SQLite storage;
-8. verifying all workflows through GitHub Actions.
+1. Create and persist a support case.
+2. Control its lifecycle through validated transitions.
+3. Add typed evidence with certainty, sensitivity, redaction, and timestamps.
+4. Create observations that must reference evidence from the same case.
+5. Evaluate a guided post-login failure playbook.
+6. Create, start, complete, and persist diagnostic actions with safety classifications.
+7. Track possible explanations with supporting and contradicting observations.
+8. Prevent confirmation without explicit operator action and supporting observations.
+9. Generate and persist an L2 escalation package.
+10. Record evidence-backed recovery validation.
+11. Generate a complete case summary and chronological timeline.
+
+The slice works with sample or sanitized data and does not connect to production systems.
 
 ## Primary users
 
@@ -46,109 +42,107 @@ Uses structured evidence, observations, possible explanations, diagnostic histor
 
 Reviews evidence quality, unsupported assumptions, escalation readiness, ownership, recovery validation, and RCA completeness.
 
-## First vertical slice
-
-The first slice covers a post-login application feature failure:
-
-1. Create a case.
-2. Record impact and affected scope.
-3. Confirm where the login flow succeeds or fails.
-4. Add error, screenshot, HTTP/API, log, SQL/data, change, or reproduction evidence.
-5. Convert evidence into traceable observations.
-6. Evaluate the post-login feature-failure playbook.
-7. Create and execute safe diagnostic actions.
-8. Record action results.
-9. Build an evidence-linked timeline.
-10. Generate an L2 escalation package.
-11. Persist and reopen the case.
-
-The first slice must work with sample or sanitized data and must not connect to production systems.
-
 ## Architecture style
 
-Use a modular monolith. Keep domain and application logic independent from FastAPI, CLI, UI, and persistence frameworks.
+INFIOS uses a modular monolith. Domain and application logic remain independent from FastAPI routes, persistence, CLI, and future UI code.
 
 ```text
 app/
   domain/
-  application/
-  playbooks/
+    models.py
+    recovery.py
   persistence/
-  reporting/
+    sqlite_case_repository.py
+    sqlite_evidence_repository.py
+    sqlite_observation_repository.py
+    sqlite_action_repository.py
+    sqlite_explanation_repository.py
+    sqlite_escalation_repository.py
+    sqlite_recovery_repository.py
+  playbooks/
+    post_login_feature_failure.py
   api/
-  cli/
-  ui/
+    cases.py
+    lifecycle.py
+    evidence.py
+    observations.py
+    playbooks.py
+    actions.py
+    explanations.py
+    escalations.py
+    recovery.py
+    timeline.py
+    summary.py
 ```
 
-## Core domain rules
+## Persistence decision
 
-- Every observation must reference one or more evidence records.
-- Evidence references must exist and belong to the same case.
-- Reported information must not be silently promoted to technically confirmed information.
-- Keyword or pattern matching can propose explanations but can never confirm root cause.
-- A confirmed explanation requires explicit operator confirmation and supporting observations.
-- Every diagnostic action has a safety level.
-- Write or restart actions cannot be classified as L1-safe.
-- A completed diagnostic action requires a recorded result.
-- A recent change, SQL error, or timeout is evidence, not proof of causation.
+SQLite is the primary mutable case store. Each repository keeps selected searchable columns and the complete validated domain object as JSON.
 
-## First playbook
+This hybrid approach provides durable local storage, simple schema boundaries, validated round-trip reconstruction, indexed case-specific listing, and freedom to evolve domain objects before committing to a large ORM model.
 
-`post-login-feature-failure` evaluates stored case context, evidence, and observations. It returns:
+JSON and Markdown remain import/export and reporting formats rather than the primary mutable store.
 
-- whether the playbook applies and why;
-- technically confirmed or reproduced observation IDs;
-- missing evidence;
-- L1-safe guided checks;
-- possible explanations labelled as unconfirmed;
-- escalation criteria;
-- safety and redaction warnings.
+## Evidence and certainty rules
 
-The playbook does not modify systems and does not produce a confirmed root cause.
+Evidence preserves its source, observed and collected timestamps, certainty, sensitivity, redaction state, and optional attachment reference.
 
-## Persistence
+Observations cannot exist without evidence IDs. The API rejects missing or cross-case evidence references.
 
-SQLite is used through repository classes built on Python's standard `sqlite3` module. The current implementation uses separate tables and repositories for:
+Possible explanations are separate from observations. They may be proposed, supported, weakened, ruled out, or confirmed. Confirmation requires explicit operator confirmation and at least one supporting observation from the same case. Keyword matching and temporal proximity cannot confirm root cause.
 
-- support cases;
-- evidence;
-- observations;
-- diagnostic actions.
+## Diagnostic safety
 
-Validated domain objects are stored as JSON payloads with selected indexed metadata columns. This avoids premature ORM coupling while preserving a clear migration path.
+Diagnostic actions have one of three safety levels:
+
+- L1 safe;
+- approved runbook required;
+- escalation required.
+
+An action involving a write or restart cannot be represented as L1-safe. A completed action must contain an actual result.
+
+## Escalation projection
+
+The escalation package separates business impact, confirmed observations, reported information, action results, unconfirmed explanations, deliberately confirmed explanations, missing information, the requested receiving-team action, and a safety statement.
+
+The package is persisted so the exact handover can be reviewed later.
+
+## Recovery validation
+
+Recovery validation records the method, result, operator, outcome, supporting evidence, and timestamp. A passed validation requires evidence from the same case.
+
+Case resolution remains a controlled lifecycle action rather than an automatic side effect of one successful test.
+
+## Timeline and summary
+
+The timeline projects case creation, evidence, observations, diagnostic-action starts and completions, escalation generation, and recovery validation.
+
+The case summary aggregates all current investigation objects, playbook guidance, escalation readiness, and the next recommended action for a future L1/L2 interface.
 
 ## Compatibility strategy
 
-The current `POST /api/analyze`, CLI analysis command, sample incidents, and generated reports remain available during migration.
+The current `POST /api/analyze`, CLI analysis command, sample incidents, generated reports, and run history remain available.
 
 Migration rules:
 
-1. Preserve existing tests and behaviour first.
-2. Add the new case workflow beside the legacy scenario analyzer.
+1. Preserve existing tests and behaviour.
+2. Build the new case workflow beside the legacy analyzer.
 3. Reuse current samples as compatibility fixtures.
 4. Move scenario rules into playbooks only after parity tests exist.
 5. Remove legacy paths only in an explicit later milestone.
 
 ## Safety boundaries
 
-The first releases remain:
-
-- local-first;
-- sample/sanitized-data only;
-- read-only toward external systems;
-- credential-free;
-- non-remediating;
-- explicit about uncertainty;
-- conservative with SQL and production actions.
+The current release remains local-first, sample or sanitized-data only, read-only toward external systems, credential-free, non-remediating, explicit about uncertainty, and conservative with SQL and production actions.
 
 The system must never present a recommendation as authorization to perform a risky action.
 
+## Automated proof
+
+GitHub Actions verifies the complete legacy and persistent test suite on every pull-request update. The workflow uploads `pytest.log` as a short-lived artifact so failures can be inspected directly.
+
+Tests cover domain invariants, SQLite persistence, case lifecycle, evidence, observations, playbook guidance, diagnostic actions, possible explanations, escalation packages, recovery validation, timeline generation, case-summary readiness, README compatibility, and all legacy analyzer/CLI/report behaviour.
+
 ## Next implementation boundary
 
-The next coherent work is:
-
-1. automatic timeline projections from evidence and diagnostic actions;
-2. persistent possible explanations with support/contradiction references;
-3. L2 escalation generation based on current stored case state;
-4. case status transitions and recovery validation;
-5. a simple guided UI only after the backend vertical slice is complete.
+The backend vertical slice is now complete enough to support UI design. The next phase should define and implement the L1 guided interface over the existing APIs, followed by the L2 investigation view and manual first-time-user usability validation.
