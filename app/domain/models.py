@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from enum import StrEnum
+from enum import Enum
 from typing import Any
 from uuid import uuid4
 
@@ -16,7 +16,7 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class CaseStatus(StrEnum):
+class CaseStatus(str, Enum):
     NEW = "new"
     INFORMATION_GATHERING = "information_gathering"
     INVESTIGATION = "investigation"
@@ -30,7 +30,7 @@ class CaseStatus(StrEnum):
     CLOSED = "closed"
 
 
-class CertaintyLevel(StrEnum):
+class CertaintyLevel(str, Enum):
     TECHNICALLY_CONFIRMED = "technically_confirmed"
     REPRODUCED = "reproduced"
     REPORTED = "reported"
@@ -38,7 +38,7 @@ class CertaintyLevel(StrEnum):
     UNKNOWN = "unknown"
 
 
-class EvidenceSensitivity(StrEnum):
+class EvidenceSensitivity(str, Enum):
     PUBLIC_SAMPLE = "public_sample"
     INTERNAL = "internal"
     PERSONAL_DATA = "personal_data"
@@ -46,7 +46,7 @@ class EvidenceSensitivity(StrEnum):
     RESTRICTED = "restricted"
 
 
-class ExplanationStatus(StrEnum):
+class ExplanationStatus(str, Enum):
     PROPOSED = "proposed"
     SUPPORTED = "supported"
     WEAKENED = "weakened"
@@ -54,13 +54,13 @@ class ExplanationStatus(StrEnum):
     CONFIRMED = "confirmed"
 
 
-class ActionSafetyLevel(StrEnum):
+class ActionSafetyLevel(str, Enum):
     L1_SAFE = "l1_safe"
     APPROVED_RUNBOOK_REQUIRED = "approved_runbook_required"
     ESCALATION_REQUIRED = "escalation_required"
 
 
-class ActionStatus(StrEnum):
+class ActionStatus(str, Enum):
     RECOMMENDED = "recommended"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -68,7 +68,7 @@ class ActionStatus(StrEnum):
     NOT_APPLICABLE = "not_applicable"
 
 
-class TimestampPrecision(StrEnum):
+class TimestampPrecision(str, Enum):
     EXACT = "exact"
     APPROXIMATE = "approximate"
     UNKNOWN = "unknown"
