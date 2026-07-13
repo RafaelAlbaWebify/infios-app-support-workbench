@@ -4,7 +4,7 @@
 
 **Incident Flow & Information Operations Support**
 
-INFIOS is a local-first Application Support Engineering workbench. It helps support teams turn fragmented application incidents into structured cases containing evidence, traceable observations, guided checks, diagnostic actions, escalation context, and cautious RCA material.
+INFIOS is a local-first Application Support Engineering workbench. It helps support teams turn fragmented application incidents into structured cases containing evidence, traceable observations, guided checks, diagnostic actions, possible explanations, escalation packages, recovery validation, and cautious RCA material.
 
 ## Current development status
 
@@ -14,7 +14,7 @@ The persistent investigation workflow is being developed on the draft pull-reque
 
 This repository is designed both as portfolio proof for Application Support Engineer, Software Support Engineer, Technical Support Engineer II, and Production Support Engineer roles, and as the foundation of a practical incident-investigation tool for L1 and L2 support teams.
 
-INFIOS is not an autonomous root-cause engine. It preserves the distinction between reported information, technically confirmed observations, possible explanations, completed diagnostic actions, and unresolved unknowns.
+INFIOS is not an autonomous root-cause engine. It preserves the distinction between reported information, technically confirmed observations, possible explanations, completed diagnostic actions, recovery validation, and unresolved unknowns.
 
 ## Persistent investigation workflow
 
@@ -24,8 +24,10 @@ Create case
 → create evidence-backed observations
 → evaluate a guided playbook
 → create/start/complete diagnostic actions
-→ generate an evidence-linked timeline
-→ reopen and review the stored investigation
+→ track possible explanations
+→ generate an L2 escalation package
+→ validate recovery with supporting evidence
+→ review the complete case summary and timeline
 ```
 
 ### Case endpoints
@@ -34,6 +36,7 @@ Create case
 - `GET /api/cases`
 - `GET /api/cases/{case_id}`
 - `POST /api/cases/{case_id}/status`
+- `GET /api/cases/{case_id}/summary`
 
 ### Evidence endpoints
 
@@ -59,9 +62,30 @@ Create case
 - `POST /api/cases/{case_id}/actions/{action_id}/start`
 - `POST /api/cases/{case_id}/actions/{action_id}/complete`
 
+### Possible-explanation endpoints
+
+- `POST /api/cases/{case_id}/explanations`
+- `GET /api/cases/{case_id}/explanations`
+- `GET /api/cases/{case_id}/explanations/{explanation_id}`
+- `POST /api/cases/{case_id}/explanations/{explanation_id}/status`
+
+### Escalation endpoints
+
+- `POST /api/cases/{case_id}/escalations`
+- `GET /api/cases/{case_id}/escalations`
+- `GET /api/cases/{case_id}/escalations/{package_id}`
+
+### Recovery-validation endpoints
+
+- `POST /api/cases/{case_id}/recovery-validations`
+- `GET /api/cases/{case_id}/recovery-validations`
+- `GET /api/cases/{case_id}/recovery-validations/{validation_id}`
+
 ### Timeline endpoint
 
 - `GET /api/cases/{case_id}/timeline`
+
+The timeline includes case creation, evidence, observations, diagnostic-action starts and completions, generated escalation packages, and recovery-validation outcomes.
 
 ## Safety principles
 
@@ -71,7 +95,10 @@ Create case
 - No SQL writes or production configuration changes.
 - Restart/write actions cannot be represented as L1-safe.
 - Every factual observation must reference evidence from the same case.
+- Possible explanations must reference same-case observations and actions.
 - Pattern matching can propose explanations but cannot confirm root cause.
+- A confirmed explanation requires explicit operator confirmation and supporting observations.
+- A passed recovery validation requires supporting evidence from the same case.
 
 ## Legacy compatibility
 
@@ -150,4 +177,4 @@ Additional portfolio and workflow documentation is available under `docs/`, incl
 
 ## Development verification
 
-GitHub Actions installs the package and runs the complete automated test suite for every pull-request update. CI also uploads `pytest.log` as a short-lived artifact, making failures directly inspectable. Repository-native CI is the default proof loop; local PowerShell and manual testing are reserved for Windows-specific packaging and later usability or visual validation.
+GitHub Actions installs the package and runs the complete automated test suite for every pull-request update. CI uploads `pytest.log` as a short-lived artifact, making failures directly inspectable. Repository-native CI is the default proof loop; local PowerShell and manual testing are reserved for Windows-specific packaging and later usability or visual validation.
