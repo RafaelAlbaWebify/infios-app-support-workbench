@@ -8,185 +8,47 @@
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <p class="eyebrow">Application Incident Investigation Workbench</p>
-      <h1>INFIOS</h1>
-    </div>
+    <div><p class="eyebrow">Application Incident Investigation Workbench</p><h1>INFIOS</h1></div>
     <div class="mode-pill" aria-label="Current mode">Guided L1 mode</div>
   </header>
-
   <main class="layout">
     <aside class="sidebar" aria-label="Investigation progress">
       <h2>Incident progress</h2>
-      <ol class="steps" id="progress-steps">
-        <li class="active">Describe the problem</li>
-        <li>Who is affected?</li>
-        <li>Add evidence</li>
-        <li>Run safe checks</li>
-        <li>Review and escalate</li>
-      </ol>
-      <div class="safety-card">
-        <strong>Safe by design</strong>
-        <p>Unknown is valid. Do not guess technical causes or perform production changes without approval.</p>
-      </div>
+      <ol class="steps" id="progress-steps"><li class="active">Describe the problem</li><li>Who is affected?</li><li>Add evidence</li><li>Run safe checks</li><li>Review and escalate</li></ol>
+      <div class="safety-card"><strong>Safe by design</strong><p>Unknown is valid. Do not guess technical causes or perform production changes without approval.</p></div>
     </aside>
-
     <section class="workspace">
-      <div class="status-row">
-        <span class="status-badge" id="workspace-status">Dashboard</span>
-        <span id="save-state" class="muted">Loading recent cases…</span>
-      </div>
-
+      <div class="status-row"><span class="status-badge" id="workspace-status">Dashboard</span><span id="save-state" class="muted">Loading recent cases…</span></div>
       <section class="panel" id="dashboard-panel">
-        <div class="case-heading">
-          <div>
-            <p class="step-label">Current workload</p>
-            <h2>Recent incidents</h2>
-            <p class="lead">Resume an existing investigation or start a new one. Cases are stored locally in this workbench.</p>
-          </div>
-          <button id="new-incident" class="primary" type="button">New incident</button>
-        </div>
-        <p id="dashboard-error" class="error" role="alert" hidden></p>
-        <div id="recent-cases" class="case-list empty-state">No cases found.</div>
+        <div class="case-heading"><div><p class="step-label">Current workload</p><h2>Recent incidents</h2><p class="lead">Resume an existing investigation or start a new one. Cases are stored locally in this workbench.</p></div><button id="new-incident" class="primary" type="button">New incident</button></div>
+        <p id="dashboard-error" class="error" role="alert" hidden></p><div id="recent-cases" class="case-list empty-state">No cases found.</div>
       </section>
-
       <section class="panel" id="create-panel" hidden>
-        <p class="step-label">Step 1 of 5</p>
-        <h2>What is happening?</h2>
-        <p class="lead">Start with what the user sees. You do not need to know the technical cause.</p>
-
+        <p class="step-label">Step 1 of 5</p><h2>What is happening?</h2><p class="lead">Start with what the user sees. You do not need to know the technical cause.</p>
         <form id="case-form">
-          <label>
-            Application or service <span aria-hidden="true">*</span>
-            <input id="application" name="application" required placeholder="Example: Order Management">
-          </label>
-
-          <label>
-            Short problem description <span aria-hidden="true">*</span>
-            <input id="title" name="title" required placeholder="Example: Orders page fails after login">
-          </label>
-
-          <fieldset>
-            <legend>What happens?</legend>
-            <div class="choice-grid">
-              <label class="choice"><input type="radio" name="symptom" value="Cannot log in"> Cannot log in</label>
-              <label class="choice"><input type="radio" name="symptom" value="Access denied"> Access denied</label>
-              <label class="choice"><input type="radio" name="symptom" value="Page or feature gives an error" checked> Page or feature gives an error</label>
-              <label class="choice"><input type="radio" name="symptom" value="Application is slow"> Application is slow</label>
-              <label class="choice"><input type="radio" name="symptom" value="Data is missing or incorrect"> Data is missing or incorrect</label>
-              <label class="choice"><input type="radio" name="symptom" value="Other"> Other</label>
-            </div>
-          </fieldset>
-
-          <div class="two-column">
-            <label>
-              Who is affected?
-              <select id="affected-scope" name="affected_scope">
-                <option value="unknown">Unknown</option>
-                <option value="one user">One user</option>
-                <option value="several users">Several users</option>
-                <option value="one team or role">One team or role</option>
-                <option value="one location">One location</option>
-                <option value="everyone">Everyone</option>
-              </select>
-            </label>
-
-            <label>
-              Business impact
-              <select id="impact" name="impact">
-                <option value="unknown">Unknown</option>
-                <option value="minor inconvenience">Minor inconvenience</option>
-                <option value="work slowed">Work slowed</option>
-                <option value="important function unavailable">Important function unavailable</option>
-                <option value="critical business process blocked">Critical business process blocked</option>
-                <option value="production or customer impact">Production or customer impact</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="actions">
-            <button class="primary" type="submit">Create incident and continue</button>
-            <button id="cancel-create" class="secondary" type="button">Back to recent incidents</button>
-          </div>
-          <p id="form-error" class="error" role="alert" hidden></p>
+          <label>Application or service <span aria-hidden="true">*</span><input id="application" name="application" required placeholder="Example: Order Management"></label>
+          <label>Short problem description <span aria-hidden="true">*</span><input id="title" name="title" required placeholder="Example: Orders page fails after login"></label>
+          <fieldset><legend>What happens?</legend><div class="choice-grid">
+            <label class="choice"><input type="radio" name="symptom" value="Cannot log in"> Cannot log in</label><label class="choice"><input type="radio" name="symptom" value="Access denied"> Access denied</label><label class="choice"><input type="radio" name="symptom" value="Page or feature gives an error" checked> Page or feature gives an error</label><label class="choice"><input type="radio" name="symptom" value="Application is slow"> Application is slow</label><label class="choice"><input type="radio" name="symptom" value="Data is missing or incorrect"> Data is missing or incorrect</label><label class="choice"><input type="radio" name="symptom" value="Other"> Other</label>
+          </div></fieldset>
+          <div class="two-column"><label>Who is affected?<select id="affected-scope" name="affected_scope"><option value="unknown">Unknown</option><option value="one user">One user</option><option value="several users">Several users</option><option value="one team or role">One team or role</option><option value="one location">One location</option><option value="everyone">Everyone</option></select></label><label>Business impact<select id="impact" name="impact"><option value="unknown">Unknown</option><option value="minor inconvenience">Minor inconvenience</option><option value="work slowed">Work slowed</option><option value="important function unavailable">Important function unavailable</option><option value="critical business process blocked">Critical business process blocked</option><option value="production or customer impact">Production or customer impact</option></select></label></div>
+          <div class="actions"><button class="primary" type="submit">Create incident and continue</button><button id="cancel-create" class="secondary" type="button">Back to recent incidents</button></div><p id="form-error" class="error" role="alert" hidden></p>
         </form>
       </section>
-
       <section class="panel" id="case-panel" hidden>
-        <div class="case-heading">
-          <div>
-            <p class="step-label">Current incident</p>
-            <h2 id="case-title"></h2>
-            <p id="case-context" class="lead"></p>
-          </div>
-          <span id="case-status" class="status-badge"></span>
-        </div>
-
-        <div class="summary-grid">
-          <article>
-            <h3>What we know</h3>
-            <p id="known-summary">The case has been created. Add evidence before drawing conclusions.</p>
-          </article>
-          <article>
-            <h3>Next recommended action</h3>
-            <p id="next-action">Record the exact error, timestamp, and reproduction result.</p>
-          </article>
-        </div>
-
-        <section class="quick-actions" aria-label="Evidence quick actions">
-          <h3>Add evidence</h3>
-          <div class="button-grid">
-            <button type="button" data-evidence-type="user_report">User report</button>
-            <button type="button" data-evidence-type="error_message">Error message</button>
-            <button type="button" data-evidence-type="reproduction_result">Reproduction result</button>
-            <button type="button" data-evidence-type="http_observation">HTTP/API evidence</button>
-          </div>
-        </section>
-
-        <section id="evidence-editor" class="evidence-editor" hidden>
-          <h3 id="evidence-heading">Add evidence</h3>
-          <label>
-            Source
-            <input id="evidence-source" placeholder="Example: affected user, browser developer tools">
-          </label>
-          <label>
-            What did you observe?
-            <textarea id="evidence-content" rows="5" placeholder="Paste a sanitized error or describe the result."></textarea>
-          </label>
-          <label>
-            How certain is this information?
-            <select id="evidence-certainty">
-              <option value="reported">Reported by a person</option>
-              <option value="reproduced">Confirmed by reproduction</option>
-              <option value="technically_confirmed">Confirmed by technical evidence</option>
-              <option value="suspected">Suspected</option>
-              <option value="unknown">Unknown</option>
-            </select>
-          </label>
-          <div class="actions">
-            <button id="save-evidence" class="primary" type="button">Save evidence</button>
-            <button id="cancel-evidence" class="secondary" type="button">Cancel</button>
-          </div>
-          <p id="evidence-error" class="error" role="alert" hidden></p>
-        </section>
-
-        <section>
-          <div class="section-heading">
-            <h3>Evidence collected</h3>
-            <span id="evidence-count" class="muted">0 items</span>
-          </div>
-          <div id="evidence-list" class="empty-state">No evidence has been added yet.</div>
-        </section>
-
-        <div class="actions footer-actions">
-          <button id="refresh-summary" class="secondary" type="button">Review case guidance</button>
-          <button id="back-dashboard" class="secondary" type="button">Back to recent incidents</button>
-          <a class="text-link" href="/docs" target="_blank" rel="noreferrer">Open API documentation</a>
-        </div>
+        <div class="case-heading"><div><p class="step-label">Current incident</p><h2 id="case-title"></h2><p id="case-context" class="lead"></p></div><span id="case-status" class="status-badge"></span></div>
+        <div class="summary-grid"><article><h3>What we know</h3><p id="known-summary">The case has been created. Add evidence before drawing conclusions.</p></article><article><h3>Next recommended action</h3><p id="next-action">Record the exact error, timestamp, and reproduction result.</p></article></div>
+        <section class="quick-actions" aria-label="Evidence quick actions"><h3>Add evidence</h3><div class="button-grid"><button type="button" data-evidence-type="user_report">User report</button><button type="button" data-evidence-type="error_message">Error message</button><button type="button" data-evidence-type="reproduction_result">Reproduction result</button><button type="button" data-evidence-type="http_observation">HTTP/API evidence</button></div></section>
+        <section id="evidence-editor" class="evidence-editor" hidden><h3 id="evidence-heading">Add evidence</h3><label>Source<input id="evidence-source" placeholder="Example: affected user, browser developer tools"></label><label>What did you observe?<textarea id="evidence-content" rows="5" placeholder="Paste a sanitized error or describe the result."></textarea></label><label>How certain is this information?<select id="evidence-certainty"><option value="reported">Reported by a person</option><option value="reproduced">Confirmed by reproduction</option><option value="technically_confirmed">Confirmed by technical evidence</option><option value="suspected">Suspected</option><option value="unknown">Unknown</option></select></label><div class="actions"><button id="save-evidence" class="primary" type="button">Save evidence</button><button id="cancel-evidence" class="secondary" type="button">Cancel</button></div><p id="evidence-error" class="error" role="alert" hidden></p></section>
+        <section><div class="section-heading"><h3>Evidence collected</h3><span id="evidence-count" class="muted">0 items</span></div><div id="evidence-list" class="empty-state">No evidence has been added yet.</div></section>
+        <section class="guided-checks"><div class="section-heading"><div><h3>Safe guided checks</h3><p class="muted">Checks come from the active playbook. Recording a check does not authorize risky production work.</p></div><span id="check-count" class="muted">0 checks</span></div><div id="guided-check-list" class="empty-state">Add evidence and review guidance to see applicable checks.</div></section>
+        <section id="action-result-editor" class="evidence-editor" hidden><h3 id="action-result-heading">Record check result</h3><label>What happened?<textarea id="action-result" rows="4" placeholder="Describe the actual result. Do not infer a root cause."></textarea></label><label>Conclusion, if supported<textarea id="action-conclusion" rows="3" placeholder="Example: The issue is less likely to be user-specific."></textarea></label><label>Performed by<input id="action-performed-by" placeholder="Example: L1 Support"></label><div class="actions"><button id="complete-action" class="primary" type="button">Save check result</button><button id="cancel-action" class="secondary" type="button">Cancel</button></div><p id="action-error" class="error" role="alert" hidden></p></section>
+        <section><div class="section-heading"><h3>Diagnostic actions</h3><span id="action-count" class="muted">0 actions</span></div><div id="action-list" class="empty-state">No diagnostic actions recorded yet.</div></section>
+        <div class="actions footer-actions"><button id="refresh-summary" class="secondary" type="button">Review case guidance</button><button id="back-dashboard" class="secondary" type="button">Back to recent incidents</button><a class="text-link" href="/docs" target="_blank" rel="noreferrer">Open API documentation</a></div>
       </section>
     </section>
   </main>
-
   <script src="/ui/static/app.js" defer></script>
+  <script src="/ui/static/guided.js" defer></script>
 </body>
 </html>
