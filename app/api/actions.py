@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from functools import lru_cache
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from app.api.cases import DEFAULT_CASE_DATABASE, get_case_repository
 from app.domain.models import (
@@ -57,15 +57,18 @@ def create_action(
     action_repository: SQLiteActionRepository = Depends(get_action_repository),
 ) -> DiagnosticAction:
     _require_case(case_id, case_repository)
-    action = DiagnosticAction(
-        case_id=case_id,
-        name=request.name,
-        purpose=request.purpose,
-        safety_level=request.safety_level,
-        requires_write_or_restart=request.requires_write_or_restart,
-        expected_result=request.expected_result,
-        status=ActionStatus.RECOMMENDED,
-    )
+    try:
+        action = DiagnosticAction(
+            case_id=case_id,
+            name=request.name,
+            purpose=request.purpose,
+            safety_level=request.safety_level,
+            requires_write_or_restart=request.requires_write_or_restart,
+            expected_result=request.expected_result,
+            status=ActionStatus.RECOMMENDED,
+        )
+    except ValidationError as exc:
+        raise HTTPException(status_code=422, detail=exc.errors()) from exc
     return action_repository.save(action)
 
 
