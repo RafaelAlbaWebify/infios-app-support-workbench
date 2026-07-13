@@ -14,6 +14,7 @@ from app.api.explanations import router as explanations_router
 from app.api.lifecycle import router as lifecycle_router
 from app.api.observations import router as observations_router
 from app.api.playbooks import router as playbooks_router
+from app.api.recovery import router as recovery_router
 from app.api.timeline import router as timeline_router
 from app.models import AnalysisResult, IncidentInput
 from app.report_markdown import render_markdown_report
@@ -33,6 +34,7 @@ app.include_router(timeline_router)
 app.include_router(lifecycle_router)
 app.include_router(explanations_router)
 app.include_router(escalations_router)
+app.include_router(recovery_router)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
