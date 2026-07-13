@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app.analyzer import analyze_incident
+from app.api.cases import router as cases_router
 from app.models import AnalysisResult, IncidentInput
 from app.report_markdown import render_markdown_report
 from app.run_history import list_run_history, save_run_history
@@ -15,6 +16,7 @@ app = FastAPI(
     version="0.1.0",
     description="Local-first Application Support workbench for incident evidence, escalation notes, and RCA drafts.",
 )
+app.include_router(cases_router)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
