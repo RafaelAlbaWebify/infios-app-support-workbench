@@ -31,11 +31,28 @@ jobs:
           echo "Dependencies installed successfully."
 
       - name: Run tests
+        id: tests
+        shell: bash
+        continue-on-error: true
+        run: pytest -q > pytest.log 2>&1
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-log
+          path: pytest.log
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Report test result
+        if: steps.tests.outcome == 'failure'
         shell: bash
         run: |
-          if ! pytest -q > pytest.log 2>&1; then
-            echo "Pytest failed. Showing the final 160 lines:"
-            tail -n 160 pytest.log
-            exit 1
-          fi
-          cat pytest.log
+          echo "Pytest failed. Showing the final 160 lines:"
+          tail -n 160 pytest.log
+          exit 1
+
+      - name: Show passing summary
+        if: steps.tests.outcome == 'success'
+        run: cat pytest.log
