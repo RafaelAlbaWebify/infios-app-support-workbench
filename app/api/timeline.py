@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from functools import lru_cache
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.api.actions import get_action_repository
 from app.api.cases import get_case_repository
+from app.api.escalations import get_escalation_repository
 from app.api.evidence import get_evidence_repository
 from app.api.observations import get_observation_repository
+from app.api.recovery import get_recovery_repository
 from app.domain.models import CertaintyLevel, TimelineEvent, TimestampPrecision
 from app.persistence.sqlite_action_repository import SQLiteActionRepository
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
+from app.persistence.sqlite_escalation_repository import SQLiteEscalationRepository
 from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
 from app.persistence.sqlite_observation_repository import SQLiteObservationRepository
+from app.persistence.sqlite_recovery_repository import SQLiteRecoveryRepository
 
 router = APIRouter(prefix="/api/cases/{case_id}/timeline", tags=["timeline"])
 
@@ -35,6 +38,8 @@ def get_timeline(
     evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
     action_repository: SQLiteActionRepository = Depends(get_action_repository),
+    escalation_repository: SQLiteEscalationRepository = Depends(get_escalation_repository),
+    recovery_repository: SQLiteRecoveryRepository = Depends(get_recovery_repository),
 ) -> TimelineResponse:
     support_case = case_repository.get(case_id)
     if support_case is None:
@@ -105,6 +110,32 @@ def get_timeline(
                     certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
                 )
             )
+
+    for package in escalation_repository.list_for_case(case_id, limit=200):
+        events.append(
+            TimelineEvent(
+                case_id=case_id,
+                timestamp=package.generated_at,
+                timestamp_precision=TimestampPrecision.EXACT,
+                event_type="escalation_generated",
+                summary=f"Escalation package generated for {package.target_team}",
+                source_reference=package.package_id,
+                certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+            )
+        )
+
+    for validation in recovery_repository.list_for_case(case_id, limit=200):
+        events.append(
+            TimelineEvent(
+                case_id=case_id,
+                timestamp=validation.tested_at,
+                timestamp_precision=TimestampPrecision.EXACT,
+                event_type="recovery_validation",
+                summary=f"Recovery validation {validation.outcome.value}: {validation.result}",
+                source_reference=validation.validation_id,
+                certainty=CertaintyLevel.REPRODUCED,
+            )
+        )
 
     events.sort(key=lambda event: (_event_time(event.timestamp), event.event_type, event.event_id))
     return TimelineResponse(events=events, count=len(events))
