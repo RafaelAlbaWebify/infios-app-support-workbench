@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 
 from app.analyzer import analyze_incident
+from app.api.actions import router as actions_router
 from app.api.cases import router as cases_router
 from app.api.evidence import router as evidence_router
 from app.api.observations import router as observations_router
@@ -23,6 +24,7 @@ app.include_router(cases_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
 app.include_router(playbooks_router)
+app.include_router(actions_router)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
