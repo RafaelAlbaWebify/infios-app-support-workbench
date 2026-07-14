@@ -17,7 +17,8 @@ if (-not $Database) {
 }
 
 $baseUrl = "http://127.0.0.1:$Port"
-$serverLog = Join-Path $evidenceRoot "server.log"
+$serverLog = Join-Path $evidenceRoot "server-output.log"
+$serverErrorLog = Join-Path $evidenceRoot "server-error.log"
 $reportPath = Join-Path $evidenceRoot "release-validation.md"
 $summaryPath = Join-Path $evidenceRoot "case-summary.md"
 $handoverPath = Join-Path $evidenceRoot "l2-handover.md"
@@ -56,7 +57,7 @@ $arguments = @(
 
 Write-Host "Starting INFIOS release validation..."
 Write-Host "Evidence folder: $evidenceRoot"
-$process = Start-Process powershell.exe -ArgumentList $arguments -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog -PassThru
+$process = Start-Process powershell.exe -ArgumentList $arguments -RedirectStandardOutput $serverLog -RedirectStandardError $serverErrorLog -PassThru
 
 try {
     $health = Wait-ForInfios
@@ -93,12 +94,12 @@ try {
     $handoverOpened = Read-Host "Did the downloaded L2 handover Markdown open correctly? (yes/no)"
     $publicSafe = Read-Host "Was only sample/public-safe data used? (yes/no)"
 
-    $passed = @($browserOpened, $dashboardUsable, $summaryOpened, $handoverOpened, $publicSafe) |
+    $failedAnswers = @($browserOpened, $dashboardUsable, $summaryOpened, $handoverOpened, $publicSafe) |
         ForEach-Object { $_.Trim().ToLowerInvariant() -in @("yes", "y") } |
         Where-Object { -not $_ } |
         Measure-Object |
         Select-Object -ExpandProperty Count
-    $result = if ($passed -eq 0) { "PASS" } else { "FAIL" }
+    $result = if ($failedAnswers -eq 0) { "PASS" } else { "FAIL" }
 
     @"
 # INFIOS v0.1.0 Windows interactive validation
@@ -125,7 +126,8 @@ try {
 
 ## Generated evidence
 
-- Server log: `$serverLog`
+- Server output log: `$serverLog`
+- Server error log: `$serverErrorLog`
 - Case summary: `$summaryPath`
 - L2 handover: `$handoverPath`
 
