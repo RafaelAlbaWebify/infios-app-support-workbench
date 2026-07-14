@@ -109,3 +109,117 @@ jobs:
       - name: Show browser passing summary
         if: steps.browser-tests.outcome == 'success'
         run: cat browser-tests.log
+
+  windows-bootstrap:
+    runs-on: windows-latest
+    needs: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Windows bootstrap, persistence, and export smoke test
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $port = 8877
+          $baseUrl = "http://127.0.0.1:$port"
+          $database = Join-Path $env:RUNNER_TEMP "infios-windows-smoke\cases.sqlite3"
+          $artifactDir = Join-Path $env:RUNNER_TEMP "infios-windows-smoke\artifacts"
+          New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
+
+          function Start-InfiosBootstrap {
+            $arguments = @(
+              "-NoProfile",
+              "-ExecutionPolicy", "Bypass",
+              "-File", (Join-Path $PWD "tools\start-infios.ps1"),
+              "-Port", $port,
+              "-Database", $database,
+              "-NoBrowser"
+            )
+            return Start-Process pwsh -ArgumentList $arguments -PassThru -RedirectStandardOutput (Join-Path $artifactDir "bootstrap-out.log") -RedirectStandardError (Join-Path $artifactDir "bootstrap-error.log")
+          }
+
+          function Wait-ForHealth {
+            for ($attempt = 0; $attempt -lt 120; $attempt++) {
+              try {
+                $health = Invoke-RestMethod -Uri "$baseUrl/api/health" -TimeoutSec 2
+                if ($health.status -eq "ok" -and $health.version -eq "0.1.0") { return }
+              } catch {
+                Start-Sleep -Seconds 1
+              }
+            }
+            throw "INFIOS did not become healthy on Windows."
+          }
+
+          function Stop-InfiosServer {
+            $connection = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($connection) {
+              Stop-Process -Id $connection.OwningProcess -Force -ErrorAction SilentlyContinue
+            }
+            Start-Sleep -Seconds 2
+          }
+
+          $bootstrap = Start-InfiosBootstrap
+          try {
+            Wait-ForHealth
+            if (-not (Test-Path ".venv\Scripts\python.exe")) { throw ".venv was not created by the bootstrap." }
+
+            $caseBody = @{
+              title = "Windows bootstrap persistence proof"
+              application = "Order Management"
+              impact = "Important function unavailable"
+              affected_scope = "Several users"
+            } | ConvertTo-Json
+            $case = Invoke-RestMethod -Method Post -Uri "$baseUrl/api/cases" -ContentType "application/json" -Body $caseBody
+
+            $evidenceBody = @{
+              evidence_type = "http_observation"
+              source = "Windows GitHub Actions smoke test"
+              content = "POST /api/orders returned HTTP 500"
+              certainty = "technically_confirmed"
+            } | ConvertTo-Json
+            Invoke-RestMethod -Method Post -Uri "$baseUrl/api/cases/$($case.case_id)/evidence" -ContentType "application/json" -Body $evidenceBody | Out-Null
+
+            $escalationBody = @{
+              target_team = "L2 Application Support"
+              requested_action = "Review application logs for the captured endpoint."
+            } | ConvertTo-Json
+            $package = Invoke-RestMethod -Method Post -Uri "$baseUrl/api/cases/$($case.case_id)/escalations" -ContentType "application/json" -Body $escalationBody
+
+            Stop-InfiosServer
+            if (-not $bootstrap.HasExited) { Stop-Process -Id $bootstrap.Id -Force -ErrorAction SilentlyContinue }
+
+            $restart = Start-InfiosBootstrap
+            Wait-ForHealth
+
+            $reopened = Invoke-RestMethod -Uri "$baseUrl/api/cases/$($case.case_id)"
+            if ($reopened.title -ne "Windows bootstrap persistence proof") { throw "Saved case did not persist after restart." }
+
+            $summaryPath = Join-Path $artifactDir "case-summary.md"
+            $handoverPath = Join-Path $artifactDir "l2-handover.md"
+            Invoke-WebRequest -Uri "$baseUrl/api/cases/$($case.case_id)/summary/download" -OutFile $summaryPath
+            Invoke-WebRequest -Uri "$baseUrl/api/cases/$($case.case_id)/escalations/$($package.package_id)/download" -OutFile $handoverPath
+
+            if (-not (Select-String -Path $summaryPath -Pattern "Windows bootstrap persistence proof" -Quiet)) { throw "Case summary content was not downloaded correctly." }
+            if (-not (Select-String -Path $handoverPath -Pattern "Review application logs" -Quiet)) { throw "Escalation handover content was not downloaded correctly." }
+          } finally {
+            Stop-InfiosServer
+            Get-Process pwsh -ErrorAction SilentlyContinue | Where-Object { $_.Id -ne $PID } | ForEach-Object {
+              if ($_.Path -and $_.Path -like "*$env:RUNNER_TEMP*") { Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue }
+            }
+          }
+
+      - name: Upload Windows bootstrap evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-bootstrap-evidence
+          path: ${{ runner.temp }}\infios-windows-smoke\
+          if-no-files-found: warn
+          retention-days: 14
