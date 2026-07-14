@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field, model_validator
 
-from app.domain.models import CaseMetadataChange, CaseStatus, SupportCase
+from app.domain.models import CaseArchiveEvent, CaseMetadataChange, CaseStatus, SupportCase
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
@@ -24,6 +24,18 @@ class CaseSort(str, Enum):
     CREATED_ASC = "created_asc"
 
 
+class CaseKind(str, Enum):
+    ALL = "all"
+    REAL = "real"
+    DEMO = "demo"
+
+
+class ArchiveState(str, Enum):
+    ACTIVE = "active"
+    ARCHIVED = "archived"
+    ALL = "all"
+
+
 class CreateCaseRequest(BaseModel):
     title: str = Field(min_length=1)
     application: str = Field(min_length=1)
@@ -32,6 +44,7 @@ class CreateCaseRequest(BaseModel):
     impact: str = "unknown"
     owner: str | None = None
     affected_scope: str = "unknown"
+    is_demo: bool = False
 
 
 class UpdateCaseMetadataRequest(BaseModel):
@@ -57,6 +70,11 @@ class UpdateCaseMetadataRequest(BaseModel):
         if not any(value is not None for value in metadata_fields) and "owner" not in self.model_fields_set:
             raise ValueError("At least one case metadata field must be supplied.")
         return self
+
+
+class ArchiveCaseRequest(BaseModel):
+    performed_by: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
 
 
 class CaseListResponse(BaseModel):
@@ -92,6 +110,7 @@ def create_case(
         impact=request.impact,
         owner=request.owner,
         affected_scope=request.affected_scope,
+        is_demo=request.is_demo,
     )
     return repository.save(support_case)
 
@@ -103,6 +122,8 @@ def list_cases(
     case_status: CaseStatus | None = Query(default=None, alias="status"),
     owner: str | None = Query(default=None, max_length=200),
     sort: CaseSort = Query(default=CaseSort.UPDATED_DESC),
+    case_kind: CaseKind = Query(default=CaseKind.ALL),
+    archive_state: ArchiveState = Query(default=ArchiveState.ACTIVE),
     repository: SQLiteCaseRepository = Depends(get_case_repository),
 ) -> CaseListResponse:
     cases, count = repository.search(
@@ -111,6 +132,8 @@ def list_cases(
         status=case_status,
         owner=owner,
         sort=sort.value,
+        case_kind=case_kind.value,
+        archive_state=archive_state.value,
     )
     return CaseListResponse(cases=cases, count=count)
 
@@ -152,6 +175,8 @@ def update_case_metadata(
     support_case = repository.get(case_id)
     if support_case is None:
         raise HTTPException(status_code=404, detail="Support case not found")
+    if support_case.archived_at is not None:
+        raise HTTPException(status_code=409, detail="Restore the case before editing metadata.")
 
     update_values = request.model_dump(exclude={"changed_by"}, exclude_unset=True)
     changed_fields = [
@@ -163,14 +188,13 @@ def update_case_metadata(
         raise HTTPException(status_code=409, detail="The supplied metadata does not change the case.")
 
     now = datetime.now(timezone.utc)
-    summary = "Updated " + ", ".join(field.replace("_", " ") for field in changed_fields)
     history = [
         *support_case.metadata_changes,
         CaseMetadataChange(
             changed_at=now,
             changed_by=request.changed_by,
             fields=changed_fields,
-            summary=summary,
+            summary="Updated " + ", ".join(field.replace("_", " ") for field in changed_fields),
         ),
     ]
     updated = support_case.model_copy(
@@ -181,3 +205,63 @@ def update_case_metadata(
         }
     )
     return repository.save(updated)
+
+
+@router.post("/{case_id}/archive", response_model=SupportCase)
+def archive_case(
+    case_id: str,
+    request: ArchiveCaseRequest,
+    repository: SQLiteCaseRepository = Depends(get_case_repository),
+) -> SupportCase:
+    support_case = repository.get(case_id)
+    if support_case is None:
+        raise HTTPException(status_code=404, detail="Support case not found")
+    if support_case.archived_at is not None:
+        raise HTTPException(status_code=409, detail="Support case is already archived")
+    now = datetime.now(timezone.utc)
+    event = CaseArchiveEvent(
+        action="archived",
+        occurred_at=now,
+        performed_by=request.performed_by,
+        reason=request.reason,
+    )
+    archived = support_case.model_copy(
+        update={
+            "archived_at": now,
+            "archived_by": request.performed_by,
+            "archive_reason": request.reason,
+            "archive_history": [*support_case.archive_history, event],
+            "updated_at": now,
+        }
+    )
+    return repository.save(archived)
+
+
+@router.post("/{case_id}/restore", response_model=SupportCase)
+def restore_case(
+    case_id: str,
+    request: ArchiveCaseRequest,
+    repository: SQLiteCaseRepository = Depends(get_case_repository),
+) -> SupportCase:
+    support_case = repository.get(case_id)
+    if support_case is None:
+        raise HTTPException(status_code=404, detail="Support case not found")
+    if support_case.archived_at is None:
+        raise HTTPException(status_code=409, detail="Support case is not archived")
+    now = datetime.now(timezone.utc)
+    event = CaseArchiveEvent(
+        action="restored",
+        occurred_at=now,
+        performed_by=request.performed_by,
+        reason=request.reason,
+    )
+    restored = support_case.model_copy(
+        update={
+            "archived_at": None,
+            "archived_by": None,
+            "archive_reason": None,
+            "archive_history": [*support_case.archive_history, event],
+            "updated_at": now,
+        }
+    )
+    return repository.save(restored)

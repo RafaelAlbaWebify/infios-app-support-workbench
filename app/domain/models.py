@@ -81,6 +81,13 @@ class CaseMetadataChange(BaseModel):
     summary: str = Field(min_length=1)
 
 
+class CaseArchiveEvent(BaseModel):
+    action: str = Field(pattern="^(archived|restored)$")
+    occurred_at: datetime = Field(default_factory=_utc_now)
+    performed_by: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
 class SupportCase(BaseModel):
     case_id: str = Field(default_factory=lambda: _new_id("case"))
     title: str = Field(min_length=1)
@@ -91,6 +98,11 @@ class SupportCase(BaseModel):
     impact: str = "unknown"
     owner: str | None = None
     affected_scope: str = "unknown"
+    is_demo: bool = False
+    archived_at: datetime | None = None
+    archived_by: str | None = None
+    archive_reason: str | None = None
+    archive_history: list[CaseArchiveEvent] = Field(default_factory=list)
     metadata_changes: list[CaseMetadataChange] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=_utc_now)
     updated_at: datetime = Field(default_factory=_utc_now)
