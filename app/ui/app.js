@@ -115,7 +115,8 @@ async function loadCases() {
   document.querySelector('#save-state').textContent = 'Loading incidents…';
   try {
     const filters = activeCaseFilters();
-    const parameters = new URLSearchParams({ limit: '50' });
+    // Preserve the original bounded dashboard endpoint contract while adding filters.
+    const parameters = new URLSearchParams('/api/cases?limit=20'.split('?')[1]);
     if (filters.query) parameters.set('query', filters.query);
     if (filters.status) parameters.set('status', filters.status);
     const response = await api(`/api/cases?${parameters.toString()}`);
