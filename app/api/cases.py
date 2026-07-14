@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
-from app.domain.models import CaseStatus, SupportCase
+from app.domain.models import CaseMetadataChange, CaseStatus, SupportCase
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 
 router = APIRouter(prefix="/api/cases", tags=["cases"])
@@ -23,6 +24,31 @@ class CreateCaseRequest(BaseModel):
     impact: str = "unknown"
     owner: str | None = None
     affected_scope: str = "unknown"
+
+
+class UpdateCaseMetadataRequest(BaseModel):
+    title: str | None = Field(default=None, min_length=1)
+    application: str | None = Field(default=None, min_length=1)
+    environment: str | None = Field(default=None, min_length=1)
+    severity: str | None = Field(default=None, min_length=1)
+    impact: str | None = Field(default=None, min_length=1)
+    owner: str | None = None
+    affected_scope: str | None = Field(default=None, min_length=1)
+    changed_by: str = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def require_at_least_one_metadata_field(self) -> UpdateCaseMetadataRequest:
+        metadata_fields = (
+            self.title,
+            self.application,
+            self.environment,
+            self.severity,
+            self.impact,
+            self.affected_scope,
+        )
+        if not any(value is not None for value in metadata_fields) and "owner" not in self.model_fields_set:
+            raise ValueError("At least one case metadata field must be supplied.")
+        return self
 
 
 class CaseListResponse(BaseModel):
@@ -73,3 +99,43 @@ def get_case(
     if support_case is None:
         raise HTTPException(status_code=404, detail="Support case not found")
     return support_case
+
+
+@router.patch("/{case_id}", response_model=SupportCase)
+def update_case_metadata(
+    case_id: str,
+    request: UpdateCaseMetadataRequest,
+    repository: SQLiteCaseRepository = Depends(get_case_repository),
+) -> SupportCase:
+    support_case = repository.get(case_id)
+    if support_case is None:
+        raise HTTPException(status_code=404, detail="Support case not found")
+
+    update_values = request.model_dump(exclude={"changed_by"}, exclude_unset=True)
+    changed_fields = [
+        field_name
+        for field_name, value in update_values.items()
+        if getattr(support_case, field_name) != value
+    ]
+    if not changed_fields:
+        raise HTTPException(status_code=409, detail="The supplied metadata does not change the case.")
+
+    now = datetime.now(timezone.utc)
+    summary = "Updated " + ", ".join(field.replace("_", " ") for field in changed_fields)
+    history = [
+        *support_case.metadata_changes,
+        CaseMetadataChange(
+            changed_at=now,
+            changed_by=request.changed_by,
+            fields=changed_fields,
+            summary=summary,
+        ),
+    ]
+    updated = support_case.model_copy(
+        update={
+            **{field: update_values[field] for field in changed_fields},
+            "metadata_changes": history,
+            "updated_at": now,
+        }
+    )
+    return repository.save(updated)
