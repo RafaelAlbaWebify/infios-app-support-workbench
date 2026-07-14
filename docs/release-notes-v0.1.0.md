@@ -19,6 +19,7 @@ It provides a persistent workflow for L1 and L2 Application Support teams to col
 - Downloadable Markdown case summaries and escalation handovers.
 - Responsive guided browser interface.
 - `infios serve` and Windows `tools/start-infios.ps1` launch paths.
+- Guided `tools/validate-release-windows.ps1` release-validation path.
 
 ## Safety model
 
@@ -44,6 +45,8 @@ The release candidate is protected by:
 - Desktop and 390px responsive checks.
 - Runtime JavaScript, console-error and failed-request gates.
 - Structural accessibility checks for labels, names, duplicate IDs, skip navigation, live announcements and keyboard focus.
+- Real Windows bootstrap, restart-persistence and Markdown-export integration on `windows-latest`.
+- PowerShell parsing of the guided interactive validator.
 
 ## Installation
 
@@ -65,10 +68,21 @@ infios serve
 
 INFIOS opens locally at `http://127.0.0.1:8000`.
 
+## Interactive release validation
+
+Before creating the tag or GitHub release, run:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\tools\validate-release-windows.ps1
+```
+
+The validator opens INFIOS, creates a public-safe sample case, downloads the case summary and L2 handover, opens both files in the configured Windows application, asks for five confirmations, and writes a timestamped `release-validation.md` report under Downloads.
+
 ## Compatibility
 
 The original scenario analyzer, CLI, JSON output, Markdown reports, sample incidents and local run history remain available.
 
 ## Known release constraint
 
-This release must not be tagged or published until the Windows bootstrap smoke test in `docs/release-checklist-v0.1.0.md` is completed.
+This release must not be tagged or published until the generated `release-validation.md` result is **PASS** and is attached to issue #18.
