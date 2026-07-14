@@ -15,6 +15,10 @@ const archiveScript = document.createElement('script');
 archiveScript.src = '/ui/static/archive.js';
 document.head.append(archiveScript);
 
+const databaseScript = document.createElement('script');
+databaseScript.src = '/ui/static/database.js';
+document.head.append(databaseScript);
+
 const workAreaDefinitions = [
   { selector: '.quick-actions', id: 'work-evidence', label: 'Evidence', advanced: false },
   { selector: '.observation-section', id: 'work-observations', label: 'Observations', advanced: false },
