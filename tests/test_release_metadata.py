@@ -26,14 +26,15 @@ def test_health_endpoint_exposes_release_identity() -> None:
     }
 
 
-def test_release_documents_track_pending_windows_gate() -> None:
+def test_release_documents_track_interactive_windows_gate() -> None:
     changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
     checklist = Path("docs/release-checklist-v0.1.0.md").read_text(encoding="utf-8")
     release_notes = Path("docs/release-notes-v0.1.0.md").read_text(encoding="utf-8")
 
     assert "## [0.1.0] - Unreleased" in changelog
     assert "Windows bootstrap smoke test" in changelog
-    assert "- [ ] `.venv` is created when absent." in checklist
+    assert "- [x] Windows bootstrap creates `.venv` when absent." in checklist
+    assert "- [ ] The default browser opens automatically" in checklist
     assert "- [ ] Create annotated tag `v0.1.0`" in checklist
     assert "INFIOS v0.1.0" in release_notes
     assert "must not be tagged or published" in release_notes
