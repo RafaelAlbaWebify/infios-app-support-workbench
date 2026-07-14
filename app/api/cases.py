@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
@@ -14,6 +15,13 @@ router = APIRouter(prefix="/api/cases", tags=["cases"])
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_CASE_DATABASE = ROOT_DIR / "runs" / "infios-cases.sqlite3"
+
+
+class CaseSort(str, Enum):
+    UPDATED_DESC = "updated_desc"
+    UPDATED_ASC = "updated_asc"
+    CREATED_DESC = "created_desc"
+    CREATED_ASC = "created_asc"
 
 
 class CreateCaseRequest(BaseModel):
@@ -93,9 +101,17 @@ def list_cases(
     limit: int = Query(default=50, ge=1, le=200),
     query: str | None = Query(default=None, max_length=200),
     case_status: CaseStatus | None = Query(default=None, alias="status"),
+    owner: str | None = Query(default=None, max_length=200),
+    sort: CaseSort = Query(default=CaseSort.UPDATED_DESC),
     repository: SQLiteCaseRepository = Depends(get_case_repository),
 ) -> CaseListResponse:
-    cases, count = repository.search(limit=limit, query=query, status=case_status)
+    cases, count = repository.search(
+        limit=limit,
+        query=query,
+        status=case_status,
+        owner=owner,
+        sort=sort.value,
+    )
     return CaseListResponse(cases=cases, count=count)
 
 
