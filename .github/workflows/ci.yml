@@ -123,6 +123,21 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Validate interactive release script parses
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD "tools\validate-release-windows.ps1"),
+            [ref]$tokens,
+            [ref]$errors
+          ) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            throw "Interactive Windows release validation script contains PowerShell parse errors."
+          }
+
       - name: Run Windows bootstrap, persistence, and export smoke test
         shell: pwsh
         run: |
