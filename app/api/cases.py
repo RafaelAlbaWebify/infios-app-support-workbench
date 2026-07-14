@@ -56,10 +56,12 @@ def create_case(
 @router.get("", response_model=CaseListResponse)
 def list_cases(
     limit: int = Query(default=50, ge=1, le=200),
+    query: str | None = Query(default=None, max_length=200),
+    case_status: CaseStatus | None = Query(default=None, alias="status"),
     repository: SQLiteCaseRepository = Depends(get_case_repository),
 ) -> CaseListResponse:
-    cases = repository.list(limit=limit)
-    return CaseListResponse(cases=cases, count=len(cases))
+    cases, count = repository.search(limit=limit, query=query, status=case_status)
+    return CaseListResponse(cases=cases, count=count)
 
 
 @router.get("/{case_id}", response_model=SupportCase)

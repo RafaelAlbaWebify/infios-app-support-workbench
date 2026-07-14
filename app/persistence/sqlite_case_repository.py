@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from app.domain.models import SupportCase
+from app.domain.models import CaseStatus, SupportCase
 
 
 SCHEMA_VERSION = 1
@@ -48,6 +48,12 @@ class SQLiteCaseRepository:
                 """
                 CREATE INDEX IF NOT EXISTS idx_support_cases_updated_at
                 ON support_cases(updated_at DESC)
+                """
+            )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_support_cases_status_updated_at
+                ON support_cases(status, updated_at DESC)
                 """
             )
 
@@ -102,16 +108,52 @@ class SQLiteCaseRepository:
         return SupportCase.model_validate_json(row["payload_json"])
 
     def list(self, limit: int = 50) -> list[SupportCase]:
+        cases, _ = self.search(limit=limit)
+        return cases
+
+    def search(
+        self,
+        *,
+        limit: int = 50,
+        query: str | None = None,
+        status: CaseStatus | None = None,
+    ) -> tuple[list[SupportCase], int]:
         if limit < 1:
             raise ValueError("limit must be at least 1")
+
+        clauses: list[str] = []
+        parameters: list[object] = []
+        normalized_query = query.strip().lower() if query else ""
+
+        if normalized_query:
+            search_term = f"%{normalized_query}%"
+            clauses.append(
+                "(LOWER(case_id) LIKE ? OR LOWER(title) LIKE ? OR "
+                "LOWER(application) LIKE ? OR LOWER(COALESCE(owner, '')) LIKE ?)"
+            )
+            parameters.extend([search_term] * 4)
+
+        if status is not None:
+            clauses.append("status = ?")
+            parameters.append(status.value)
+
+        where_clause = f" WHERE {' AND '.join(clauses)}" if clauses else ""
+
         with self._connect() as connection:
+            total = connection.execute(
+                f"SELECT COUNT(*) AS count FROM support_cases{where_clause}",
+                parameters,
+            ).fetchone()["count"]
             rows = connection.execute(
-                """
+                f"""
                 SELECT payload_json
                 FROM support_cases
+                {where_clause}
                 ORDER BY updated_at DESC, case_id ASC
                 LIMIT ?
                 """,
-                (limit,),
+                [*parameters, limit],
             ).fetchall()
-        return [SupportCase.model_validate_json(row["payload_json"]) for row in rows]
+
+        cases = [SupportCase.model_validate_json(row["payload_json"]) for row in rows]
+        return cases, int(total)
