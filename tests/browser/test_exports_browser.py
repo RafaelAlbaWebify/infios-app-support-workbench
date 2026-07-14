@@ -72,7 +72,7 @@ def test_case_summary_and_escalation_downloads_are_available(page: Page, tmp_pat
         f"{BASE_URL}/api/cases/{case_id}/escalations",
         data={
             "target_team": "L2 Application Support",
-            "requested_action": "Review the application logs.",
+            "requested_action": "Review the application logs and correlate the captured timestamp with the complete request path, correlation identifier, deployment history, dependency health, and any matching backend exception without assuming that temporal proximity proves causation.",
         },
     )
     assert package_response.ok
@@ -97,6 +97,19 @@ def test_case_summary_and_escalation_downloads_are_available(page: Page, tmp_pat
         "href",
         f"/api/cases/{case_id}/escalations/{package['package_id']}/download",
     )
+
+    preview_fits = page.locator("#escalation-preview").evaluate(
+        "element => element.scrollWidth <= element.clientWidth"
+    )
+    assert preview_fits is True
+    report_fits = page.locator("#escalation-preview pre").evaluate(
+        "element => element.scrollWidth <= element.clientWidth"
+    )
+    assert report_fits is True
+    assert page.locator("#escalation-preview pre").evaluate(
+        "element => getComputedStyle(element).whiteSpace"
+    ) == "pre-wrap"
+
     with page.expect_download() as handover_download_info:
         handover_link.click()
     handover_download = handover_download_info.value
