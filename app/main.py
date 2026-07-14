@@ -22,10 +22,11 @@ from app.api.ui import UI_DIR, router as ui_router
 from app.models import AnalysisResult, IncidentInput
 from app.report_markdown import render_markdown_report
 from app.run_history import list_run_history, save_run_history
+from app.version import VERSION
 
 app = FastAPI(
     title="INFIOS Application Support Workbench",
-    version="0.1.0",
+    version=VERSION,
     description="Local-first Application Support workbench for incident evidence, escalation notes, and RCA drafts.",
 )
 app.mount("/ui/static", StaticFiles(directory=UI_DIR), name="ui-static")
@@ -48,7 +49,11 @@ SAMPLES_DIR = ROOT_DIR / "samples"
 
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "service": "infios-app-support-workbench"}
+    return {
+        "status": "ok",
+        "service": "infios-app-support-workbench",
+        "version": VERSION,
+    }
 
 
 @app.get("/api/samples")
