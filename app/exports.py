@@ -3,6 +3,10 @@ from __future__ import annotations
 from typing import Any
 
 
+def _value(item: Any) -> str:
+    return str(getattr(item, "value", item))
+
+
 def render_case_summary_markdown(summary: Any) -> str:
     support_case = summary.case
     lines = [
@@ -11,7 +15,7 @@ def render_case_summary_markdown(summary: Any) -> str:
         f"- Case ID: `{support_case.case_id}`",
         f"- Application: {support_case.application}",
         f"- Environment: {support_case.environment}",
-        f"- Status: {support_case.status.value}",
+        f"- Status: {_value(support_case.status)}",
         f"- Severity: {support_case.severity}",
         f"- Impact: {support_case.impact}",
         f"- Affected scope: {support_case.affected_scope}",
@@ -21,32 +25,32 @@ def render_case_summary_markdown(summary: Any) -> str:
     ]
     lines.extend(
         [
-            f"- [{item.certainty.value}] {item.evidence_type.value}: {item.content} — source: {item.source} (`{item.evidence_id}`)"
+            f"- [{_value(item.certainty)}] {_value(item.evidence_type)}: {item.content} — source: {item.source} (`{item.evidence_id}`)"
             for item in summary.evidence
         ]
         or ["- None recorded."]
     )
     lines.extend(["", "## Evidence-backed observations", ""])
     lines.extend(
-        [f"- [{item.certainty.value}] {item.statement} (`{item.observation_id}`)" for item in summary.observations]
+        [f"- [{_value(item.certainty)}] {item.statement} (`{item.observation_id}`)" for item in summary.observations]
         or ["- None recorded."]
     )
     lines.extend(["", "## Diagnostic actions", ""])
     lines.extend(
         [
-            f"- {item.name} [{item.status.value}]: {item.actual_result or 'No result recorded.'}"
+            f"- {item.name} [{_value(item.status)}]: {item.actual_result or 'No result recorded.'}"
             for item in summary.actions
         ]
         or ["- None recorded."]
     )
     lines.extend(["", "## Possible explanations", ""])
     lines.extend(
-        [f"- [{item.status.value}] {item.statement}" for item in summary.explanations]
+        [f"- [{_value(item.status)}] {item.statement}" for item in summary.explanations]
         or ["- None recorded."]
     )
     lines.extend(["", "## Recovery validation", ""])
     lines.extend(
-        [f"- [{item.outcome.value}] {item.method}: {item.result}" for item in summary.recovery_validations]
+        [f"- [{_value(item.outcome)}] {item.method}: {item.result}" for item in summary.recovery_validations]
         or ["- None recorded."]
     )
     lines.extend(["", "## Escalation readiness", ""])
