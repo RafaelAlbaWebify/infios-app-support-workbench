@@ -50,6 +50,7 @@ def _structural_violations(page: Page) -> dict[str, list[str]]:
         """
         () => {
           const visible = (element) => {
+            if (element.closest('details:not([open])') && element.tagName !== 'SUMMARY') return false;
             const style = getComputedStyle(element);
             return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
           };
@@ -62,7 +63,7 @@ def _structural_violations(page: Page) -> dict[str, list[str]]:
             .map((element) => element.id || element.outerHTML.slice(0, 100));
           const unnamedInteractive = [...document.querySelectorAll('button, a[href], summary')]
             .filter(visible)
-            .filter((element) => !(element.innerText || element.getAttribute('aria-label') || element.getAttribute('aria-labelledby') || '').trim())
+            .filter((element) => !(element.textContent || element.getAttribute('aria-label') || element.getAttribute('aria-labelledby') || '').trim())
             .map((element) => element.id || element.outerHTML.slice(0, 100));
           return { duplicateIds, unlabeledControls, unnamedInteractive };
         }
