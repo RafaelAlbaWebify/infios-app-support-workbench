@@ -135,4 +135,13 @@ const lifecycleObserver = new MutationObserver(() => {
 });
 lifecycleObserver.observe(lifecycleSaveState, { childList: true, characterData: true, subtree: true });
 
+window.addEventListener('infios:case-opened', (event) => {
+  lifecycleState.caseId = event.detail.caseId;
+  loadLifecycle();
+});
+
+window.addEventListener('infios:evidence-updated', (event) => {
+  if (event.detail.caseId === lifecycleState.caseId) loadLifecycle();
+});
+
 document.querySelector('#refresh-summary').addEventListener('click', () => window.setTimeout(loadLifecycle, 0));
