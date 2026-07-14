@@ -115,7 +115,6 @@ async function loadCases() {
   document.querySelector('#save-state').textContent = 'Loading incidents…';
   try {
     const filters = activeCaseFilters();
-    // Preserve the original bounded dashboard endpoint contract while adding filters.
     const parameters = new URLSearchParams('/api/cases?limit=20'.split('?')[1]);
     if (filters.query) parameters.set('query', filters.query);
     if (filters.status) parameters.set('status', filters.status);
@@ -292,3 +291,113 @@ document.querySelectorAll('[data-evidence-type]').forEach((button) => {
     document.querySelector('#evidence-source').focus();
   });
 });
+
+document.querySelector('#cancel-evidence').addEventListener('click', () => {
+  evidenceEditor.hidden = true;
+  clearEvidenceForm();
+});
+
+document.querySelector('#save-evidence').addEventListener('click', async () => {
+  clearError(evidenceError);
+  const source = document.querySelector('#evidence-source').value.trim();
+  const content = document.querySelector('#evidence-content').value.trim();
+  if (!source || !content) {
+    showError(evidenceError, 'Source and observation are required.');
+    return;
+  }
+
+  const button = document.querySelector('#save-evidence');
+  button.disabled = true;
+  button.textContent = 'Saving…';
+  try {
+    await api(`/api/cases/${state.caseId}/evidence`, {
+      method: 'POST',
+      body: JSON.stringify({
+        evidence_type: state.evidenceType,
+        source,
+        content,
+        certainty: document.querySelector('#evidence-certainty').value,
+        sensitivity: 'internal',
+        redacted: false,
+        notes: 'Redaction review required before external sharing.',
+      }),
+    });
+    evidenceEditor.hidden = true;
+    clearEvidenceForm();
+    document.querySelector('#save-state').textContent = 'Evidence saved';
+    await Promise.all([loadEvidence(), loadSummary()]);
+    emitWorkbenchEvent('infios:evidence-updated', { caseId: state.caseId });
+  } catch (error) {
+    showError(evidenceError, error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Save evidence';
+  }
+});
+
+function clearEvidenceForm() {
+  state.evidenceType = null;
+  document.querySelector('#evidence-source').value = '';
+  document.querySelector('#evidence-content').value = '';
+  document.querySelector('#evidence-certainty').value = 'reported';
+  clearError(evidenceError);
+}
+
+async function loadEvidence() {
+  const response = await api(`/api/cases/${state.caseId}/evidence`);
+  const list = document.querySelector('#evidence-list');
+  document.querySelector('#evidence-count').textContent = `${response.count} item${response.count === 1 ? '' : 's'}`;
+  if (!response.evidence || response.evidence.length === 0) {
+    list.className = 'empty-state';
+    list.textContent = 'No evidence has been added yet.';
+    return;
+  }
+
+  list.className = '';
+  list.innerHTML = '';
+  response.evidence.forEach((item) => {
+    const card = document.createElement('article');
+    card.className = 'evidence-card';
+    const header = document.createElement('header');
+    const title = document.createElement('strong');
+    title.textContent = formatValue(item.evidence_type);
+    const certainty = document.createElement('span');
+    certainty.className = 'muted';
+    certainty.textContent = formatValue(item.certainty);
+    header.append(title, certainty);
+
+    const source = document.createElement('p');
+    source.textContent = `Source: ${item.source}`;
+    const content = document.createElement('p');
+    content.textContent = typeof item.content === 'string' ? item.content : JSON.stringify(item.content, null, 2);
+    card.append(header, source, content);
+    list.append(card);
+  });
+}
+
+async function loadSummary() {
+  const summary = await api(`/api/cases/${state.caseId}/summary`);
+  document.querySelector('#next-action').textContent = summary.next_recommended_action;
+  const complete = summary.escalation_readiness.filter((item) => item.complete).length;
+  document.querySelector('#known-summary').textContent = `${summary.evidence.length} evidence item(s), ${summary.observations.length} evidence-backed observation(s), and ${complete}/${summary.escalation_readiness.length} escalation checks complete.`;
+  return summary;
+}
+
+document.querySelector('#refresh-summary').addEventListener('click', async () => {
+  if (!state.caseId) return;
+  const button = document.querySelector('#refresh-summary');
+  button.disabled = true;
+  button.textContent = 'Reviewing…';
+  try {
+    await loadSummary();
+    document.querySelector('#save-state').textContent = 'Guidance refreshed';
+    setProgress(3);
+  } catch (error) {
+    document.querySelector('#known-summary').textContent = error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Review case guidance';
+  }
+});
+
+loadCases();
