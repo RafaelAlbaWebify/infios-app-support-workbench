@@ -7,6 +7,10 @@ const metadataScript = document.createElement('script');
 metadataScript.src = '/ui/static/metadata.js';
 document.head.append(metadataScript);
 
+const dashboardScript = document.createElement('script');
+dashboardScript.src = '/ui/static/dashboard.js';
+document.head.append(dashboardScript);
+
 const workAreaDefinitions = [
   { selector: '.quick-actions', id: 'work-evidence', label: 'Evidence', advanced: false },
   { selector: '.observation-section', id: 'work-observations', label: 'Observations', advanced: false },

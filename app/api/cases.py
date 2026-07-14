@@ -56,6 +56,15 @@ class CaseListResponse(BaseModel):
     count: int
 
 
+class DashboardCountsResponse(BaseModel):
+    open_cases: int
+    waiting_cases: int
+    escalated_cases: int
+    recovery_validation_cases: int
+    resolved_today: int
+    generated_at: datetime
+
+
 @lru_cache(maxsize=1)
 def get_case_repository() -> SQLiteCaseRepository:
     return SQLiteCaseRepository(DEFAULT_CASE_DATABASE)
@@ -88,6 +97,23 @@ def list_cases(
 ) -> CaseListResponse:
     cases, count = repository.search(limit=limit, query=query, status=case_status)
     return CaseListResponse(cases=cases, count=count)
+
+
+@router.get("/dashboard", response_model=DashboardCountsResponse)
+def dashboard_counts(
+    repository: SQLiteCaseRepository = Depends(get_case_repository),
+) -> DashboardCountsResponse:
+    now = datetime.now(timezone.utc)
+    start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    counts = repository.dashboard_counts(resolved_since=start_of_day)
+    return DashboardCountsResponse(
+        open_cases=counts["open_cases"],
+        waiting_cases=counts["waiting_cases"],
+        escalated_cases=counts["escalated_cases"],
+        recovery_validation_cases=counts["recovery_validation_cases"],
+        resolved_today=counts["resolved_since"],
+        generated_at=now,
+    )
 
 
 @router.get("/{case_id}", response_model=SupportCase)

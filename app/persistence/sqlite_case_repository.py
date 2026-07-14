@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 from app.domain.models import CaseStatus, SupportCase
@@ -157,3 +158,33 @@ class SQLiteCaseRepository:
 
         cases = [SupportCase.model_validate_json(row["payload_json"]) for row in rows]
         return cases, int(total)
+
+    def dashboard_counts(self, *, resolved_since: datetime) -> dict[str, int]:
+        waiting_statuses = (
+            CaseStatus.WAITING_FOR_USER.value,
+            CaseStatus.WAITING_FOR_ESCALATION.value,
+            CaseStatus.WAITING_FOR_ANOTHER_TEAM.value,
+            CaseStatus.BLOCKED.value,
+        )
+        with self._connect() as connection:
+            row = connection.execute(
+                """
+                SELECT
+                    SUM(CASE WHEN status NOT IN (?, ?) THEN 1 ELSE 0 END) AS open_cases,
+                    SUM(CASE WHEN status IN (?, ?, ?, ?) THEN 1 ELSE 0 END) AS waiting_cases,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS escalated_cases,
+                    SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) AS recovery_validation_cases,
+                    SUM(CASE WHEN status = ? AND updated_at >= ? THEN 1 ELSE 0 END) AS resolved_since
+                FROM support_cases
+                """,
+                (
+                    CaseStatus.RESOLVED.value,
+                    CaseStatus.CLOSED.value,
+                    *waiting_statuses,
+                    CaseStatus.ESCALATED.value,
+                    CaseStatus.RECOVERY_VALIDATION.value,
+                    CaseStatus.RESOLVED.value,
+                    resolved_since.isoformat(),
+                ),
+            ).fetchone()
+        return {key: int(row[key] or 0) for key in row.keys()}
