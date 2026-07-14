@@ -33,19 +33,18 @@ def test_favicon_request_does_not_create_browser_error_noise() -> None:
     assert response.content == b""
 
 
-def test_release_documents_track_pending_interactive_gate() -> None:
+def test_release_documents_record_completed_interactive_gate() -> None:
     changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
     checklist = Path("docs/release-checklist-v0.1.0.md").read_text(encoding="utf-8")
     release_notes = Path("docs/release-notes-v0.1.0.md").read_text(encoding="utf-8")
     validator = Path("tools/validate-release-windows.ps1").read_text(encoding="utf-8")
 
-    assert "## [0.1.0] - Unreleased" in changelog
-    assert "Interactive Windows" in changelog
-    assert ".\\tools\\validate-release-windows.ps1" in checklist
-    assert "release-validation.md" in checklist
+    assert "## [0.1.0] - 2026-07-14" in changelog
+    assert "Interactive Windows validation passed" in changelog
+    assert "- [x] The generated `release-validation.md` result was **PASS**." in checklist
+    assert "- [x] The evidence archive was reviewed and summarized in issue #18." in checklist
     assert "- [ ] Create annotated tag `v0.1.0`" in checklist
     assert "INFIOS v0.1.0" in release_notes
-    assert "must not be tagged or published" in release_notes
     assert "INFIOS_RELEASE_VALIDATION_" in validator
     assert "Compress-Archive" in validator
     assert "Upload-ready ZIP" in validator
