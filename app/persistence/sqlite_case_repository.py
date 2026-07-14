@@ -57,6 +57,12 @@ class SQLiteCaseRepository:
                 ON support_cases(status, updated_at DESC)
                 """
             )
+            connection.execute(
+                """
+                CREATE INDEX IF NOT EXISTS idx_support_cases_owner_updated_at
+                ON support_cases(owner, updated_at DESC)
+                """
+            )
 
     def save(self, support_case: SupportCase) -> SupportCase:
         payload_json = support_case.model_dump_json()
@@ -118,13 +124,25 @@ class SQLiteCaseRepository:
         limit: int = 50,
         query: str | None = None,
         status: CaseStatus | None = None,
+        owner: str | None = None,
+        sort: str = "updated_desc",
     ) -> tuple[list[SupportCase], int]:
         if limit < 1:
             raise ValueError("limit must be at least 1")
 
+        order_by = {
+            "updated_desc": "updated_at DESC, case_id ASC",
+            "updated_asc": "updated_at ASC, case_id ASC",
+            "created_desc": "json_extract(payload_json, '$.created_at') DESC, case_id ASC",
+            "created_asc": "json_extract(payload_json, '$.created_at') ASC, case_id ASC",
+        }.get(sort)
+        if order_by is None:
+            raise ValueError("Unsupported case sort order")
+
         clauses: list[str] = []
         parameters: list[object] = []
         normalized_query = query.strip().lower() if query else ""
+        normalized_owner = owner.strip().lower() if owner else ""
 
         if normalized_query:
             search_term = f"%{normalized_query}%"
@@ -138,6 +156,14 @@ class SQLiteCaseRepository:
             clauses.append("status = ?")
             parameters.append(status.value)
 
+        if normalized_owner == "__unassigned__":
+            clauses.append("(owner IS NULL OR TRIM(owner) = '')")
+        elif normalized_owner == "__assigned__":
+            clauses.append("owner IS NOT NULL AND TRIM(owner) != ''")
+        elif normalized_owner:
+            clauses.append("LOWER(TRIM(owner)) = ?")
+            parameters.append(normalized_owner)
+
         where_clause = f" WHERE {' AND '.join(clauses)}" if clauses else ""
 
         with self._connect() as connection:
@@ -150,7 +176,7 @@ class SQLiteCaseRepository:
                 SELECT payload_json
                 FROM support_cases
                 {where_clause}
-                ORDER BY updated_at DESC, case_id ASC
+                ORDER BY {order_by}
                 LIMIT ?
                 """,
                 [*parameters, limit],
