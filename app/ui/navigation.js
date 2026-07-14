@@ -11,6 +11,10 @@ const dashboardScript = document.createElement('script');
 dashboardScript.src = '/ui/static/dashboard.js';
 document.head.append(dashboardScript);
 
+const archiveScript = document.createElement('script');
+archiveScript.src = '/ui/static/archive.js';
+document.head.append(archiveScript);
+
 const workAreaDefinitions = [
   { selector: '.quick-actions', id: 'work-evidence', label: 'Evidence', advanced: false },
   { selector: '.observation-section', id: 'work-observations', label: 'Observations', advanced: false },
