@@ -26,6 +26,13 @@ def test_health_endpoint_exposes_release_identity() -> None:
     }
 
 
+def test_favicon_request_does_not_create_browser_error_noise() -> None:
+    response = TestClient(app).get("/favicon.ico")
+
+    assert response.status_code == 204
+    assert response.content == b""
+
+
 def test_release_documents_track_pending_interactive_gate() -> None:
     changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
     checklist = Path("docs/release-checklist-v0.1.0.md").read_text(encoding="utf-8")
@@ -40,4 +47,8 @@ def test_release_documents_track_pending_interactive_gate() -> None:
     assert "INFIOS v0.1.0" in release_notes
     assert "must not be tagged or published" in release_notes
     assert "INFIOS_RELEASE_VALIDATION_" in validator
-    assert "Attach this report to GitHub issue #18" in validator
+    assert "Compress-Archive" in validator
+    assert "Upload-ready ZIP" in validator
+    assert "Upload the ZIP archive to GitHub issue #18" in validator
+    assert "- Python launcher: `$launcher`" not in validator
+    assert "- Health version: `$($health.version)`" not in validator
