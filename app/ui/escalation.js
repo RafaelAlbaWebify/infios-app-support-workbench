@@ -78,6 +78,8 @@ function renderEscalation(packageData) {
     : 'No standard gaps detected.';
   const report = document.createElement('pre');
   report.textContent = packageData.report_text;
+  const actions = document.createElement('div');
+  actions.className = 'actions';
   const copy = document.createElement('button');
   copy.type = 'button';
   copy.className = 'secondary';
@@ -90,7 +92,13 @@ function renderEscalation(packageData) {
       copy.textContent = 'Select and copy the report';
     }
   });
-  preview.append(heading, missing, report, copy);
+  const download = document.createElement('a');
+  download.className = 'text-link';
+  download.textContent = 'Download Markdown';
+  download.href = `/api/cases/${packageData.case_id}/escalations/${packageData.package_id}/download`;
+  download.setAttribute('download', '');
+  actions.append(copy, download);
+  preview.append(heading, missing, report, actions);
 }
 
 document.querySelector('#generate-escalation').addEventListener('click', async () => {
