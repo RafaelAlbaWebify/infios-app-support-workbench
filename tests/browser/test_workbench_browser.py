@@ -64,6 +64,14 @@ def _capture(page: Page, name: str) -> None:
     page.screenshot(path=str(SCREENSHOT_DIR / name), full_page=True)
 
 
+def _create_case(page: Page, title: str = "Orders page fails after login") -> None:
+    page.goto(BASE_URL)
+    page.get_by_role("button", name="New incident").click()
+    page.get_by_label("Application or service").fill("Order Management")
+    page.get_by_label("Short problem description").fill(title)
+    page.get_by_role("button", name="Create incident and continue").click()
+
+
 def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     page.goto(BASE_URL)
     expect(page.get_by_role("heading", name="Recent incidents")).to_be_visible()
@@ -81,17 +89,31 @@ def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     ).to_be_visible()
     expect(page.get_by_role("heading", name="Evidence collected")).to_be_visible()
     expect(page.get_by_role("heading", name="Safe guided checks")).to_be_visible()
-    expect(page.get_by_role("heading", name="Review and escalate")).to_be_visible()
+    expect(page.get_by_role("navigation", name="Case work areas")).to_be_visible()
     expect(page.locator("#action-result-editor")).to_be_hidden()
-    _capture(page, "desktop-new-case.png")
+    expect(page.locator("#work-explanations")).not_to_have_attribute("open", "")
+    expect(page.locator("#work-escalation")).not_to_have_attribute("open", "")
+    expect(page.locator("#work-recovery")).not_to_have_attribute("open", "")
+    _capture(page, "desktop-new-case-compact.png")
+
+
+def test_case_work_navigation_opens_and_focuses_advanced_area(page: Page) -> None:
+    _create_case(page, "Navigation quality check")
+    navigation = page.get_by_role("navigation", name="Case work areas")
+    expect(navigation).to_be_visible()
+
+    navigation.get_by_role("link", name="L2 explanations").click()
+    expect(page.locator("#work-explanations")).to_have_attribute("open", "")
+    expect(page.locator("#work-explanations > summary")).to_be_focused()
+
+    navigation.get_by_role("link", name="Lifecycle & recovery").click()
+    expect(page.locator("#work-recovery")).to_have_attribute("open", "")
+    expect(page.locator("#work-recovery > summary")).to_be_focused()
+    _capture(page, "desktop-navigation-open.png")
 
 
 def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
-    page.goto(BASE_URL)
-    page.get_by_role("button", name="New incident").click()
-    page.get_by_label("Application or service").fill("Order Management")
-    page.get_by_label("Short problem description").fill("Orders API returns 500")
-    page.get_by_role("button", name="Create incident and continue").click()
+    _create_case(page, "Orders API returns 500")
 
     page.get_by_role("button", name="HTTP/API evidence").click()
     page.get_by_label("Source", exact=True).fill("Browser developer tools")
@@ -120,14 +142,22 @@ def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
 
 def test_mobile_layout_has_no_horizontal_overflow(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
-    page.goto(BASE_URL)
-    expect(page.get_by_role("heading", name="Recent incidents")).to_be_visible()
+    _create_case(page, "Mobile navigation check")
+    expect(page.get_by_role("navigation", name="Case work areas")).to_be_visible()
 
     overflow = page.evaluate(
         "document.documentElement.scrollWidth > document.documentElement.clientWidth"
     )
     assert overflow is False
-    _capture(page, "mobile-dashboard.png")
+    page.get_by_role("navigation", name="Case work areas").get_by_role(
+        "link", name="Escalation"
+    ).click()
+    expect(page.locator("#work-escalation")).to_have_attribute("open", "")
+    overflow_after_open = page.evaluate(
+        "document.documentElement.scrollWidth > document.documentElement.clientWidth"
+    )
+    assert overflow_after_open is False
+    _capture(page, "mobile-case-navigation.png")
 
 
 def test_basic_accessibility_contract(page: Page) -> None:
