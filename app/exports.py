@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from app.api.summary import CaseSummaryResponse
+from typing import Any
 
 
-def render_case_summary_markdown(summary: CaseSummaryResponse) -> str:
+def render_case_summary_markdown(summary: Any) -> str:
     support_case = summary.case
     lines = [
         f"# Case summary: {support_case.title}",
