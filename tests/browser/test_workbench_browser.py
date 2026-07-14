@@ -109,8 +109,12 @@ def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
             "HTTP 500 was observed on /api/orders.", exact=True
         )
     ).to_be_visible()
-    expect(page.locator("#timeline-list").get_by_text("case created", exact=False)).to_be_visible()
-    expect(page.locator("#timeline-list").get_by_text("observation", exact=False)).to_be_visible()
+    expect(
+        page.locator("#timeline-list").get_by_text("case created", exact=True)
+    ).to_be_visible()
+    expect(
+        page.locator("#timeline-list").get_by_text("observation", exact=True)
+    ).to_be_visible()
     _capture(page, "desktop-observation-timeline.png")
 
 
