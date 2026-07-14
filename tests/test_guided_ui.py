@@ -10,6 +10,8 @@ def test_guided_workbench_is_served_at_root() -> None:
     assert "Safe guided checks" in response.text
     assert "Review and escalate" in response.text
     assert "Generate L2 handover" in response.text
+    assert "Case lifecycle and recovery" in response.text
+    assert "Save recovery validation" in response.text
 
 
 def test_guided_workbench_assets_are_served() -> None:
@@ -18,6 +20,7 @@ def test_guided_workbench_assets_are_served() -> None:
     script = client.get("/ui/static/app.js")
     guided_script = client.get("/ui/static/guided.js")
     escalation_script = client.get("/ui/static/escalation.js")
+    lifecycle_script = client.get("/ui/static/lifecycle.js")
 
     assert stylesheet.status_code == 200
     assert ".case-card" in stylesheet.text
@@ -28,6 +31,10 @@ def test_guided_workbench_assets_are_served() -> None:
     assert escalation_script.status_code == 200
     assert "/escalations" in escalation_script.text
     assert "target_team" in escalation_script.text
+    assert lifecycle_script.status_code == 200
+    assert "/status" in lifecycle_script.text
+    assert "/recovery-validations" in lifecycle_script.text
+    assert "Passed recovery validation requires supporting evidence" in lifecycle_script.text
 
 
 def test_case_api_contract_supports_dashboard_and_resume() -> None:
@@ -111,6 +118,59 @@ def test_escalation_api_contract_generates_persistent_l2_handover() -> None:
     assert "## Requested support" in created.json()["report_text"]
     assert listed.status_code == 200
     assert listed.json()["count"] == 1
+
+
+def test_lifecycle_and_recovery_api_contract_requires_evidence_for_passed_result() -> None:
+    client = TestClient(app)
+    support_case = client.post(
+        "/api/cases",
+        json={"title": "Orders page fails", "application": "Order Management"},
+    ).json()
+    case_id = support_case["case_id"]
+
+    assert client.post(
+        f"/api/cases/{case_id}/status", json={"status": "information_gathering"}
+    ).status_code == 200
+    assert client.post(
+        f"/api/cases/{case_id}/status", json={"status": "investigation"}
+    ).status_code == 200
+    assert client.post(
+        f"/api/cases/{case_id}/status", json={"status": "recovery_validation"}
+    ).status_code == 200
+
+    without_evidence = client.post(
+        f"/api/cases/{case_id}/recovery-validations",
+        json={
+            "outcome": "passed",
+            "method": "Repeat the affected operation",
+            "result": "Orders page opened successfully",
+            "performed_by": "L1 Support",
+        },
+    )
+    assert without_evidence.status_code == 422
+
+    evidence = client.post(
+        f"/api/cases/{case_id}/evidence",
+        json={
+            "evidence_type": "recovery_result",
+            "source": "affected user and L1 Support",
+            "content": "Orders page opened successfully twice",
+            "certainty": "reproduced",
+        },
+    ).json()
+    validation = client.post(
+        f"/api/cases/{case_id}/recovery-validations",
+        json={
+            "outcome": "passed",
+            "method": "Repeat the affected operation",
+            "result": "Orders page opened successfully twice",
+            "performed_by": "L1 Support",
+            "evidence_ids": [evidence["evidence_id"]],
+        },
+    )
+    assert validation.status_code == 201
+    assert validation.json()["outcome"] == "passed"
+    assert client.get(f"/api/cases/{case_id}/recovery-validations").json()["count"] == 1
 
 
 def test_api_documentation_remains_available() -> None:
