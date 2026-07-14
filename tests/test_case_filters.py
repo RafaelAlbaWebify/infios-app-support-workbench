@@ -93,3 +93,5 @@ def test_dashboard_assets_include_accessible_filter_controls() -> None:
     assert 'id="case-status-filter"' in script
     assert 'id="clear-case-filters"' in script
     assert "No incidents match the current filters." in script
+    assert "document.querySelector('#save-evidence').addEventListener" in script
+    assert "loadCases();" in script
