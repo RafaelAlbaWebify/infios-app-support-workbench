@@ -59,6 +59,33 @@ def live_server() -> None:
         process.kill()
 
 
+@pytest.fixture
+def runtime_clean_page(page: Page) -> Page:
+    page_errors: list[str] = []
+    console_errors: list[str] = []
+    failed_responses: list[str] = []
+
+    page.on("pageerror", lambda error: page_errors.append(str(error)))
+    page.on(
+        "console",
+        lambda message: console_errors.append(message.text)
+        if message.type == "error"
+        else None,
+    )
+    page.on(
+        "response",
+        lambda response: failed_responses.append(f"{response.status} {response.url}")
+        if response.url.startswith(BASE_URL) and response.status >= 400
+        else None,
+    )
+
+    yield page
+
+    assert page_errors == [], f"Uncaught browser exceptions: {page_errors}"
+    assert console_errors == [], f"Browser console errors: {console_errors}"
+    assert failed_responses == [], f"Failed same-origin responses: {failed_responses}"
+
+
 def _capture(page: Page, name: str) -> None:
     SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
     page.screenshot(path=str(SCREENSHOT_DIR / name), full_page=True)
@@ -140,7 +167,8 @@ def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
     _capture(page, "desktop-observation-timeline.png")
 
 
-def test_full_l1_to_l2_recovery_and_export_workflow(page: Page) -> None:
+def test_full_l1_to_l2_recovery_and_export_workflow(runtime_clean_page: Page) -> None:
+    page = runtime_clean_page
     _create_case(page, "Full lifecycle browser proof")
 
     page.get_by_role("button", name="HTTP/API evidence").click()
