@@ -104,9 +104,13 @@ def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
     page.locator("#observation-evidence").select_option(index=0)
     page.get_by_role("button", name="Save observation").click()
 
-    expect(page.get_by_text("HTTP 500 was observed on /api/orders.")).to_be_visible()
-    expect(page.get_by_text("case created", exact=False)).to_be_visible()
-    expect(page.get_by_text("observation", exact=False)).to_be_visible()
+    expect(
+        page.locator("#observation-list").get_by_text(
+            "HTTP 500 was observed on /api/orders.", exact=True
+        )
+    ).to_be_visible()
+    expect(page.locator("#timeline-list").get_by_text("case created", exact=False)).to_be_visible()
+    expect(page.locator("#timeline-list").get_by_text("observation", exact=False)).to_be_visible()
     _capture(page, "desktop-observation-timeline.png")
 
 
