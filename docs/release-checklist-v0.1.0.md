@@ -15,31 +15,36 @@
 - [x] Skip navigation and keyboard focus visibility pass.
 - [x] Desktop and 390px mobile layouts have no horizontal page overflow.
 - [x] Long escalation Markdown wraps inside the case panel.
+- [x] `windows-latest` executes the real PowerShell bootstrap.
+- [x] Windows bootstrap creates `.venv` when absent.
+- [x] Windows editable installation completes without manual repair.
+- [x] INFIOS starts and reports version `0.1.0` on Windows.
+- [x] A case is created and persisted to an explicit SQLite path on Windows.
+- [x] The Windows server stops and restarts through the bootstrap.
+- [x] The saved case reappears after the Windows restart.
+- [x] Case-summary Markdown downloads and contains the expected case.
+- [x] L2 escalation Markdown downloads and contains the expected request.
+- [x] Windows bootstrap evidence is uploaded as a CI artifact.
 
-## Windows smoke test — required before tag
+## Interactive Windows check — required before tag
 
-Run from a fresh PowerShell process in the repository folder:
+Run from a fresh interactive PowerShell process in the repository folder:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process Bypass
 .\tools\start-infios.ps1
 ```
 
-Confirm:
+Confirm the behavior that a headless GitHub runner cannot prove:
 
-- [ ] `.venv` is created when absent.
-- [ ] Package installation completes without manual repair.
-- [ ] INFIOS starts on `http://127.0.0.1:8000`.
-- [ ] The default browser opens automatically.
-- [ ] A case can be created and saved.
-- [ ] INFIOS can be stopped and restarted.
-- [ ] The saved case reappears after restart.
-- [ ] Case-summary Markdown downloads successfully.
-- [ ] L2 escalation Markdown downloads successfully.
-- [ ] Downloaded files open correctly on Windows.
-- [ ] No production credentials or sensitive data were used.
+- [ ] The default browser opens automatically on the interactive Windows desktop.
+- [ ] The dashboard is visible and usable in the locally opened browser.
+- [ ] Downloaded Markdown files open correctly in the user's configured Windows application.
+- [ ] No production credentials or sensitive data are used.
 
-## Release actions — only after the smoke test
+The underlying bootstrap, installation, startup, persistence, restart and export behavior is already verified on `windows-latest`; this final check is limited to interactive desktop integration and human usability.
+
+## Release actions — only after the interactive check
 
 - [ ] Replace `Unreleased` in `CHANGELOG.md` with the release date.
 - [ ] Merge the release-preparation PR.
@@ -50,9 +55,9 @@ Confirm:
 
 ## Rollback
 
-If the Windows smoke test fails:
+If the interactive Windows check fails:
 
 1. Do not tag or publish the release.
 2. Record the exact PowerShell output and failing step.
 3. Fix the bootstrap in a separate focused branch.
-4. Re-run complete CI and the Windows smoke test.
+4. Re-run complete CI, the Windows integration job and the interactive check.
