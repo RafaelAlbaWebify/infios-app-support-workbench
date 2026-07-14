@@ -82,6 +82,7 @@ def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     expect(page.get_by_role("heading", name="Evidence collected")).to_be_visible()
     expect(page.get_by_role("heading", name="Safe guided checks")).to_be_visible()
     expect(page.get_by_role("heading", name="Review and escalate")).to_be_visible()
+    expect(page.locator("#action-result-editor")).to_be_hidden()
     _capture(page, "desktop-new-case.png")
 
 
@@ -100,7 +101,7 @@ def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
 
     expect(page.get_by_text("POST /api/orders returned HTTP 500")).to_be_visible()
     page.get_by_label("Factual statement").fill("HTTP 500 was observed on /api/orders.")
-    page.get_by_label("Supporting evidence", exact=True).select_option(index=0)
+    page.locator("#observation-evidence").select_option(index=0)
     page.get_by_role("button", name="Save observation").click()
 
     expect(page.get_by_text("HTTP 500 was observed on /api/orders.")).to_be_visible()
