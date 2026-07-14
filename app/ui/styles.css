@@ -72,6 +72,8 @@ button, .text-link { border-radius: 10px; padding: 11px 16px; border: 1px solid 
 .evidence-card { margin-top: 10px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
 .evidence-card header { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 8px; }
 .evidence-card p { margin: 6px 0; color: var(--muted); white-space: pre-wrap; }
+.escalation-preview { min-width: 0; overflow: hidden; }
+.escalation-preview pre { max-width: 100%; margin: 16px 0; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; }
 .footer-actions { margin-top: 30px; padding-top: 22px; border-top: 1px solid var(--border); }
 .case-list { display: grid; gap: 12px; }
 .case-card { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: white; transition: border-color .15s, box-shadow .15s, transform .15s; }
