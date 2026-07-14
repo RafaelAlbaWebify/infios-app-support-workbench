@@ -140,6 +140,74 @@ def test_evidence_observation_and_timeline_workflow(page: Page) -> None:
     _capture(page, "desktop-observation-timeline.png")
 
 
+def test_full_l1_to_l2_recovery_and_export_workflow(page: Page) -> None:
+    _create_case(page, "Full lifecycle browser proof")
+
+    page.get_by_role("button", name="HTTP/API evidence").click()
+    page.get_by_label("Source", exact=True).fill("Browser developer tools")
+    page.get_by_label("What did you observe?").fill("POST /api/orders returned HTTP 500 at 10:14")
+    page.get_by_label("How certain is this information?").select_option("technically_confirmed")
+    page.get_by_role("button", name="Save evidence").click()
+    expect(page.get_by_text("POST /api/orders returned HTTP 500 at 10:14")).to_be_visible()
+
+    page.get_by_label("Factual statement").fill("HTTP 500 was observed after successful login.")
+    page.locator("#observation-evidence").select_option(index=0)
+    page.get_by_role("button", name="Save observation").click()
+    expect(page.locator("#observation-list").get_by_text("HTTP 500 was observed after successful login.", exact=True)).to_be_visible()
+
+    page.get_by_role("button", name="Review case guidance").click()
+    first_check = page.locator("#guided-check-list .check-card").first
+    expect(first_check).to_be_visible()
+    first_check.get_by_role("button", name="Start this safe check").click()
+    page.get_by_label("What happened?").fill("The same HTTP 500 reproduced with a second approved test user.")
+    page.get_by_label("Conclusion, if supported").fill("The issue is less likely to be isolated to one user.")
+    page.get_by_label("Performed by").fill("L1 Support")
+    page.get_by_role("button", name="Save check result").click()
+    expect(page.locator("#action-list").get_by_text("Result: The same HTTP 500 reproduced with a second approved test user.", exact=True)).to_be_visible()
+
+    navigation = page.get_by_role("navigation", name="Case work areas")
+    navigation.get_by_role("link", name="Escalation").click()
+    page.get_by_label("What should the receiving team do?").fill("Review application logs for the captured endpoint and timestamp.")
+    page.get_by_role("button", name="Generate L2 handover").click()
+    expect(page.get_by_role("heading", name="Handover for L2 Application Support")).to_be_visible()
+    expect(page.get_by_role("link", name="Download Markdown")).to_be_visible()
+
+    navigation.get_by_role("link", name="Lifecycle & recovery").click()
+    page.get_by_label("Next status").select_option("information_gathering")
+    page.get_by_role("button", name="Change status").click()
+    expect(page.locator("#lifecycle-status")).to_have_text("information gathering")
+    page.get_by_label("Next status").select_option("investigation")
+    page.get_by_role("button", name="Change status").click()
+    expect(page.locator("#lifecycle-status")).to_have_text("investigation")
+    page.get_by_label("Next status").select_option("recovery_validation")
+    page.get_by_role("button", name="Change status").click()
+    expect(page.locator("#lifecycle-status")).to_have_text("recovery validation")
+
+    page.get_by_label("Outcome").select_option("passed")
+    page.get_by_label("Method").fill("Repeat order submission after service recovery")
+    page.get_by_label("Result").fill("Order submission completed successfully and no HTTP 500 was observed.")
+    page.get_by_label("Performed by").last.fill("L1 Support and affected user")
+    page.locator("#recovery-evidence").select_option(index=0)
+    page.get_by_role("button", name="Save recovery validation").click()
+    expect(page.locator("#recovery-list").get_by_text("Order submission completed successfully and no HTTP 500 was observed.", exact=True)).to_be_visible()
+
+    page.get_by_label("Next status").select_option("resolved")
+    page.get_by_role("button", name="Change status").click()
+    expect(page.locator("#lifecycle-status")).to_have_text("resolved")
+
+    summary_link = page.get_by_role("link", name="Download case summary")
+    expect(summary_link).to_be_visible()
+    with page.expect_download() as download_info:
+        summary_link.click()
+    downloaded = download_info.value
+    summary_text = Path(downloaded.path()).read_text(encoding="utf-8")
+    assert "# Case summary: Full lifecycle browser proof" in summary_text
+    assert "HTTP 500 was observed after successful login." in summary_text
+    assert "Order submission completed successfully" in summary_text
+
+    _capture(page, "desktop-full-lifecycle-resolved.png")
+
+
 def test_mobile_layout_has_no_horizontal_overflow(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     _create_case(page, "Mobile navigation check")
