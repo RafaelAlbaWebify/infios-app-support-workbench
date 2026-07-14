@@ -2,7 +2,7 @@ const databasePanel = document.createElement('details');
 databasePanel.id = 'database-safety-panel';
 databasePanel.className = 'work-area-disclosure';
 databasePanel.innerHTML = `
-  <summary><span>Database safety</span><span class="muted disclosure-hint">Integrity, backup, and restore</span></summary>
+  <summary><span>Database safety</span><span class="muted disclosure-hint">Integrity, backup, restore, and portability</span></summary>
   <section class="work-area-content">
     <div class="section-heading">
       <div>
@@ -17,6 +17,13 @@ databasePanel.innerHTML = `
       <button id="check-database-integrity" class="secondary" type="button">Check integrity</button>
       <button id="create-database-backup" class="primary" type="button">Create verified backup</button>
     </div>
+    <section class="evidence-editor" aria-labelledby="database-import-heading">
+      <h4 id="database-import-heading">Import portable backup</h4>
+      <p class="muted">Choose an INFIOS .sqlite3 file. It will be validated and added to the managed backup inventory without replacing the live database.</p>
+      <label>SQLite backup file<input id="database-import-file" type="file" accept=".sqlite3,application/vnd.sqlite3,application/octet-stream"></label>
+      <div class="actions"><button id="import-database-backup" class="secondary" type="button">Validate and import backup</button></div>
+      <p id="database-import-result" class="muted" role="status" aria-live="polite"></p>
+    </section>
     <div class="section-heading">
       <h4>Available backups</h4>
       <span id="database-backup-count" class="muted">0 backups</span>
@@ -106,7 +113,7 @@ async function loadDatabaseBackups() {
     document.querySelector('#database-backup-count').textContent = `${response.count} backup${response.count === 1 ? '' : 's'}`;
     if (!response.backups.length) {
       list.className = 'empty-state';
-      list.textContent = 'No verified backups have been created yet.';
+      list.textContent = 'No verified backups have been created or imported yet.';
       return;
     }
     list.className = '';
@@ -121,17 +128,72 @@ async function loadDatabaseBackups() {
       detail.textContent = databaseInspectionText(backup);
       const actions = document.createElement('div');
       actions.className = 'actions';
+      const download = document.createElement('a');
+      download.className = 'text-link';
+      download.href = `/api/database/backups/${encodeURIComponent(backup.filename)}/download`;
+      download.download = backup.filename;
+      download.textContent = 'Download backup';
       const restore = document.createElement('button');
       restore.type = 'button';
       restore.className = 'secondary';
       restore.textContent = 'Preview restore';
       restore.addEventListener('click', () => previewDatabaseRestore(backup.filename));
-      actions.append(restore);
+      actions.append(download, restore);
       card.append(title, detail, actions);
       list.append(card);
     });
   } catch (error) {
     databaseError(error.message);
+  }
+}
+
+async function importDatabaseBackup() {
+  const input = document.querySelector('#database-import-file');
+  const result = document.querySelector('#database-import-result');
+  const button = document.querySelector('#import-database-backup');
+  const file = input.files?.[0];
+  databaseError();
+  result.textContent = '';
+  if (!file) {
+    databaseError('Choose a .sqlite3 backup file before importing.');
+    input.focus();
+    return;
+  }
+  if (!file.name.toLowerCase().endsWith('.sqlite3')) {
+    databaseError('Imported backup filename must end with .sqlite3.');
+    input.focus();
+    return;
+  }
+  button.disabled = true;
+  button.textContent = 'Validating and importing…';
+  result.textContent = `Reading ${file.name} (${formatDatabaseBytes(file.size)})…`;
+  try {
+    const response = await fetch(`/api/database/backups/import?filename=${encodeURIComponent(file.name)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: await file.arrayBuffer(),
+    });
+    if (!response.ok) {
+      let detail = `Import failed with status ${response.status}`;
+      try {
+        const body = await response.json();
+        if (typeof body.detail === 'string') detail = body.detail;
+      } catch (_) {
+        // Keep stable fallback.
+      }
+      throw new Error(detail);
+    }
+    const imported = await response.json();
+    result.textContent = `Imported and verified as ${imported.filename}. ${databaseInspectionText(imported)}`;
+    document.querySelector('#save-state').textContent = `Portable backup imported: ${imported.filename}`;
+    input.value = '';
+    await loadDatabaseBackups();
+  } catch (error) {
+    databaseError(error.message);
+    result.textContent = 'Import was not accepted; the live database was not changed.';
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Validate and import backup';
   }
 }
 
@@ -162,6 +224,7 @@ databasePanel.addEventListener('toggle', () => {
 });
 
 document.querySelector('#check-database-integrity').addEventListener('click', loadDatabaseIntegrity);
+document.querySelector('#import-database-backup').addEventListener('click', importDatabaseBackup);
 
 document.querySelector('#create-database-backup').addEventListener('click', async () => {
   const button = document.querySelector('#create-database-backup');
