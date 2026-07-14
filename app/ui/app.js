@@ -22,6 +22,10 @@ function clearError(element) {
   element.hidden = true;
 }
 
+function emitWorkbenchEvent(name, detail = {}) {
+  window.dispatchEvent(new CustomEvent(name, { detail }));
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
@@ -128,6 +132,7 @@ async function openCase(caseId) {
     setProgress(2);
     await Promise.all([loadEvidence(), loadSummary()]);
     document.querySelector('#save-state').textContent = `Opened ${supportCase.case_id}`;
+    emitWorkbenchEvent('infios:case-opened', { caseId: supportCase.case_id });
   } catch (error) {
     showError(dashboardError, error.message);
     setActivePanel(dashboardPanel);
@@ -195,6 +200,7 @@ caseForm.addEventListener('submit', async (event) => {
     setActivePanel(casePanel);
     setProgress(2);
     await Promise.all([loadEvidence(), loadSummary()]);
+    emitWorkbenchEvent('infios:case-opened', { caseId: supportCase.case_id });
   } catch (error) {
     showError(formError, error.message);
   } finally {
@@ -246,6 +252,7 @@ document.querySelector('#save-evidence').addEventListener('click', async () => {
     clearEvidenceForm();
     document.querySelector('#save-state').textContent = 'Evidence saved';
     await Promise.all([loadEvidence(), loadSummary()]);
+    emitWorkbenchEvent('infios:evidence-updated', { caseId: state.caseId });
   } catch (error) {
     showError(evidenceError, error.message);
   } finally {
