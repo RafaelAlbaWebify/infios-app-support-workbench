@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import time
 from pathlib import Path
@@ -75,7 +76,9 @@ def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     page.get_by_label("Business impact").select_option(label="Important function unavailable")
     page.get_by_role("button", name="Create incident and continue").click()
 
-    expect(page.get_by_role("heading", name=/Orders page fails after login/)).to_be_visible()
+    expect(
+        page.get_by_role("heading", name=re.compile(r"Orders page fails after login", re.I))
+    ).to_be_visible()
     expect(page.get_by_role("heading", name="Evidence collected")).to_be_visible()
     expect(page.get_by_role("heading", name="Safe guided checks")).to_be_visible()
     expect(page.get_by_role("heading", name="Review and escalate")).to_be_visible()
@@ -111,7 +114,9 @@ def test_mobile_layout_has_no_horizontal_overflow(page: Page) -> None:
     page.goto(BASE_URL)
     expect(page.get_by_role("heading", name="Recent incidents")).to_be_visible()
 
-    overflow = page.evaluate("document.documentElement.scrollWidth > document.documentElement.clientWidth")
+    overflow = page.evaluate(
+        "document.documentElement.scrollWidth > document.documentElement.clientWidth"
+    )
     assert overflow is False
     _capture(page, "mobile-dashboard.png")
 
@@ -123,4 +128,6 @@ def test_basic_accessibility_contract(page: Page) -> None:
     expect(page.locator("button:not([type])")).to_have_count(0)
 
     page.get_by_role("button", name="New incident").focus()
-    assert page.evaluate("document.activeElement === document.querySelector('#new-incident')")
+    assert page.evaluate(
+        "document.activeElement === document.querySelector('#new-incident')"
+    )
