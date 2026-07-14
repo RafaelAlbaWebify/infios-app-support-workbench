@@ -161,7 +161,7 @@ def test_full_l1_to_l2_recovery_and_export_workflow(page: Page) -> None:
     first_check.get_by_role("button", name="Start this safe check").click()
     page.get_by_label("What happened?").fill("The same HTTP 500 reproduced with a second approved test user.")
     page.get_by_label("Conclusion, if supported").fill("The issue is less likely to be isolated to one user.")
-    page.get_by_label("Performed by").fill("L1 Support")
+    page.locator("#action-performed-by").fill("L1 Support")
     page.get_by_role("button", name="Save check result").click()
     expect(page.locator("#action-list").get_by_text("Result: The same HTTP 500 reproduced with a second approved test user.", exact=True)).to_be_visible()
 
@@ -186,7 +186,7 @@ def test_full_l1_to_l2_recovery_and_export_workflow(page: Page) -> None:
     page.get_by_label("Outcome").select_option("passed")
     page.get_by_label("Method").fill("Repeat order submission after service recovery")
     page.get_by_label("Result").fill("Order submission completed successfully and no HTTP 500 was observed.")
-    page.get_by_label("Performed by").last.fill("L1 Support and affected user")
+    page.locator("#recovery-performed-by").fill("L1 Support and affected user")
     page.locator("#recovery-evidence").select_option(index=0)
     page.get_by_role("button", name="Save recovery validation").click()
     expect(page.locator("#recovery-list").get_by_text("Order submission completed successfully and no HTTP 500 was observed.", exact=True)).to_be_visible()
