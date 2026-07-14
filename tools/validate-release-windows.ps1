@@ -9,7 +9,9 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 Set-Location $repoRoot
 
 $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-$evidenceRoot = Join-Path $env:USERPROFILE "Downloads\INFIOS_RELEASE_VALIDATION_$timestamp"
+$evidenceName = "INFIOS_RELEASE_VALIDATION_$timestamp"
+$evidenceRoot = Join-Path $env:USERPROFILE "Downloads\$evidenceName"
+$zipPath = Join-Path $env:USERPROFILE "Downloads\$evidenceName.zip"
 New-Item -ItemType Directory -Path $evidenceRoot -Force | Out-Null
 
 if (-not $Database) {
@@ -22,6 +24,8 @@ $serverErrorLog = Join-Path $evidenceRoot "server-error.log"
 $reportPath = Join-Path $evidenceRoot "release-validation.md"
 $summaryPath = Join-Path $evidenceRoot "case-summary.md"
 $handoverPath = Join-Path $evidenceRoot "l2-handover.md"
+$result = "FAIL"
+$process = $null
 
 function Wait-ForInfios {
     param([int]$TimeoutSeconds = 90)
@@ -108,13 +112,13 @@ try {
 - Timestamp: $(Get-Date -Format "yyyy-MM-dd HH:mm:ss K")
 - Windows: $([System.Environment]::OSVersion.VersionString)
 - PowerShell: $($PSVersionTable.PSVersion)
-- Python launcher: `$launcher`
-- INFIOS URL: `$baseUrl`
-- Health version: `$($health.version)`
-- Database: `$Database`
-- Case ID: `$($case.case_id)`
-- Evidence ID: `$($evidence.evidence_id)`
-- Escalation package ID: `$($package.package_id)`
+- Python launcher: $launcher
+- INFIOS URL: $baseUrl
+- Health version: $($health.version)
+- Database: $Database
+- Case ID: $($case.case_id)
+- Evidence ID: $($evidence.evidence_id)
+- Escalation package ID: $($package.package_id)
 
 ## Interactive confirmations
 
@@ -126,26 +130,33 @@ try {
 
 ## Generated evidence
 
-- Server output log: `$serverLog`
-- Server error log: `$serverErrorLog`
-- Case summary: `$summaryPath`
-- L2 handover: `$handoverPath`
+- Server output log: $serverLog
+- Server error log: $serverErrorLog
+- Case summary: $summaryPath
+- L2 handover: $handoverPath
+- Upload archive: $zipPath
 
-Attach this report to GitHub issue #18. Do not merge or publish v0.1.0 if the result is FAIL.
+Upload the ZIP archive to GitHub issue #18. Do not merge or publish v0.1.0 if the result is FAIL.
 "@ | Set-Content -Path $reportPath -Encoding UTF8
-
-    Write-Host "Validation result: $result"
-    Write-Host "Evidence report: $reportPath"
-    Start-Process explorer.exe -ArgumentList $evidenceRoot
-
-    if ($result -ne "PASS") {
-        exit 1
-    }
 } finally {
     if (-not $KeepServerRunning) {
         Stop-InfiosOnPort
-        if (-not $process.HasExited) {
+        if ($process -and -not $process.HasExited) {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         }
     }
+}
+
+if (Test-Path $zipPath) {
+    Remove-Item $zipPath -Force
+}
+Compress-Archive -Path $evidenceRoot -DestinationPath $zipPath -CompressionLevel Optimal
+
+Write-Host "Validation result: $result"
+Write-Host "Evidence report: $reportPath"
+Write-Host "Upload-ready ZIP: $zipPath"
+Start-Process explorer.exe -ArgumentList "/select,`"$zipPath`""
+
+if ($result -ne "PASS") {
+    exit 1
 }
