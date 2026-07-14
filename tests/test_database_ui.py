@@ -9,7 +9,7 @@ def test_navigation_loads_database_safety_module() -> None:
 def test_database_safety_ui_exposes_verified_backup_and_confirmed_restore() -> None:
     script = (UI_DIR / "database.js").read_text(encoding="utf-8")
 
-    assert 'id="database-safety-panel"' in script
+    assert "databasePanel.id = 'database-safety-panel'" in script
     assert 'id="check-database-integrity"' in script
     assert 'id="create-database-backup"' in script
     assert 'id="database-backup-list"' in script
