@@ -2,7 +2,7 @@
 
 All notable changes to INFIOS are documented here.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-07-14
 
 ### Added
 
@@ -20,7 +20,7 @@ All notable changes to INFIOS are documented here.
 - Guided L1 browser interface and first L2 investigation panel.
 - Responsive compact case navigation and native disclosure panels.
 - Windows PowerShell bootstrap launcher.
-- Guided Windows release-validation script with generated evidence report.
+- Guided Windows release-validation script with generated evidence report and upload-ready ZIP archive.
 - `infios serve` local launch command.
 - Complete Python, API, SQLite and Chromium Playwright verification.
 - Full L1-to-L2-to-recovery browser lifecycle proof.
@@ -42,8 +42,8 @@ All notable changes to INFIOS are documented here.
 
 - Original incident analyzer, CLI, JSON output, Markdown reports, samples and local run history remain available.
 
-### Release gate still pending
+### Release validation
 
-- Interactive Windows desktop validation on a representative user machine.
-- Confirm the default browser opens visibly, the local dashboard is usable, downloaded Markdown opens in the configured Windows application, and the generated `release-validation.md` result is **PASS**.
-- The underlying `.venv` creation, editable installation, local startup, SQLite persistence across restart and Markdown export behavior already pass on `windows-latest`.
+- Interactive Windows validation passed on July 14, 2026 using Windows 11, Windows PowerShell 5.1 and INFIOS `0.1.0`.
+- The default browser opened the local dashboard, the dashboard was usable, both Markdown exports opened correctly, and only public-safe sample data was used.
+- GitHub Actions separately verified Python/API/domain behavior, Chromium workflows, PowerShell parsing, Windows bootstrap, persistence across restart and both Markdown exports.
