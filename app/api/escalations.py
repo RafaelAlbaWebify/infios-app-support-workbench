@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from pydantic import BaseModel, Field
 
 from app.api.actions import get_action_repository
@@ -67,12 +67,8 @@ def _render_report(
         }
     ]
     reported = [item for item in evidence if item.certainty is CertaintyLevel.REPORTED]
-    possible = [
-        item for item in explanations if item.status is not ExplanationStatus.CONFIRMED
-    ]
-    confirmed_explanations = [
-        item for item in explanations if item.status is ExplanationStatus.CONFIRMED
-    ]
+    possible = [item for item in explanations if item.status is not ExplanationStatus.CONFIRMED]
+    confirmed_explanations = [item for item in explanations if item.status is ExplanationStatus.CONFIRMED]
 
     lines = [
         f"# Escalation: {support_case.title}",
@@ -93,33 +89,18 @@ def _render_report(
         "## Confirmed observations",
         "",
     ]
-    lines.extend(
-        [f"- {item.statement} (`{item.observation_id}`)" for item in confirmed]
-        or ["- None recorded."]
-    )
+    lines.extend([f"- {item.statement} (`{item.observation_id}`)" for item in confirmed] or ["- None recorded."])
     lines.extend(["", "## Reported but not technically confirmed", ""])
-    lines.extend(
-        [f"- {item.content} (`{item.evidence_id}`)" for item in reported]
-        or ["- None recorded."]
-    )
+    lines.extend([f"- {item.content} (`{item.evidence_id}`)" for item in reported] or ["- None recorded."])
     lines.extend(["", "## Diagnostic actions and results", ""])
     lines.extend(
-        [
-            f"- {item.name}: {item.actual_result or 'No result recorded.'}"
-            for item in actions
-        ]
+        [f"- {item.name}: {item.actual_result or 'No result recorded.'}" for item in actions]
         or ["- None recorded."]
     )
     lines.extend(["", "## Possible explanations — unconfirmed", ""])
-    lines.extend(
-        [f"- {item.statement} [{item.status.value}]" for item in possible]
-        or ["- None recorded."]
-    )
+    lines.extend([f"- {item.statement} [{item.status.value}]" for item in possible] or ["- None recorded."])
     lines.extend(["", "## Confirmed explanations", ""])
-    lines.extend(
-        [f"- {item.statement}" for item in confirmed_explanations]
-        or ["- None recorded."]
-    )
+    lines.extend([f"- {item.statement}" for item in confirmed_explanations] or ["- None recorded."])
     lines.extend(["", "## Missing information", ""])
     lines.extend([f"- {item}" for item in missing] or ["- No standard gaps detected."])
     lines.extend(
@@ -202,3 +183,19 @@ def get_escalation(
     if package is None or package.case_id != case_id:
         raise HTTPException(status_code=404, detail="Escalation package not found")
     return package
+
+
+@router.get("/{package_id}/download")
+def download_escalation(
+    case_id: str,
+    package_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    escalation_repository: SQLiteEscalationRepository = Depends(get_escalation_repository),
+) -> Response:
+    package = get_escalation(case_id, package_id, case_repository, escalation_repository)
+    filename = f"infios-{case_id}-{package_id}.md"
+    return Response(
+        content=package.report_text,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

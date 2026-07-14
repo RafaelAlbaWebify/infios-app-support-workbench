@@ -38,6 +38,7 @@ def test_readme_powershell_blocks_contain_commands_only() -> None:
         "pytest ",
         "uvicorn ",
         "infios ",
+        "Set-ExecutionPolicy ",
     )
 
     for block in powershell_blocks:

@@ -8,7 +8,7 @@ INFIOS is a local-first Application Support Engineering workbench. It helps supp
 
 ## Current development status
 
-The persistent investigation workflow is being developed on the draft pull-request branch `architecture/investigation-workbench`. The `main` branch remains the published compatibility baseline until the new slice is reviewed and merged.
+The first persistent L1-to-L2 investigation workflow is available on `main`. It includes the SQLite-backed case model, guided browser interface, Playwright browser verification, responsive navigation, escalation and recovery workflows, and a tested local launch command.
 
 ## Purpose
 
@@ -27,7 +27,7 @@ Create case
 → track possible explanations
 → generate an L2 escalation package
 → validate recovery with supporting evidence
-→ review the complete case summary and timeline
+→ review or download the complete case summary and handover
 ```
 
 ### Case endpoints
@@ -37,6 +37,7 @@ Create case
 - `GET /api/cases/{case_id}`
 - `POST /api/cases/{case_id}/status`
 - `GET /api/cases/{case_id}/summary`
+- `GET /api/cases/{case_id}/summary/download`
 
 ### Evidence endpoints
 
@@ -74,6 +75,7 @@ Create case
 - `POST /api/cases/{case_id}/escalations`
 - `GET /api/cases/{case_id}/escalations`
 - `GET /api/cases/{case_id}/escalations/{package_id}`
+- `GET /api/cases/{case_id}/escalations/{package_id}/download`
 
 ### Recovery-validation endpoints
 
@@ -100,11 +102,30 @@ The timeline includes case creation, evidence, observations, diagnostic-action s
 - A confirmed explanation requires explicit operator confirmation and supporting observations.
 - A passed recovery validation requires supporting evidence from the same case.
 
-## Legacy compatibility
+## First run on Windows
 
-The original scenario analyzer, CLI, sample incidents, Markdown reports, JSON output, and local run history remain available while the persistent workbench is developed alongside them.
+From PowerShell in the repository folder:
 
-## Local Setup
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass
+.\tools\start-infios.ps1
+```
+
+The bootstrap script creates `.venv` when needed, installs the local package, starts INFIOS on `127.0.0.1:8000`, and opens the default browser.
+
+Use another port or database path when needed:
+
+```powershell
+.\tools\start-infios.ps1 -Port 8765 -Database "C:\INFIOS\data\cases.sqlite3"
+```
+
+Start without opening a browser:
+
+```powershell
+.\tools\start-infios.ps1 -NoBrowser
+```
+
+## Manual local setup
 
 ```powershell
 python -m venv .venv
@@ -112,14 +133,30 @@ python -m venv .venv
 python -m pip install -U pip
 pip install -e ".[dev]"
 pytest -q
-uvicorn app.main:app --reload
+infios serve
 ```
 
 Then open:
 
 ```text
+http://127.0.0.1:8000
+```
+
+API documentation remains available at:
+
+```text
 http://127.0.0.1:8000/docs
 ```
+
+## Exporting investigation records
+
+The active-case footer provides **Download case summary**. A generated L2 handover provides **Download Markdown** next to the copy control.
+
+Exports are local Markdown files intended for sanitized case review, shift handover, escalation preparation, or portfolio demonstration. The export keeps facts, reported information, possible explanations, diagnostic actions, missing information, and recovery validation visibly separated.
+
+## Legacy compatibility
+
+The original scenario analyzer, CLI, sample incidents, Markdown reports, JSON output, and local run history remain available alongside the persistent workbench.
 
 ## Demo Commands
 
@@ -177,4 +214,4 @@ Additional portfolio and workflow documentation is available under `docs/`, incl
 
 ## Development verification
 
-GitHub Actions installs the package and runs the complete automated test suite for every pull-request update. CI uploads `pytest.log` as a short-lived artifact, making failures directly inspectable. Repository-native CI is the default proof loop; local PowerShell and manual testing are reserved for Windows-specific packaging and later usability or visual validation.
+GitHub Actions installs the package and runs the complete Python suite and Chromium Playwright suite for every pull-request update. CI uploads `pytest.log`, browser logs, screenshots, and traces as short-lived artifacts. Repository-native CI is the default proof loop; local testing is reserved for Windows-specific bootstrap validation and the final controlled usability review.

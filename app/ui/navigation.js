@@ -80,4 +80,23 @@ function buildWorkAreaNavigation() {
   summaryGrid.insertAdjacentElement('afterend', navigation);
 }
 
+function updateCaseSummaryDownload(caseId) {
+  const footer = document.querySelector('.footer-actions');
+  if (!footer || !caseId) return;
+  let link = document.querySelector('#download-case-summary');
+  if (!link) {
+    link = document.createElement('a');
+    link.id = 'download-case-summary';
+    link.className = 'text-link';
+    link.textContent = 'Download case summary';
+    link.setAttribute('download', '');
+    footer.insertBefore(link, footer.querySelector('a[href="/docs"]'));
+  }
+  link.href = `/api/cases/${caseId}/summary/download`;
+}
+
+window.addEventListener('infios:case-opened', (event) => {
+  updateCaseSummaryDownload(event.detail?.caseId);
+});
+
 buildWorkAreaNavigation();
