@@ -74,6 +74,13 @@ class TimestampPrecision(str, Enum):
     UNKNOWN = "unknown"
 
 
+class CaseMetadataChange(BaseModel):
+    changed_at: datetime = Field(default_factory=_utc_now)
+    changed_by: str = Field(min_length=1)
+    fields: list[str] = Field(min_length=1)
+    summary: str = Field(min_length=1)
+
+
 class SupportCase(BaseModel):
     case_id: str = Field(default_factory=lambda: _new_id("case"))
     title: str = Field(min_length=1)
@@ -84,6 +91,7 @@ class SupportCase(BaseModel):
     impact: str = "unknown"
     owner: str | None = None
     affected_scope: str = "unknown"
+    metadata_changes: list[CaseMetadataChange] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=_utc_now)
     updated_at: datetime = Field(default_factory=_utc_now)
 
