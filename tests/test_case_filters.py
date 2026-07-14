@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.api.cases import get_case_repository
+from app.api.ui import UI_DIR
 from app.domain.models import CaseStatus, SupportCase
 from app.main import app
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
@@ -85,9 +86,9 @@ def test_case_api_returns_total_filtered_count_before_limit(tmp_path) -> None:
 
 
 def test_dashboard_assets_include_accessible_filter_controls() -> None:
-    script = (app.routes[1].app.directory.parent / "app.js").read_text(encoding="utf-8")
+    script = (UI_DIR / "app.js").read_text(encoding="utf-8")
 
-    assert 'role', 'search'
+    assert "setAttribute('role', 'search')" in script
     assert 'id="case-search"' in script
     assert 'id="case-status-filter"' in script
     assert 'id="clear-case-filters"' in script
