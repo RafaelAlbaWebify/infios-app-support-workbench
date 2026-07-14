@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.analyzer import analyze_incident
@@ -45,6 +45,11 @@ app.include_router(summary_router)
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=204)
 
 
 @app.get("/api/health")
