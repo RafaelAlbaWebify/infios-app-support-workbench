@@ -106,7 +106,11 @@ def test_active_case_controls_are_labeled_and_focus_is_visible(page: Page) -> No
     }
 
     evidence_button = page.get_by_role("button", name="HTTP/API evidence")
-    evidence_button.focus()
+    for _ in range(40):
+        page.keyboard.press("Tab")
+        if evidence_button.evaluate("element => document.activeElement === element"):
+            break
+    expect(evidence_button).to_be_focused()
     focus_style = evidence_button.evaluate(
         "element => ({ outline: getComputedStyle(element).outlineStyle, width: getComputedStyle(element).outlineWidth })"
     )
