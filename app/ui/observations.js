@@ -152,6 +152,7 @@ document.querySelector('#save-observation').addEventListener('click', async () =
     document.querySelector('#observation-statement').value = '';
     traceSaveState.textContent = 'Evidence-backed observation saved';
     await loadTraceability();
+    window.dispatchEvent(new CustomEvent('infios:observation-updated', { detail: { caseId: traceState.caseId } }));
   } catch (error) {
     setTraceError(error.message);
   } finally {
@@ -168,6 +169,15 @@ const traceObserver = new MutationObserver(() => {
   }
 });
 traceObserver.observe(traceSaveState, { childList: true, characterData: true, subtree: true });
+
+window.addEventListener('infios:case-opened', (event) => {
+  traceState.caseId = event.detail.caseId;
+  loadTraceability();
+});
+
+window.addEventListener('infios:evidence-updated', (event) => {
+  if (event.detail.caseId === traceState.caseId) loadTraceability();
+});
 
 document.querySelector('#refresh-summary').addEventListener('click', () => {
   window.setTimeout(loadTraceability, 0);
