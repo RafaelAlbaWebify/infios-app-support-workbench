@@ -22,13 +22,7 @@ class DatabaseInspection:
 
 
 class DatabaseSafetyService:
-    """Create, inspect, and restore local SQLite backups safely.
-
-    Backups are restricted to a dedicated sibling directory. Every backup is
-    created with SQLite's online backup API, checked with ``quick_check``, and
-    accompanied by a JSON manifest. Restores always create a verified
-    pre-restore backup before atomically replacing the live database.
-    """
+    """Create, inspect, import, and restore local SQLite backups safely."""
 
     def __init__(self, database_path: str | Path, backup_dir: str | Path | None = None) -> None:
         self.database_path = Path(database_path)
@@ -54,13 +48,12 @@ class DatabaseSafetyService:
             raise ValueError("Backup filename must be a plain .sqlite3 filename.")
         return filename
 
-    def _backup_path(self, filename: str) -> Path:
+    def backup_path(self, filename: str) -> Path:
         return self.backup_dir / self._safe_filename(filename)
 
     def inspect_path(self, path: Path) -> DatabaseInspection:
         if not path.exists() or not path.is_file():
             raise FileNotFoundError(path.name)
-
         try:
             with sqlite3.connect(f"file:{path.as_posix()}?mode=ro", uri=True) as connection:
                 integrity_row = connection.execute("PRAGMA quick_check").fetchone()
@@ -74,13 +67,10 @@ class DatabaseSafetyService:
                 if "support_cases" not in tables:
                     raise ValueError("Database does not contain the support_cases table.")
                 case_count = int(connection.execute("SELECT COUNT(*) FROM support_cases").fetchone()[0])
-                version_row = connection.execute(
-                    "SELECT MAX(schema_version) FROM support_cases"
-                ).fetchone()
+                version_row = connection.execute("SELECT MAX(schema_version) FROM support_cases").fetchone()
                 schema_version = int(version_row[0]) if version_row and version_row[0] is not None else None
         except sqlite3.DatabaseError as exc:
             raise ValueError(f"Invalid SQLite database: {exc}") from exc
-
         stat = path.stat()
         return DatabaseInspection(
             filename=path.name,
@@ -97,7 +87,7 @@ class DatabaseSafetyService:
         return self.inspect_path(self.database_path)
 
     def inspect_backup(self, filename: str) -> DatabaseInspection:
-        return self.inspect_path(self._backup_path(filename))
+        return self.inspect_path(self.backup_path(filename))
 
     def list_backups(self) -> list[DatabaseInspection]:
         inspections: list[DatabaseInspection] = []
@@ -108,10 +98,15 @@ class DatabaseSafetyService:
                 continue
         return inspections
 
+    def _write_manifest(self, path: Path, inspection: DatabaseInspection) -> None:
+        path.with_suffix(".json").write_text(
+            json.dumps(asdict(inspection), indent=2) + "\n",
+            encoding="utf-8",
+        )
+
     def create_backup(self, *, label: str = "manual") -> DatabaseInspection:
         if not self.database_path.exists():
             raise FileNotFoundError("Live database does not exist.")
-
         safe_label = "".join(character for character in label.lower() if character.isalnum() or character == "-")
         safe_label = safe_label.strip("-") or "manual"
         timestamp = self._now().strftime("%Y%m%dT%H%M%SZ")
@@ -120,7 +115,6 @@ class DatabaseSafetyService:
         while destination.exists():
             destination = self.backup_dir / f"infios-{safe_label}-{timestamp}-{counter}.sqlite3"
             counter += 1
-
         temporary = destination.with_suffix(".sqlite3.tmp")
         try:
             with sqlite3.connect(self.database_path) as source, sqlite3.connect(temporary) as target:
@@ -130,20 +124,40 @@ class DatabaseSafetyService:
                 raise ValueError(f"Backup integrity check failed: {inspection.integrity}")
             os.replace(temporary, destination)
             inspection = self.inspect_path(destination)
-            destination.with_suffix(".json").write_text(
-                json.dumps(asdict(inspection), indent=2) + "\n",
-                encoding="utf-8",
-            )
+            self._write_manifest(destination, inspection)
+            return inspection
+        finally:
+            temporary.unlink(missing_ok=True)
+
+    def import_backup(self, content: bytes, *, original_filename: str) -> DatabaseInspection:
+        self._safe_filename(original_filename)
+        stem = Path(original_filename).stem
+        safe_stem = "".join(character for character in stem.lower() if character.isalnum() or character == "-")
+        safe_stem = safe_stem.strip("-")[:40] or "backup"
+        timestamp = self._now().strftime("%Y%m%dT%H%M%SZ")
+        destination = self.backup_dir / f"infios-imported-{safe_stem}-{timestamp}.sqlite3"
+        counter = 1
+        while destination.exists():
+            destination = self.backup_dir / f"infios-imported-{safe_stem}-{timestamp}-{counter}.sqlite3"
+            counter += 1
+        temporary = destination.with_suffix(".sqlite3.tmp")
+        try:
+            temporary.write_bytes(content)
+            inspection = self.inspect_path(temporary)
+            if not inspection.valid:
+                raise ValueError(f"Imported backup integrity check failed: {inspection.integrity}")
+            os.replace(temporary, destination)
+            inspection = self.inspect_path(destination)
+            self._write_manifest(destination, inspection)
             return inspection
         finally:
             temporary.unlink(missing_ok=True)
 
     def restore_backup(self, filename: str, *, performed_by: str, reason: str) -> dict[str, object]:
-        source = self._backup_path(filename)
+        source = self.backup_path(filename)
         preview = self.inspect_path(source)
         if not preview.valid:
             raise ValueError(f"Backup integrity check failed: {preview.integrity}")
-
         pre_restore = self.create_backup(label="pre-restore")
         temporary = self.database_path.with_suffix(".restore.tmp")
         try:
@@ -156,7 +170,6 @@ class DatabaseSafetyService:
             live = self.inspect_live()
         finally:
             temporary.unlink(missing_ok=True)
-
         event = {
             "restored_at": self._now().isoformat(),
             "performed_by": performed_by,
