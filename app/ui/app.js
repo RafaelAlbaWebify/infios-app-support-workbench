@@ -37,14 +37,39 @@ caseFilterForm.innerHTML = `
       </select>
     </label>
   </div>
-  <div class="actions">
-    <button id="clear-case-filters" class="secondary" type="button">Clear filters</button>
+  <div class="two-column">
+    <label>Ownership
+      <select id="case-owner-filter">
+        <option value="">All ownership</option>
+        <option value="__assigned__">Assigned</option>
+        <option value="__unassigned__">Unassigned</option>
+      </select>
+    </label>
+    <label>Exact owner
+      <input id="case-owner-name" type="search" placeholder="Example: L1 Support" autocomplete="off">
+    </label>
+  </div>
+  <div class="two-column">
+    <label>Sort incidents
+      <select id="case-sort">
+        <option value="updated_desc">Recently updated first</option>
+        <option value="updated_asc">Oldest update first</option>
+        <option value="created_desc">Newest created first</option>
+        <option value="created_asc">Oldest created first</option>
+      </select>
+    </label>
+    <div class="actions">
+      <button id="clear-case-filters" class="secondary" type="button">Clear filters</button>
+    </div>
   </div>
 `;
 const dashboardHeading = dashboardPanel.querySelector('.case-heading');
 dashboardHeading.insertAdjacentElement('afterend', caseFilterForm);
 const caseSearch = caseFilterForm.querySelector('#case-search');
 const caseStatusFilter = caseFilterForm.querySelector('#case-status-filter');
+const caseOwnerFilter = caseFilterForm.querySelector('#case-owner-filter');
+const caseOwnerName = caseFilterForm.querySelector('#case-owner-name');
+const caseSort = caseFilterForm.querySelector('#case-sort');
 const clearCaseFilters = caseFilterForm.querySelector('#clear-case-filters');
 let caseSearchTimer = null;
 
@@ -103,10 +128,24 @@ function formatDate(value) {
   return Number.isNaN(date.getTime()) ? 'Unknown time' : date.toLocaleString();
 }
 
+function caseAgeLabel(supportCase) {
+  const updatedAt = new Date(supportCase.updated_at);
+  if (Number.isNaN(updatedAt.getTime())) return 'Age unknown';
+  const elapsedHours = Math.max(0, Math.floor((Date.now() - updatedAt.getTime()) / 3600000));
+  if (elapsedHours < 24) return `Active · ${elapsedHours}h since update`;
+  const elapsedDays = Math.floor(elapsedHours / 24);
+  if (['resolved', 'closed'].includes(supportCase.status)) return `${elapsedDays}d since update`;
+  if (elapsedHours >= 72) return `Stale · ${elapsedDays}d since update`;
+  return `Ageing · ${elapsedDays}d since update`;
+}
+
 function activeCaseFilters() {
+  const exactOwner = caseOwnerName.value.trim();
   return {
     query: caseSearch.value.trim(),
     status: caseStatusFilter.value,
+    owner: exactOwner || caseOwnerFilter.value,
+    sort: caseSort.value,
   };
 }
 
@@ -118,14 +157,17 @@ async function loadCases() {
     const parameters = new URLSearchParams('/api/cases?limit=20'.split('?')[1]);
     if (filters.query) parameters.set('query', filters.query);
     if (filters.status) parameters.set('status', filters.status);
+    if (filters.owner) parameters.set('owner', filters.owner);
+    parameters.set('sort', filters.sort);
     const response = await api(`/api/cases?${parameters.toString()}`);
     const list = document.querySelector('#recent-cases');
+    const hasFilters = filters.query || filters.status || filters.owner || filters.sort !== 'updated_desc';
     if (!response.cases || response.cases.length === 0) {
       list.className = 'case-list empty-state';
-      list.textContent = filters.query || filters.status
+      list.textContent = hasFilters
         ? 'No incidents match the current filters.'
         : 'No cases found. Start a new incident to create the first one.';
-      document.querySelector('#save-state').textContent = filters.query || filters.status
+      document.querySelector('#save-state').textContent = hasFilters
         ? 'No matching incidents'
         : 'No saved incidents';
       return;
@@ -145,10 +187,10 @@ async function loadCases() {
       title.textContent = supportCase.title;
       const meta = document.createElement('p');
       meta.className = 'muted';
-      meta.textContent = `${supportCase.application} · ${formatValue(supportCase.affected_scope)} · ${formatValue(supportCase.impact)}`;
+      meta.textContent = `${supportCase.application} · ${formatValue(supportCase.affected_scope)} · ${formatValue(supportCase.impact)} · Owner: ${supportCase.owner || 'Unassigned'}`;
       const updated = document.createElement('p');
       updated.className = 'case-updated';
-      updated.textContent = `Updated ${formatDate(supportCase.updated_at)}`;
+      updated.textContent = `Updated ${formatDate(supportCase.updated_at)} · ${caseAgeLabel(supportCase)}`;
       content.append(title, meta, updated);
 
       const status = document.createElement('span');
@@ -181,17 +223,30 @@ caseFilterForm.addEventListener('submit', (event) => {
   loadCases();
 });
 
-caseSearch.addEventListener('input', () => {
+function scheduleCaseReload() {
   window.clearTimeout(caseSearchTimer);
   caseSearchTimer = window.setTimeout(loadCases, 250);
-});
+}
 
+caseSearch.addEventListener('input', scheduleCaseReload);
+caseOwnerName.addEventListener('input', () => {
+  if (caseOwnerName.value.trim()) caseOwnerFilter.value = '';
+  scheduleCaseReload();
+});
 caseStatusFilter.addEventListener('change', loadCases);
+caseOwnerFilter.addEventListener('change', () => {
+  if (caseOwnerFilter.value) caseOwnerName.value = '';
+  loadCases();
+});
+caseSort.addEventListener('change', loadCases);
 
 clearCaseFilters.addEventListener('click', () => {
   window.clearTimeout(caseSearchTimer);
   caseSearch.value = '';
   caseStatusFilter.value = '';
+  caseOwnerFilter.value = '';
+  caseOwnerName.value = '';
+  caseSort.value = 'updated_desc';
   loadCases();
   caseSearch.focus();
 });
