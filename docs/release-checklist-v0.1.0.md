@@ -26,52 +26,43 @@
 - [x] L2 escalation Markdown downloads and contains the expected request.
 - [x] Windows bootstrap evidence is uploaded as a CI artifact.
 - [x] The guided interactive validation script parses successfully on `windows-latest`.
+- [x] The validator generates an upload-ready ZIP archive automatically.
 
-## Interactive Windows check — required before tag
+## Interactive Windows validation
 
-Run from a fresh interactive PowerShell process in the repository folder:
+Completed on July 14, 2026 using the guided validation workflow.
 
-```powershell
-Set-ExecutionPolicy -Scope Process Bypass
-.\tools\validate-release-windows.ps1
-```
+- [x] The default browser opened automatically on the interactive Windows desktop.
+- [x] The dashboard was visible and usable in the locally opened browser.
+- [x] The case-summary Markdown opened correctly in the configured Windows application.
+- [x] The L2 handover Markdown opened correctly in the configured Windows application.
+- [x] Only sample/public-safe data was used.
+- [x] The generated `release-validation.md` result was **PASS**.
+- [x] The evidence archive was reviewed and summarized in issue #18.
 
-The guided validator:
+Validated environment:
 
-1. Starts INFIOS through the real bootstrap.
-2. Opens the local dashboard in the default browser.
-3. Creates a public-safe sample case and evidence record.
-4. Generates a sample L2 handover.
-5. Downloads the case summary and handover into a timestamped Downloads folder.
-6. Opens both Markdown files in the configured Windows application.
-7. Asks for five yes/no confirmations.
-8. Writes `release-validation.md` with the result, environment details, IDs, paths and logs.
-9. Opens the evidence folder automatically.
+- Windows: Microsoft Windows NT 10.0.26100.0.
+- PowerShell: 5.1.26100.8655.
+- INFIOS health version: `0.1.0`.
+- Sample case: `case-e24daffa67ad`.
+- Sample evidence: `evidence-7291085a0eae`.
+- Sample escalation: `escalation-169869cdc037`.
 
-Confirm the behavior that a headless GitHub runner cannot prove:
+## Release actions
 
-- [ ] The default browser opens automatically on the interactive Windows desktop.
-- [ ] The dashboard is visible and usable in the locally opened browser.
-- [ ] Downloaded Markdown files open correctly in the user's configured Windows application.
-- [ ] No production credentials or sensitive data are used.
-- [ ] The generated `release-validation.md` result is **PASS** and is attached to issue #18.
-
-The underlying bootstrap, installation, startup, persistence, restart and export behavior is already verified on `windows-latest`; this final check is limited to interactive desktop integration and human usability.
-
-## Release actions — only after the interactive check
-
-- [ ] Replace `Unreleased` in `CHANGELOG.md` with the release date.
+- [x] Replace `Unreleased` in `CHANGELOG.md` with the release date.
 - [ ] Merge the release-preparation PR.
 - [ ] Confirm `main` CI is green at the release commit.
 - [ ] Create annotated tag `v0.1.0` at the verified `main` commit.
 - [ ] Create GitHub release `INFIOS v0.1.0` from the prepared release notes.
-- [ ] Keep the repository public-safe and sample-data-only.
+- [x] Keep the repository public-safe and sample-data-only.
 
 ## Rollback
 
-If the interactive Windows check fails:
+If a release action fails:
 
-1. Do not tag or publish the release.
-2. Attach the generated report and exact logs from the validation folder.
-3. Fix the bootstrap or interactive validator in a separate focused branch.
-4. Re-run complete CI, the Windows integration job and the interactive check.
+1. Do not move the `v0.1.0` tag to an unverified commit.
+2. Record the exact failing check or publication step.
+3. Fix the defect in a focused branch.
+4. Re-run complete CI before retrying the release action.
