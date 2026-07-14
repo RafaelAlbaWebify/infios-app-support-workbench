@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel
 
 from app.api.actions import get_action_repository
@@ -12,6 +12,7 @@ from app.api.observations import get_observation_repository
 from app.api.recovery import get_recovery_repository
 from app.domain.models import DiagnosticAction, EscalationPackage, EvidenceItem, Observation, PossibleExplanation, SupportCase
 from app.domain.recovery import RecoveryValidation
+from app.exports import render_case_summary_markdown
 from app.persistence.sqlite_action_repository import SQLiteActionRepository
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 from app.persistence.sqlite_escalation_repository import SQLiteEscalationRepository
@@ -44,16 +45,15 @@ class CaseSummaryResponse(BaseModel):
     next_recommended_action: str
 
 
-@router.get("", response_model=CaseSummaryResponse)
-def get_case_summary(
+def _build_case_summary(
     case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-    explanation_repository: SQLiteExplanationRepository = Depends(get_explanation_repository),
-    action_repository: SQLiteActionRepository = Depends(get_action_repository),
-    recovery_repository: SQLiteRecoveryRepository = Depends(get_recovery_repository),
-    escalation_repository: SQLiteEscalationRepository = Depends(get_escalation_repository),
+    case_repository: SQLiteCaseRepository,
+    evidence_repository: SQLiteEvidenceRepository,
+    observation_repository: SQLiteObservationRepository,
+    explanation_repository: SQLiteExplanationRepository,
+    action_repository: SQLiteActionRepository,
+    recovery_repository: SQLiteRecoveryRepository,
+    escalation_repository: SQLiteEscalationRepository,
 ) -> CaseSummaryResponse:
     support_case = case_repository.get(case_id)
     if support_case is None:
@@ -68,26 +68,10 @@ def get_case_summary(
     playbook = evaluate_post_login_feature_failure(support_case, evidence, observations)
 
     readiness = [
-        ReadinessItem(
-            name="Business impact",
-            complete=support_case.impact != "unknown",
-            detail=support_case.impact,
-        ),
-        ReadinessItem(
-            name="Affected scope",
-            complete=support_case.affected_scope != "unknown",
-            detail=support_case.affected_scope,
-        ),
-        ReadinessItem(
-            name="Evidence",
-            complete=bool(evidence),
-            detail=f"{len(evidence)} evidence item(s)",
-        ),
-        ReadinessItem(
-            name="Evidence-backed observations",
-            complete=bool(observations),
-            detail=f"{len(observations)} observation(s)",
-        ),
+        ReadinessItem(name="Business impact", complete=support_case.impact != "unknown", detail=support_case.impact),
+        ReadinessItem(name="Affected scope", complete=support_case.affected_scope != "unknown", detail=support_case.affected_scope),
+        ReadinessItem(name="Evidence", complete=bool(evidence), detail=f"{len(evidence)} evidence item(s)"),
+        ReadinessItem(name="Evidence-backed observations", complete=bool(observations), detail=f"{len(observations)} observation(s)"),
         ReadinessItem(
             name="Completed diagnostic action",
             complete=any(action.actual_result for action in actions),
@@ -125,4 +109,56 @@ def get_case_summary(
         playbook=playbook,
         escalation_readiness=readiness,
         next_recommended_action=next_action,
+    )
+
+
+@router.get("", response_model=CaseSummaryResponse)
+def get_case_summary(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+    explanation_repository: SQLiteExplanationRepository = Depends(get_explanation_repository),
+    action_repository: SQLiteActionRepository = Depends(get_action_repository),
+    recovery_repository: SQLiteRecoveryRepository = Depends(get_recovery_repository),
+    escalation_repository: SQLiteEscalationRepository = Depends(get_escalation_repository),
+) -> CaseSummaryResponse:
+    return _build_case_summary(
+        case_id,
+        case_repository,
+        evidence_repository,
+        observation_repository,
+        explanation_repository,
+        action_repository,
+        recovery_repository,
+        escalation_repository,
+    )
+
+
+@router.get("/download")
+def download_case_summary(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+    explanation_repository: SQLiteExplanationRepository = Depends(get_explanation_repository),
+    action_repository: SQLiteActionRepository = Depends(get_action_repository),
+    recovery_repository: SQLiteRecoveryRepository = Depends(get_recovery_repository),
+    escalation_repository: SQLiteEscalationRepository = Depends(get_escalation_repository),
+) -> Response:
+    summary = _build_case_summary(
+        case_id,
+        case_repository,
+        evidence_repository,
+        observation_repository,
+        explanation_repository,
+        action_repository,
+        recovery_repository,
+        escalation_repository,
+    )
+    filename = f"infios-{case_id}-summary.md"
+    return Response(
+        content=render_case_summary_markdown(summary),
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
