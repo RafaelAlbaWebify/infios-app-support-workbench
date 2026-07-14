@@ -20,11 +20,13 @@ All notable changes to INFIOS are documented here.
 - Guided L1 browser interface and first L2 investigation panel.
 - Responsive compact case navigation and native disclosure panels.
 - Windows PowerShell bootstrap launcher.
+- Guided Windows release-validation script with generated evidence report.
 - `infios serve` local launch command.
 - Complete Python, API, SQLite and Chromium Playwright verification.
 - Full L1-to-L2-to-recovery browser lifecycle proof.
 - Browser runtime-error, console-error and failed-request gate.
 - Structural accessibility audit, skip navigation, live announcements and keyboard focus treatment.
+- Real `windows-latest` bootstrap, restart-persistence and export integration gate.
 
 ### Safety
 
@@ -42,5 +44,6 @@ All notable changes to INFIOS are documented here.
 
 ### Release gate still pending
 
-- Windows bootstrap smoke test on a clean or representative Windows environment.
-- Confirm `.venv` creation, package installation, browser opening, persistence across restart and Markdown downloads.
+- Interactive Windows desktop validation on a representative user machine.
+- Confirm the default browser opens visibly, the local dashboard is usable, downloaded Markdown opens in the configured Windows application, and the generated `release-validation.md` result is **PASS**.
+- The underlying `.venv` creation, editable installation, local startup, SQLite persistence across restart and Markdown export behavior already pass on `windows-latest`.
