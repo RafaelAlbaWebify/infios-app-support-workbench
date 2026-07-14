@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from app.api.cases import get_case_repository
@@ -10,6 +11,7 @@ from app.database_safety import DatabaseInspection, DatabaseSafetyService
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 
 router = APIRouter(prefix="/api/database", tags=["database"])
+MAX_IMPORT_BYTES = 100 * 1024 * 1024
 
 
 class BackupRequest(BaseModel):
@@ -82,6 +84,41 @@ def create_backup(
         return _inspection_response(service.create_backup(label=request.label))
     except (FileNotFoundError, ValueError) as exc:
         raise _translate_error(exc) from exc
+
+
+@router.post("/backups/import", response_model=InspectionResponse, status_code=201)
+async def import_backup(
+    request: Request,
+    filename: str = Query(min_length=1, max_length=255),
+    service: DatabaseSafetyService = Depends(get_database_safety_service),
+) -> InspectionResponse:
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_IMPORT_BYTES:
+        raise HTTPException(status_code=413, detail="Backup import exceeds the 100 MB limit.")
+    content = await request.body()
+    if not content:
+        raise HTTPException(status_code=422, detail="Backup import is empty.")
+    if len(content) > MAX_IMPORT_BYTES:
+        raise HTTPException(status_code=413, detail="Backup import exceeds the 100 MB limit.")
+    try:
+        return _inspection_response(service.import_backup(content, original_filename=filename))
+    except (FileNotFoundError, ValueError) as exc:
+        raise _translate_error(exc) from exc
+
+
+@router.get("/backups/{filename}/download")
+def download_backup(
+    filename: str,
+    service: DatabaseSafetyService = Depends(get_database_safety_service),
+) -> FileResponse:
+    try:
+        inspection = service.inspect_backup(filename)
+        if not inspection.valid:
+            raise ValueError(f"Backup integrity check failed: {inspection.integrity}")
+        path = service.backup_path(filename)
+    except (FileNotFoundError, ValueError) as exc:
+        raise _translate_error(exc) from exc
+    return FileResponse(path, media_type="application/vnd.sqlite3", filename=filename)
 
 
 @router.get("/backups/{filename}/preview", response_model=InspectionResponse)
