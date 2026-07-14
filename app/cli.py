@@ -12,6 +12,7 @@ from app.analyzer import analyze_incident
 from app.models import IncidentInput
 from app.report_markdown import render_markdown_report
 from app.run_history import save_run_history
+from app.server import run_workbench_server
 
 
 def _load_incident(path: Path) -> IncidentInput:
@@ -31,7 +32,7 @@ def _write_or_print(content: str, output_path: Path | None) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="infios",
-        description="INFIOS local Application Support incident analyzer.",
+        description="INFIOS local Application Support incident workbench.",
     )
 
     subcommands = parser.add_subparsers(dest="command", required=True)
@@ -67,6 +68,35 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         help="Optional run-history directory. Default: runs/history.",
+    )
+
+    serve_parser = subcommands.add_parser(
+        "serve",
+        help="Start the local INFIOS web workbench.",
+    )
+    serve_parser.add_argument(
+        "--host",
+        default="127.0.0.1",
+        help="Listen address. Default: 127.0.0.1 (local machine only).",
+    )
+    serve_parser.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        choices=range(1, 65536),
+        metavar="PORT",
+        help="TCP port from 1 to 65535. Default: 8000.",
+    )
+    serve_parser.add_argument(
+        "--database",
+        type=Path,
+        default=None,
+        help="Optional SQLite database path. Default: runs/infios-cases.sqlite3.",
+    )
+    serve_parser.add_argument(
+        "--no-browser",
+        action="store_true",
+        help="Do not open the workbench automatically in the default browser.",
     )
 
     return parser
@@ -115,12 +145,24 @@ def run_analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_serve(args: argparse.Namespace) -> int:
+    run_workbench_server(
+        host=args.host,
+        port=args.port,
+        open_browser=not args.no_browser,
+        database_path=args.database,
+    )
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
     if args.command == "analyze":
         return run_analyze(args)
+    if args.command == "serve":
+        return run_serve(args)
 
     parser.error(f"Unknown command: {args.command}")
     return 2
