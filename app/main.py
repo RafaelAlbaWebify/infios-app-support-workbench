@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.analyzer import analyze_incident
@@ -22,10 +22,11 @@ from app.api.ui import UI_DIR, router as ui_router
 from app.models import AnalysisResult, IncidentInput
 from app.report_markdown import render_markdown_report
 from app.run_history import list_run_history, save_run_history
+from app.version import VERSION
 
 app = FastAPI(
     title="INFIOS Application Support Workbench",
-    version="0.1.0",
+    version=VERSION,
     description="Local-first Application Support workbench for incident evidence, escalation notes, and RCA drafts.",
 )
 app.mount("/ui/static", StaticFiles(directory=UI_DIR), name="ui-static")
@@ -46,9 +47,18 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 SAMPLES_DIR = ROOT_DIR / "samples"
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon() -> Response:
+    return Response(status_code=204)
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "service": "infios-app-support-workbench"}
+    return {
+        "status": "ok",
+        "service": "infios-app-support-workbench",
+        "version": VERSION,
+    }
 
 
 @app.get("/api/samples")
