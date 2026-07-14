@@ -1,3 +1,8 @@
+const navigationStylesheet = document.createElement('link');
+navigationStylesheet.rel = 'stylesheet';
+navigationStylesheet.href = '/ui/static/navigation.css';
+document.head.append(navigationStylesheet);
+
 const workAreaDefinitions = [
   { selector: '.quick-actions', id: 'work-evidence', label: 'Evidence', advanced: false },
   { selector: '.observation-section', id: 'work-observations', label: 'Observations', advanced: false },
