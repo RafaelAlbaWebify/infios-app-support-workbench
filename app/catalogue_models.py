@@ -46,6 +46,13 @@ class DependencyType(str, Enum):
     OTHER = "other"
 
 
+class CaseServiceRole(str, Enum):
+    AFFECTED = "affected"
+    SUSPECTED_DEPENDENCY = "suspected_dependency"
+    CONFIRMED_DEPENDENCY = "confirmed_dependency"
+    CONTEXT = "context"
+
+
 class ServiceCatalogueEntry(BaseModel):
     service_id: str = Field(default_factory=lambda: _new_id("service"))
     name: str = Field(min_length=1, max_length=200)
@@ -76,3 +83,13 @@ class ServiceDependency(BaseModel):
         if self.source_service_id == self.target_service_id:
             raise ValueError("A service cannot depend on itself.")
         return self
+
+
+class CaseServiceLink(BaseModel):
+    link_id: str = Field(default_factory=lambda: _new_id("case-service"))
+    case_id: str = Field(min_length=1)
+    service_id: str = Field(min_length=1)
+    role: CaseServiceRole
+    linked_by: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=1000)
+    linked_at: datetime = Field(default_factory=_utc_now)
