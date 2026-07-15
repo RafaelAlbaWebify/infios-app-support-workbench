@@ -15,6 +15,7 @@ from app.playbooks.api_integration_failure import evaluate_api_integration_failu
 from app.playbooks.authentication_failure import evaluate_authentication_failure
 from app.playbooks.authorization_failure import evaluate_authorization_failure
 from app.playbooks.background_job_scheduler_failure import evaluate_background_job_scheduler_failure
+from app.playbooks.file_transfer_import_export_failure import evaluate_file_transfer_import_export_failure
 from app.playbooks.missing_incorrect_data import evaluate_missing_incorrect_data
 from app.playbooks.performance_degradation import evaluate_performance_degradation
 from app.playbooks.post_login_feature_failure import (
@@ -131,3 +132,13 @@ def evaluate_background_job_scheduler_failure_playbook(
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_background_job_scheduler_failure, case_repository, evidence_repository, observation_repository)
+
+
+@router.get("/file-transfer-import-export-failure", response_model=PlaybookResult)
+def evaluate_file_transfer_import_export_failure_playbook(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+) -> PlaybookResult:
+    return _evaluate_case_playbook(case_id, evaluate_file_transfer_import_export_failure, case_repository, evidence_repository, observation_repository)
