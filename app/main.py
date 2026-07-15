@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from app.analyzer import analyze_incident
 from app.api.actions import router as actions_router
 from app.api.cases import router as cases_router
+from app.api.catalogue import router as catalogue_router
 from app.api.database import router as database_router
 from app.api.escalations import router as escalations_router
 from app.api.evidence import router as evidence_router
@@ -33,6 +34,7 @@ app = FastAPI(
 app.mount("/ui/static", StaticFiles(directory=UI_DIR), name="ui-static")
 app.include_router(ui_router)
 app.include_router(cases_router)
+app.include_router(catalogue_router)
 app.include_router(database_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
