@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from app.catalogue_models import ServiceCatalogueEntry, ServiceDependency
+from app.catalogue_models import CaseServiceLink, ServiceCatalogueEntry, ServiceDependency
 
 
 class SQLiteCatalogueRepository:
@@ -21,8 +21,11 @@ class SQLiteCatalogueRepository:
         with self._connect() as connection:
             connection.execute("CREATE TABLE IF NOT EXISTS catalogue_services (service_id TEXT PRIMARY KEY, payload_json TEXT NOT NULL)")
             connection.execute("CREATE TABLE IF NOT EXISTS catalogue_dependencies (dependency_id TEXT PRIMARY KEY, source_service_id TEXT NOT NULL, target_service_id TEXT NOT NULL, payload_json TEXT NOT NULL)")
+            connection.execute("CREATE TABLE IF NOT EXISTS catalogue_case_links (link_id TEXT PRIMARY KEY, case_id TEXT NOT NULL, service_id TEXT NOT NULL, payload_json TEXT NOT NULL)")
             connection.execute("CREATE INDEX IF NOT EXISTS idx_catalogue_dependency_source ON catalogue_dependencies(source_service_id)")
             connection.execute("CREATE INDEX IF NOT EXISTS idx_catalogue_dependency_target ON catalogue_dependencies(target_service_id)")
+            connection.execute("CREATE INDEX IF NOT EXISTS idx_catalogue_case_link_case ON catalogue_case_links(case_id)")
+            connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_catalogue_case_link_unique ON catalogue_case_links(case_id, service_id)")
 
     def save_service(self, service: ServiceCatalogueEntry) -> ServiceCatalogueEntry:
         with self._connect() as connection:
@@ -58,3 +61,22 @@ class SQLiteCatalogueRepository:
                 (service_id, service_id),
             ).fetchall()
         return [ServiceDependency.model_validate_json(row["payload_json"]) for row in rows]
+
+    def save_case_link(self, link: CaseServiceLink) -> CaseServiceLink:
+        with self._connect() as connection:
+            try:
+                connection.execute(
+                    "INSERT INTO catalogue_case_links(link_id, case_id, service_id, payload_json) VALUES (?, ?, ?, ?)",
+                    (link.link_id, link.case_id, link.service_id, link.model_dump_json()),
+                )
+            except sqlite3.IntegrityError as exc:
+                raise ValueError("The case is already linked to this catalogue service.") from exc
+        return link
+
+    def list_case_links(self, case_id: str) -> list[CaseServiceLink]:
+        with self._connect() as connection:
+            rows = connection.execute(
+                "SELECT payload_json FROM catalogue_case_links WHERE case_id = ? ORDER BY link_id",
+                (case_id,),
+            ).fetchall()
+        return [CaseServiceLink.model_validate_json(row["payload_json"]) for row in rows]
