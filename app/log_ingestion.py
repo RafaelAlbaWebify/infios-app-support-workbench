@@ -37,20 +37,20 @@ _PATTERNS: tuple[tuple[str, re.Pattern[str], str], ...] = (
         "[REDACTED_JWT]",
     ),
     (
-        "named_secret",
-        re.compile(
-            r"(?i)\b(password|passwd|pwd|api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|session[_-]?token)"
-            r"(\s*[:=]\s*)([^\s,;]+)"
-        ),
-        r"\1\2[REDACTED]",
-    ),
-    (
         "url_secret",
         re.compile(
             r"(?i)([?&](?:password|passwd|pwd|api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token)=)"
             r"([^&#\s]+)"
         ),
         r"\1[REDACTED]",
+    ),
+    (
+        "named_secret",
+        re.compile(
+            r"(?i)(?<![?&])\b(password|passwd|pwd|api[_-]?key|client[_-]?secret|access[_-]?token|refresh[_-]?token|session[_-]?token)"
+            r"(\s*[:=]\s*)([^\s,;]+)"
+        ),
+        r"\1\2[REDACTED]",
     ),
 )
 
