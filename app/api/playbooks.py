@@ -13,6 +13,7 @@ from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
 from app.persistence.sqlite_observation_repository import SQLiteObservationRepository
 from app.playbooks.authentication_failure import evaluate_authentication_failure
 from app.playbooks.authorization_failure import evaluate_authorization_failure
+from app.playbooks.performance_degradation import evaluate_performance_degradation
 from app.playbooks.post_login_feature_failure import (
     PlaybookResult,
     evaluate_post_login_feature_failure,
@@ -45,13 +46,7 @@ def evaluate_post_login_playbook(
     evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
-    return _evaluate_case_playbook(
-        case_id,
-        evaluate_post_login_feature_failure,
-        case_repository,
-        evidence_repository,
-        observation_repository,
-    )
+    return _evaluate_case_playbook(case_id, evaluate_post_login_feature_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/authentication-failure", response_model=PlaybookResult)
@@ -61,13 +56,7 @@ def evaluate_authentication_playbook(
     evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
-    return _evaluate_case_playbook(
-        case_id,
-        evaluate_authentication_failure,
-        case_repository,
-        evidence_repository,
-        observation_repository,
-    )
+    return _evaluate_case_playbook(case_id, evaluate_authentication_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/authorization-failure", response_model=PlaybookResult)
@@ -77,13 +66,7 @@ def evaluate_authorization_playbook(
     evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
-    return _evaluate_case_playbook(
-        case_id,
-        evaluate_authorization_failure,
-        case_repository,
-        evidence_repository,
-        observation_repository,
-    )
+    return _evaluate_case_playbook(case_id, evaluate_authorization_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/service-unavailable", response_model=PlaybookResult)
@@ -93,10 +76,14 @@ def evaluate_service_unavailable_playbook(
     evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
-    return _evaluate_case_playbook(
-        case_id,
-        evaluate_service_unavailable,
-        case_repository,
-        evidence_repository,
-        observation_repository,
-    )
+    return _evaluate_case_playbook(case_id, evaluate_service_unavailable, case_repository, evidence_repository, observation_repository)
+
+
+@router.get("/performance-degradation", response_model=PlaybookResult)
+def evaluate_performance_degradation_playbook(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+) -> PlaybookResult:
+    return _evaluate_case_playbook(case_id, evaluate_performance_degradation, case_repository, evidence_repository, observation_repository)
