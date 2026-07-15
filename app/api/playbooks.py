@@ -16,6 +16,7 @@ from app.playbooks.authentication_failure import evaluate_authentication_failure
 from app.playbooks.authorization_failure import evaluate_authorization_failure
 from app.playbooks.background_job_scheduler_failure import evaluate_background_job_scheduler_failure
 from app.playbooks.certificate_tls_failure import evaluate_certificate_tls_failure
+from app.playbooks.dependency_outage import evaluate_dependency_outage
 from app.playbooks.file_transfer_import_export_failure import evaluate_file_transfer_import_export_failure
 from app.playbooks.missing_incorrect_data import evaluate_missing_incorrect_data
 from app.playbooks.performance_degradation import evaluate_performance_degradation
@@ -153,3 +154,13 @@ def evaluate_certificate_tls_failure_playbook(
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_certificate_tls_failure, case_repository, evidence_repository, observation_repository)
+
+
+@router.get("/dependency-outage", response_model=PlaybookResult)
+def evaluate_dependency_outage_playbook(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+) -> PlaybookResult:
+    return _evaluate_case_playbook(case_id, evaluate_dependency_outage, case_repository, evidence_repository, observation_repository)
