@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from app.api.cases import DEFAULT_CASE_DATABASE, get_case_repository
+from app.correlation_extraction import extract_correlation_identifiers
 from app.domain.models import CertaintyLevel, EvidenceItem, EvidenceSensitivity
 from app.log_ingestion import sanitize_log_text
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
@@ -37,11 +38,17 @@ class ImportLogRequest(BaseModel):
     sensitivity: EvidenceSensitivity = EvidenceSensitivity.INTERNAL
 
 
+class CorrelationIdentifierResponse(BaseModel):
+    kind: str
+    value: str
+
+
 class ImportedLogResponse(BaseModel):
     evidence: EvidenceItem
     original_bytes: int
     line_count: int
     redactions: dict[str, int]
+    correlation_identifiers: list[CorrelationIdentifierResponse]
 
 
 class EvidenceListResponse(BaseModel):
@@ -95,6 +102,7 @@ def import_sanitized_log(
     except (TypeError, ValueError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    identifiers = extract_correlation_identifiers(result.content)
     redactions = {finding.kind: finding.replacements for finding in result.findings}
     evidence = EvidenceItem(
         case_id=case_id,
@@ -107,7 +115,7 @@ def import_sanitized_log(
         redacted=True,
         notes=(
             f"Sanitized log import: {result.line_count} line(s), {result.original_bytes} original byte(s), "
-            f"{sum(redactions.values())} automatic redaction(s)."
+            f"{sum(redactions.values())} automatic redaction(s), {len(identifiers)} correlation identifier(s)."
         ),
     )
     saved = evidence_repository.save(evidence)
@@ -116,6 +124,10 @@ def import_sanitized_log(
         original_bytes=result.original_bytes,
         line_count=result.line_count,
         redactions=redactions,
+        correlation_identifiers=[
+            CorrelationIdentifierResponse(kind=identifier.kind, value=identifier.value)
+            for identifier in identifiers
+        ],
     )
 
 
