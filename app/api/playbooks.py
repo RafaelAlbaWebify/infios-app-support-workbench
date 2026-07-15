@@ -17,6 +17,7 @@ from app.playbooks.post_login_feature_failure import (
     PlaybookResult,
     evaluate_post_login_feature_failure,
 )
+from app.playbooks.service_unavailable import evaluate_service_unavailable
 
 router = APIRouter(prefix="/api/cases/{case_id}/playbooks", tags=["playbooks"])
 PlaybookEvaluator = Callable[[SupportCase, list[EvidenceItem], list[Observation]], PlaybookResult]
@@ -79,6 +80,22 @@ def evaluate_authorization_playbook(
     return _evaluate_case_playbook(
         case_id,
         evaluate_authorization_failure,
+        case_repository,
+        evidence_repository,
+        observation_repository,
+    )
+
+
+@router.get("/service-unavailable", response_model=PlaybookResult)
+def evaluate_service_unavailable_playbook(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+) -> PlaybookResult:
+    return _evaluate_case_playbook(
+        case_id,
+        evaluate_service_unavailable,
         case_repository,
         evidence_repository,
         observation_repository,
