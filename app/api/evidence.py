@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from app.api.cases import DEFAULT_CASE_DATABASE, get_case_repository
 from app.correlation_extraction import extract_correlation_identifiers
 from app.domain.models import CertaintyLevel, EvidenceItem, EvidenceSensitivity
+from app.evidence_validation import build_evidence_validation_report
 from app.log_ingestion import sanitize_log_text
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
@@ -63,6 +64,22 @@ class EvidenceSecretScanResponse(BaseModel):
     status: str
     finding_count: int
     findings: list[SecretScanFindingResponse]
+
+
+class EvidenceValidationItemResponse(BaseModel):
+    evidence_id: str
+    status: str
+    issues: list[str]
+    secret_finding_count: int
+
+
+class EvidenceValidationReportResponse(BaseModel):
+    case_id: str
+    status: str
+    evidence_count: int
+    attention_required_count: int
+    issue_counts: dict[str, int]
+    items: list[EvidenceValidationItemResponse]
 
 
 class EvidenceListResponse(BaseModel):
@@ -155,6 +172,34 @@ def list_evidence(
     _require_case(case_id, case_repository)
     evidence = evidence_repository.list_for_case(case_id, limit=limit)
     return EvidenceListResponse(evidence=evidence, count=len(evidence))
+
+
+@router.get("/validation-report", response_model=EvidenceValidationReportResponse)
+def get_evidence_validation_report(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+) -> EvidenceValidationReportResponse:
+    _require_case(case_id, case_repository)
+    report = build_evidence_validation_report(
+        evidence_repository.list_for_case(case_id, limit=500)
+    )
+    return EvidenceValidationReportResponse(
+        case_id=case_id,
+        status=report.status,
+        evidence_count=report.evidence_count,
+        attention_required_count=report.attention_required_count,
+        issue_counts=report.issue_counts,
+        items=[
+            EvidenceValidationItemResponse(
+                evidence_id=item.evidence_id,
+                status=item.status,
+                issues=item.issues,
+                secret_finding_count=item.secret_finding_count,
+            )
+            for item in report.items
+        ],
+    )
 
 
 @router.get("/{evidence_id}/secret-scan", response_model=EvidenceSecretScanResponse)
