@@ -19,6 +19,7 @@ from app.playbooks.certificate_tls_failure import evaluate_certificate_tls_failu
 from app.playbooks.dependency_outage import evaluate_dependency_outage
 from app.playbooks.deployment_change_correlation import evaluate_deployment_change_correlation
 from app.playbooks.file_transfer_import_export_failure import evaluate_file_transfer_import_export_failure
+from app.playbooks.intermittent_incident import evaluate_intermittent_incident
 from app.playbooks.missing_incorrect_data import evaluate_missing_incorrect_data
 from app.playbooks.performance_degradation import evaluate_performance_degradation
 from app.playbooks.post_login_feature_failure import (
@@ -175,3 +176,13 @@ def evaluate_deployment_change_correlation_playbook(
     observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
 ) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_deployment_change_correlation, case_repository, evidence_repository, observation_repository)
+
+
+@router.get("/intermittent-incident", response_model=PlaybookResult)
+def evaluate_intermittent_incident_playbook(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+) -> PlaybookResult:
+    return _evaluate_case_playbook(case_id, evaluate_intermittent_incident, case_repository, evidence_repository, observation_repository)
