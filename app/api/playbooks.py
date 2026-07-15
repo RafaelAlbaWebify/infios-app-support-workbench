@@ -19,6 +19,7 @@ from app.playbooks.post_login_feature_failure import (
     evaluate_post_login_feature_failure,
 )
 from app.playbooks.service_unavailable import evaluate_service_unavailable
+from app.playbooks.sql_database_connectivity import evaluate_sql_database_connectivity
 
 router = APIRouter(prefix="/api/cases/{case_id}/playbooks", tags=["playbooks"])
 PlaybookEvaluator = Callable[[SupportCase, list[EvidenceItem], list[Observation]], PlaybookResult]
@@ -113,6 +114,22 @@ def evaluate_performance_degradation_playbook(
     return _evaluate_case_playbook(
         case_id,
         evaluate_performance_degradation,
+        case_repository,
+        evidence_repository,
+        observation_repository,
+    )
+
+
+@router.get("/sql-database-connectivity", response_model=PlaybookResult)
+def evaluate_sql_database_connectivity_playbook(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
+) -> PlaybookResult:
+    return _evaluate_case_playbook(
+        case_id,
+        evaluate_sql_database_connectivity,
         case_repository,
         evidence_repository,
         observation_repository,
