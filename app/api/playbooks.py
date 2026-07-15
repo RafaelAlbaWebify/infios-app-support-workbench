@@ -15,6 +15,7 @@ from app.playbooks.api_integration_failure import evaluate_api_integration_failu
 from app.playbooks.authentication_failure import evaluate_authentication_failure
 from app.playbooks.authorization_failure import evaluate_authorization_failure
 from app.playbooks.background_job_scheduler_failure import evaluate_background_job_scheduler_failure
+from app.playbooks.certificate_tls_failure import evaluate_certificate_tls_failure
 from app.playbooks.file_transfer_import_export_failure import evaluate_file_transfer_import_export_failure
 from app.playbooks.missing_incorrect_data import evaluate_missing_incorrect_data
 from app.playbooks.performance_degradation import evaluate_performance_degradation
@@ -45,100 +46,55 @@ def _evaluate_case_playbook(
 
 
 @router.get("/post-login-feature-failure", response_model=PlaybookResult)
-def evaluate_post_login_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_post_login_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_post_login_feature_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/authentication-failure", response_model=PlaybookResult)
-def evaluate_authentication_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_authentication_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_authentication_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/authorization-failure", response_model=PlaybookResult)
-def evaluate_authorization_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_authorization_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_authorization_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/service-unavailable", response_model=PlaybookResult)
-def evaluate_service_unavailable_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_service_unavailable_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_service_unavailable, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/performance-degradation", response_model=PlaybookResult)
-def evaluate_performance_degradation_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_performance_degradation_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_performance_degradation, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/sql-database-connectivity", response_model=PlaybookResult)
-def evaluate_sql_database_connectivity_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_sql_database_connectivity_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_sql_database_connectivity, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/api-integration-failure", response_model=PlaybookResult)
-def evaluate_api_integration_failure_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_api_integration_failure_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_api_integration_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/missing-incorrect-data", response_model=PlaybookResult)
-def evaluate_missing_incorrect_data_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_missing_incorrect_data_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_missing_incorrect_data, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/background-job-scheduler-failure", response_model=PlaybookResult)
-def evaluate_background_job_scheduler_failure_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_background_job_scheduler_failure_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_background_job_scheduler_failure, case_repository, evidence_repository, observation_repository)
 
 
 @router.get("/file-transfer-import-export-failure", response_model=PlaybookResult)
-def evaluate_file_transfer_import_export_failure_playbook(
-    case_id: str,
-    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
-    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
-    observation_repository: SQLiteObservationRepository = Depends(get_observation_repository),
-) -> PlaybookResult:
+def evaluate_file_transfer_import_export_failure_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
     return _evaluate_case_playbook(case_id, evaluate_file_transfer_import_export_failure, case_repository, evidence_repository, observation_repository)
+
+
+@router.get("/certificate-tls-failure", response_model=PlaybookResult)
+def evaluate_certificate_tls_failure_playbook(case_id: str, case_repository: SQLiteCaseRepository = Depends(get_case_repository), evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository), observation_repository: SQLiteObservationRepository = Depends(get_observation_repository)) -> PlaybookResult:
+    return _evaluate_case_playbook(case_id, evaluate_certificate_tls_failure, case_repository, evidence_repository, observation_repository)
