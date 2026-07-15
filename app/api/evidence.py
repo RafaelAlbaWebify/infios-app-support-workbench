@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from app.api.cases import DEFAULT_CASE_DATABASE, get_case_repository
 from app.domain.models import CertaintyLevel, EvidenceItem, EvidenceSensitivity
+from app.log_ingestion import sanitize_log_text
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
 
@@ -26,6 +27,21 @@ class CreateEvidenceRequest(BaseModel):
     redacted: bool = False
     attachment_reference: str | None = None
     notes: str | None = None
+
+
+class ImportLogRequest(BaseModel):
+    source: str = Field(min_length=1, max_length=300)
+    content: str = Field(min_length=1)
+    observed_at: datetime | None = None
+    certainty: CertaintyLevel = CertaintyLevel.UNKNOWN
+    sensitivity: EvidenceSensitivity = EvidenceSensitivity.INTERNAL
+
+
+class ImportedLogResponse(BaseModel):
+    evidence: EvidenceItem
+    original_bytes: int
+    line_count: int
+    redactions: dict[str, int]
 
 
 class EvidenceListResponse(BaseModel):
@@ -64,6 +80,43 @@ def create_evidence(
         notes=request.notes,
     )
     return evidence_repository.save(evidence)
+
+
+@router.post("/import-log", response_model=ImportedLogResponse, status_code=status.HTTP_201_CREATED)
+def import_sanitized_log(
+    case_id: str,
+    request: ImportLogRequest,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+) -> ImportedLogResponse:
+    _require_case(case_id, case_repository)
+    try:
+        result = sanitize_log_text(request.content)
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    redactions = {finding.kind: finding.replacements for finding in result.findings}
+    evidence = EvidenceItem(
+        case_id=case_id,
+        evidence_type="log_sample",
+        source=request.source,
+        observed_at=request.observed_at,
+        content=result.content,
+        certainty=request.certainty,
+        sensitivity=request.sensitivity,
+        redacted=True,
+        notes=(
+            f"Sanitized log import: {result.line_count} line(s), {result.original_bytes} original byte(s), "
+            f"{sum(redactions.values())} automatic redaction(s)."
+        ),
+    )
+    saved = evidence_repository.save(evidence)
+    return ImportedLogResponse(
+        evidence=saved,
+        original_bytes=result.original_bytes,
+        line_count=result.line_count,
+        redactions=redactions,
+    )
 
 
 @router.get("", response_model=EvidenceListResponse)
