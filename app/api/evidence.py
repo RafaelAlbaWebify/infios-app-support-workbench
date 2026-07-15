@@ -13,6 +13,7 @@ from app.domain.models import CertaintyLevel, EvidenceItem, EvidenceSensitivity
 from app.log_ingestion import sanitize_log_text
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
+from app.secret_scanning import scan_evidence_content
 
 
 router = APIRouter(prefix="/api/cases/{case_id}/evidence", tags=["evidence"])
@@ -49,6 +50,19 @@ class ImportedLogResponse(BaseModel):
     line_count: int
     redactions: dict[str, int]
     correlation_identifiers: list[CorrelationIdentifierResponse]
+
+
+class SecretScanFindingResponse(BaseModel):
+    kind: str
+    location: str
+    occurrences: int
+
+
+class EvidenceSecretScanResponse(BaseModel):
+    evidence_id: str
+    status: str
+    finding_count: int
+    findings: list[SecretScanFindingResponse]
 
 
 class EvidenceListResponse(BaseModel):
@@ -141,6 +155,34 @@ def list_evidence(
     _require_case(case_id, case_repository)
     evidence = evidence_repository.list_for_case(case_id, limit=limit)
     return EvidenceListResponse(evidence=evidence, count=len(evidence))
+
+
+@router.get("/{evidence_id}/secret-scan", response_model=EvidenceSecretScanResponse)
+def scan_evidence_for_secrets(
+    case_id: str,
+    evidence_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    evidence_repository: SQLiteEvidenceRepository = Depends(get_evidence_repository),
+) -> EvidenceSecretScanResponse:
+    _require_case(case_id, case_repository)
+    evidence = evidence_repository.get(evidence_id)
+    if evidence is None or evidence.case_id != case_id:
+        raise HTTPException(status_code=404, detail="Evidence item not found")
+
+    findings = scan_evidence_content(evidence.content)
+    return EvidenceSecretScanResponse(
+        evidence_id=evidence.evidence_id,
+        status="attention_required" if findings else "clean",
+        finding_count=sum(finding.occurrences for finding in findings),
+        findings=[
+            SecretScanFindingResponse(
+                kind=finding.kind,
+                location=finding.location,
+                occurrences=finding.occurrences,
+            )
+            for finding in findings
+        ],
+    )
 
 
 @router.get("/{evidence_id}", response_model=EvidenceItem)
