@@ -19,6 +19,7 @@ from app.api.evidence_quality_analytics import router as evidence_quality_analyt
 from app.api.explanations import router as explanations_router
 from app.api.handover_analytics import router as handover_analytics_router
 from app.api.handovers import router as handovers_router
+from app.api.known_errors import router as known_errors_router
 from app.api.lifecycle import router as lifecycle_router
 from app.api.observations import router as observations_router
 from app.api.operational_trends import router as operational_trends_router
@@ -49,6 +50,7 @@ app.include_router(problem_rca_router)
 app.include_router(problem_actions_router)
 app.include_router(problem_readiness_router)
 app.include_router(problem_lifecycle_router)
+app.include_router(known_errors_router)
 app.include_router(analytics_router)
 app.include_router(operational_trends_router)
 app.include_router(problem_action_workload_router)
