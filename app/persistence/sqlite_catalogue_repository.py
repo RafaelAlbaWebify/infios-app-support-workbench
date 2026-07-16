@@ -54,6 +54,11 @@ class SQLiteCatalogueRepository:
             )
         return dependency
 
+    def list_dependencies(self) -> list[ServiceDependency]:
+        with self._connect() as connection:
+            rows = connection.execute("SELECT payload_json FROM catalogue_dependencies ORDER BY rowid").fetchall()
+        return [ServiceDependency.model_validate_json(row["payload_json"]) for row in rows]
+
     def list_dependencies_for_service(self, service_id: str) -> list[ServiceDependency]:
         with self._connect() as connection:
             rows = connection.execute(
