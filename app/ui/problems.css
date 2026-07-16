@@ -19,8 +19,15 @@
 .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
 .record-list { display: grid; gap: 10px; }
 .record-card, .history-card { padding: 14px; border: 1px solid var(--border); border-radius: 10px; }
-.record-card p, .history-card p { margin: 6px 0; color: var(--muted); }
-.readiness-card, .status-change-card { margin-top: 24px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; }
+.record-card p, .history-card p { margin: 6px 0; color: var(--muted); overflow-wrap: anywhere; }
+.known-error-section, .known-error-review, .readiness-card, .status-change-card { margin-top: 24px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; }
+.known-error-section { background: #fbfcfd; }
+.known-error-review { background: #f5f8ff; border-left: 4px solid var(--accent); }
+.known-error-review form { margin-top: 18px; }
+.known-error-draft { border-left: 4px solid var(--warning); }
+.known-error-published { border-left: 4px solid #2e7d32; }
+.known-error-retired { opacity: .78; border-left: 4px solid var(--muted); }
+.compact-action { margin-top: 10px; }
 .readiness-card { background: #fff8e6; border-left: 4px solid var(--warning); }
 .readiness-card ul { margin-bottom: 0; }
 .status-change-card { background: #f5f8ff; }
