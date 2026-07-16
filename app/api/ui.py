@@ -21,3 +21,8 @@ def operational_analytics() -> FileResponse:
 @router.get("/problems", include_in_schema=False)
 def problem_management() -> FileResponse:
     return FileResponse(UI_DIR / "problems.html", media_type="text/html")
+
+
+@router.get("/handovers", include_in_schema=False)
+def shift_handovers() -> FileResponse:
+    return FileResponse(UI_DIR / "handovers.html", media_type="text/html")
