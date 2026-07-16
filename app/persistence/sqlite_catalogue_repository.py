@@ -42,7 +42,7 @@ class SQLiteCatalogueRepository:
 
     def list_services(self, *, active_only: bool = True) -> list[ServiceCatalogueEntry]:
         with self._connect() as connection:
-            rows = connection.execute("SELECT payload_json FROM catalogue_services ORDER BY service_id").fetchall()
+            rows = connection.execute("SELECT payload_json FROM catalogue_services ORDER BY rowid").fetchall()
         services = [ServiceCatalogueEntry.model_validate_json(row["payload_json"]) for row in rows]
         return [service for service in services if service.active] if active_only else services
 
