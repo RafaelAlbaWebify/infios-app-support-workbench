@@ -18,19 +18,19 @@ DISCLAIMER = (
 
 class ApplicationAttentionItem(BaseModel):
     application: str
-    active_case_count: int
-    high_severity_active_case_count: int
-    unassigned_active_case_count: int
-    blocked_or_waiting_case_count: int
-    active_problem_count: int
-    recurring_problem_count: int
-    overdue_action_count: int
-    blocked_action_count: int
-    validation_pending_action_count: int
-    recent_handover_attention_count: int
-    recent_handover_blocker_count: int
-    evidence_attention_case_count: int
-    cases_without_evidence_count: int
+    active_case_count: int = 0
+    high_severity_active_case_count: int = 0
+    unassigned_active_case_count: int = 0
+    blocked_or_waiting_case_count: int = 0
+    active_problem_count: int = 0
+    recurring_problem_count: int = 0
+    overdue_action_count: int = 0
+    blocked_action_count: int = 0
+    validation_pending_action_count: int = 0
+    recent_handover_attention_count: int = 0
+    recent_handover_blocker_count: int = 0
+    evidence_attention_case_count: int = 0
+    cases_without_evidence_count: int = 0
 
 class ApplicationOperationalAttentionReport(BaseModel):
     generated_at: datetime
