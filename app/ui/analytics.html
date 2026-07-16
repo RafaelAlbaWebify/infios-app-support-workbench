@@ -16,7 +16,7 @@
   <main class="analytics-layout" id="main-content" tabindex="-1">
     <section class="analytics-intro">
       <div><p class="step-label">Operational visibility</p><h2>Support analytics</h2><p class="lead">Review stored workload and attention signals without changing any case, problem, action, handover, or evidence record.</p></div>
-      <button class="secondary" id="refresh-analytics" type="button">Refresh reports</button>
+      <div class="analytics-controls"><label>Activity window<select id="analytics-window"><option value="7">7 days</option><option value="30" selected>30 days</option><option value="90">90 days</option><option value="180">180 days</option><option value="365">365 days</option></select></label><button class="secondary" id="refresh-analytics" type="button">Refresh reports</button></div>
     </section>
     <p id="analytics-status" class="muted" role="status" aria-live="polite">Loading reports…</p>
     <p id="analytics-error" class="error" role="alert" hidden></p>
@@ -27,6 +27,12 @@
       <article class="metric-card"><span>Active problems</span><strong id="metric-active-problems">—</strong></article>
       <article class="metric-card"><span>Overdue actions</span><strong id="metric-overdue-actions">—</strong></article>
       <article class="metric-card"><span>Evidence review cases</span><strong id="metric-evidence-attention">—</strong></article>
+    </section>
+
+    <section class="analytics-panel" id="activity-trends-panel">
+      <div class="section-heading"><div><p class="step-label">Selected time window</p><h2>Recorded activity trends</h2><p class="muted">Timestamp activity is descriptive. It is not a productivity, reliability, or performance measure.</p></div><span id="trend-window-label" class="status-badge">30 days</span></div>
+      <div class="trend-summary" aria-label="Trend totals"><span>Created <strong id="trend-created">0</strong></span><span>Updated <strong id="trend-updated">0</strong></span><span>Resolved or closed <strong id="trend-resolved">0</strong></span><span>Handovers <strong id="trend-handovers">0</strong></span></div>
+      <div class="table-wrap"><table class="trend-table"><thead><tr><th>Date</th><th>Created</th><th>Updated</th><th>Resolved / closed</th></tr></thead><tbody id="trend-activity-body"><tr><td colspan="4" class="empty-cell">Loading activity trends…</td></tr></tbody></table></div>
     </section>
 
     <section class="analytics-panel">
