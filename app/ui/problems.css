@@ -1,0 +1,31 @@
+.problem-layout { width: min(1440px, calc(100% - 40px)); margin: 32px auto 60px; display: grid; gap: 22px; }
+.top-actions { display: flex; align-items: center; gap: 12px; }
+.top-link { color: white; font-weight: 750; text-decoration: none; padding: 8px 10px; border-radius: 8px; }
+.top-link:hover, .top-link:focus-visible { background: rgba(255,255,255,.12); }
+.problem-intro, .problem-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: clamp(24px, 4vw, 40px); }
+.problem-intro { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
+.problem-intro h2, .problem-panel h2 { margin: 8px 0; }
+.problem-intro .lead { margin-bottom: 0; }
+.problem-columns { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 2fr); gap: 22px; align-items: start; }
+.problem-list { display: grid; gap: 10px; margin-top: 18px; }
+.problem-list button { width: 100%; padding: 16px; text-align: left; border: 1px solid var(--border); border-radius: 12px; background: white; color: var(--text); }
+.problem-list button:hover, .problem-list button[aria-current="true"] { border-color: var(--accent); background: #f5f8ff; }
+.problem-list strong, .problem-list span { display: block; }
+.problem-list span { margin-top: 5px; color: var(--muted); font-size: 12px; }
+.detail-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+.problem-metadata { display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; padding: 18px; background: var(--surface-soft); border-radius: 12px; }
+.problem-metadata dt { color: var(--muted); }
+.problem-metadata dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 24px; }
+.record-list { display: grid; gap: 10px; }
+.record-card, .history-card { padding: 14px; border: 1px solid var(--border); border-radius: 10px; }
+.record-card p, .history-card p { margin: 6px 0; color: var(--muted); }
+.readiness-card, .status-change-card { margin-top: 24px; padding: 20px; border: 1px solid var(--border); border-radius: 12px; }
+.readiness-card { background: #fff8e6; border-left: 4px solid var(--warning); }
+.readiness-card ul { margin-bottom: 0; }
+.status-change-card { background: #f5f8ff; }
+.status-change-card form { margin-top: 18px; }
+.analytics-disclaimer { padding: 18px 20px; border-left: 4px solid var(--warning); border-radius: 10px; background: #fff8e6; }
+.analytics-disclaimer p { margin: 7px 0 0; color: #664d03; line-height: 1.5; }
+@media (max-width: 900px) { .problem-columns, .detail-grid { grid-template-columns: 1fr; } .problem-panel { min-width: 0; } }
+@media (max-width: 700px) { .problem-layout { width: min(100% - 24px, 760px); margin-top: 18px; } .problem-intro { display: grid; } .detail-heading { display: block; } .detail-heading .status-badge { margin-top: 10px; } .top-actions { flex-wrap: wrap; justify-content: flex-end; } }

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFIOS — Problem Management</title>
+  <link rel="stylesheet" href="/ui/static/styles.css">
+  <link rel="stylesheet" href="/ui/static/problems.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="topbar">
+    <div><p class="eyebrow">Application Incident Investigation Workbench</p><h1>INFIOS</h1></div>
+    <nav class="top-actions" aria-label="Primary"><a class="top-link" href="/">Incident workbench</a><a class="top-link" href="/analytics">Analytics</a><span class="mode-pill">Problem management</span></nav>
+  </header>
+  <main class="problem-layout" id="main-content" tabindex="-1">
+    <section class="problem-intro"><div><p class="step-label">Recurring incident control</p><h2>Problem records</h2><p class="lead">Review explicitly grouped cases, RCA statements, corrective actions, closure readiness, and audited lifecycle changes.</p></div><button id="refresh-problems" class="secondary" type="button">Refresh problems</button></section>
+    <p id="problem-status-message" class="muted" role="status" aria-live="polite">Loading problem records…</p>
+    <p id="problem-error" class="error" role="alert" hidden></p>
+    <div class="problem-columns">
+      <section class="problem-panel"><div class="section-heading"><h2>Problem list</h2><span id="problem-count" class="status-badge">0 problems</span></div><div id="problem-list" class="problem-list empty-state">Loading problems…</div></section>
+      <section class="problem-panel" id="problem-detail" hidden>
+        <div class="detail-heading"><div><p class="step-label">Selected problem</p><h2 id="problem-title"></h2><p id="problem-summary" class="lead"></p></div><span id="problem-current-status" class="status-badge"></span></div>
+        <dl class="problem-metadata"><dt>Owner</dt><dd id="problem-owner"></dd><dt>Linked cases</dt><dd id="problem-cases"></dd><dt>Occurrences</dt><dd id="problem-occurrences"></dd></dl>
+        <div class="detail-grid"><section><h3>RCA statements</h3><div id="problem-rca" class="empty-state">No RCA statements.</div></section><section><h3>Corrective actions</h3><div id="problem-actions" class="empty-state">No corrective actions.</div></section></div>
+        <section class="readiness-card"><div class="section-heading"><div><h3>Closure readiness</h3><p class="muted">Advisory only. A ready report never closes a problem automatically.</p></div><span id="readiness-state" class="status-badge"></span></div><ul id="readiness-blockers"></ul></section>
+        <section><h3>Lifecycle history</h3><div id="problem-history" class="empty-state">No status transitions recorded.</div></section>
+        <section class="status-change-card"><h3>Record a status change</h3><p class="muted">Every change requires an operator and reason. Closure is accepted only from resolved status when readiness has no blockers.</p><form id="problem-status-form"><div class="two-column"><label>New status<select id="new-problem-status" required><option value="">Select status</option><option value="open">Open</option><option value="investigating">Investigating</option><option value="known_error">Known error</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></label><label>Changed by<input id="problem-changed-by" required maxlength="200" placeholder="Example: L2 Support"></label></div><label>Reason<textarea id="problem-change-reason" required maxlength="2000" rows="3" placeholder="Record why this lifecycle change is appropriate."></textarea></label><div class="actions"><button class="primary" type="submit">Save status change</button></div></form></section>
+      </section>
+    </div>
+    <section class="analytics-disclaimer"><strong>Interpretation boundary</strong><p>Problem grouping, status, RCA, actions, and readiness describe explicit stored records. They do not independently prove shared root cause, prevention effectiveness, reliability, ownership, or team performance.</p></section>
+  </main>
+  <script src="/ui/static/problems.js" defer></script>
+</body>
+</html>

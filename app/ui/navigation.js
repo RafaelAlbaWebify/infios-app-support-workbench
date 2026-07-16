@@ -34,7 +34,6 @@ function wrapAdvancedArea(section, definition) {
   details.className = 'work-area-disclosure';
   details.id = definition.id;
   details.open = Boolean(definition.open);
-
   const summary = document.createElement('summary');
   const label = document.createElement('span');
   label.textContent = definition.label;
@@ -42,7 +41,6 @@ function wrapAdvancedArea(section, definition) {
   hint.className = 'muted disclosure-hint';
   hint.textContent = 'Show or hide';
   summary.append(label, hint);
-
   section.removeAttribute('id');
   section.classList.add('work-area-content');
   section.parentNode.insertBefore(details, section);
@@ -54,29 +52,23 @@ function buildWorkAreaNavigation() {
   const casePanel = document.querySelector('#case-panel');
   const summaryGrid = casePanel?.querySelector('.summary-grid');
   if (!casePanel || !summaryGrid || document.querySelector('#case-work-navigation')) return;
-
   const navigation = document.createElement('nav');
   navigation.id = 'case-work-navigation';
   navigation.className = 'case-work-navigation';
   navigation.setAttribute('aria-label', 'Case work areas');
-
   const heading = document.createElement('strong');
   heading.textContent = 'Jump to';
   const links = document.createElement('div');
   links.className = 'case-work-links';
-
   workAreaDefinitions.forEach((definition) => {
     const section = casePanel.querySelector(definition.selector);
     if (!section) return;
-
     let target = section;
-    if (definition.advanced) {
-      target = wrapAdvancedArea(section, definition);
-    } else {
+    if (definition.advanced) target = wrapAdvancedArea(section, definition);
+    else {
       section.id = definition.id;
       section.classList.add('work-area-anchor');
     }
-
     const link = document.createElement('a');
     link.href = `#${definition.id}`;
     link.textContent = definition.label;
@@ -91,23 +83,27 @@ function buildWorkAreaNavigation() {
     });
     links.append(link);
   });
-
   navigation.append(heading, links);
   summaryGrid.insertAdjacentElement('afterend', navigation);
 }
 
-function addAnalyticsNavigation() {
+function addOperationalNavigation() {
   const topbar = document.querySelector('.topbar');
   const modePill = topbar?.querySelector('.mode-pill');
   if (!topbar || !modePill || document.querySelector('#open-analytics')) return;
-  const link = document.createElement('a');
-  link.id = 'open-analytics';
-  link.className = 'mode-pill';
-  link.href = '/analytics';
-  link.textContent = 'Operational analytics';
-  link.style.color = 'white';
-  link.style.textDecoration = 'none';
-  topbar.insertBefore(link, modePill);
+  [
+    ['open-problems', '/problems', 'Problem management'],
+    ['open-analytics', '/analytics', 'Operational analytics'],
+  ].forEach(([id, href, label]) => {
+    const link = document.createElement('a');
+    link.id = id;
+    link.className = 'mode-pill';
+    link.href = href;
+    link.textContent = label;
+    link.style.color = 'white';
+    link.style.textDecoration = 'none';
+    topbar.insertBefore(link, modePill);
+  });
 }
 
 function updateCaseSummaryDownload(caseId) {
@@ -129,5 +125,5 @@ window.addEventListener('infios:case-opened', (event) => {
   updateCaseSummaryDownload(event.detail?.caseId);
 });
 
-addAnalyticsNavigation();
+addOperationalNavigation();
 buildWorkAreaNavigation();
