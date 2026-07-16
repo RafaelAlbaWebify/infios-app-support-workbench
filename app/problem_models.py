@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, computed_field, model_validator
 
 
 def _new_id() -> str:
@@ -41,6 +41,7 @@ class ProblemRecord(BaseModel):
             raise ValueError("A support case cannot be linked to the same problem more than once.")
         return self
 
+    @computed_field
     @property
     def occurrence_count(self) -> int:
         return len(self.case_ids)
