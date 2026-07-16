@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFIOS — Service Catalogue</title>
+  <link rel="stylesheet" href="/ui/static/styles.css">
+  <link rel="stylesheet" href="/ui/static/catalogue.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="topbar"><div><p class="eyebrow">Application Incident Investigation Workbench</p><h1>INFIOS</h1></div><nav class="top-actions" aria-label="Primary"><a class="top-link" href="/">Incident workbench</a><a class="top-link" href="/problems">Problems</a><a class="top-link" href="/handovers">Handovers</a><a class="top-link" href="/analytics">Analytics</a><span class="mode-pill">Service catalogue</span></nav></header>
+  <main class="catalogue-layout" id="main-content" tabindex="-1">
+    <section class="catalogue-intro"><div><p class="step-label">Operational context</p><h2>Service catalogue</h2><p class="lead">Review stored applications, services, support ownership, environments, references, dependencies, and completeness gaps.</p></div><button id="refresh-catalogue" class="secondary" type="button">Refresh catalogue</button></section>
+    <p id="catalogue-status" class="muted" role="status" aria-live="polite">Loading catalogue…</p>
+    <p id="catalogue-error" class="error" role="alert" hidden></p>
+    <section class="summary-strip" aria-label="Catalogue summary"><article><strong id="service-total">0</strong><span>Services</span></article><article><strong id="dependency-total">0</strong><span>Dependencies</span></article><article><strong id="attention-total">0</strong><span>Need context</span></article></section>
+    <div class="catalogue-columns">
+      <section class="catalogue-panel"><div class="section-heading"><h2>Services</h2><span id="catalogue-count" class="status-badge">0 services</span></div><div id="catalogue-list" class="catalogue-list empty-state">Loading services…</div></section>
+      <section class="catalogue-panel" id="catalogue-detail" hidden>
+        <div class="detail-heading"><div><p class="step-label">Selected service</p><h2 id="service-name"></h2><p id="service-description" class="lead"></p></div><span id="service-kind" class="status-badge"></span></div>
+        <dl class="service-metadata"><dt>Owner team</dt><dd id="service-owner"></dd><dt>Support contact</dt><dd id="service-contact"></dd><dt>Criticality</dt><dd id="service-criticality"></dd><dt>Environments</dt><dd id="service-environments"></dd><dt>Runbook</dt><dd id="service-runbook"></dd><dt>Status page</dt><dd id="service-status-page"></dd></dl>
+        <section><div class="section-heading"><h3>Recorded dependencies</h3><span id="dependency-count" class="status-badge">0 dependencies</span></div><div id="service-dependencies" class="empty-state">No dependency records.</div></section>
+        <section class="completeness-card"><div class="section-heading"><h3>Completeness review</h3><span id="service-completeness" class="status-badge"></span></div><p id="service-missing" class="muted"></p></section>
+      </section>
+    </div>
+    <section class="analytics-disclaimer"><strong>Interpretation boundary</strong><p>Catalogue entries, dependency records, ownership fields, and completeness gaps are operational context only. They do not prove service failure, incident causation, support responsibility, or root cause.</p></section>
+  </main>
+  <script src="/ui/static/catalogue.js" defer></script>
+</body>
+</html>
