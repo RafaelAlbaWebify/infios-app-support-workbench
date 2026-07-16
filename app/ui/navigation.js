@@ -92,8 +92,10 @@ function addOperationalNavigation() {
   const modePill = topbar?.querySelector('.mode-pill');
   if (!topbar || !modePill || document.querySelector('#open-analytics')) return;
   [
-    ['open-problems', '/problems', 'Problem management'],
-    ['open-analytics', '/analytics', 'Operational analytics'],
+    ['open-problems', '/problems', 'Problems'],
+    ['open-handovers', '/handovers', 'Handovers'],
+    ['open-catalogue', '/catalogue', 'Catalogue'],
+    ['open-analytics', '/analytics', 'Analytics'],
   ].forEach(([id, href, label]) => {
     const link = document.createElement('a');
     link.id = id;
