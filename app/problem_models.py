@@ -23,6 +23,14 @@ class ProblemStatus(str, Enum):
     CLOSED = "closed"
 
 
+class ProblemStatusChange(BaseModel):
+    from_status: ProblemStatus
+    to_status: ProblemStatus
+    changed_by: str = Field(min_length=1, max_length=200)
+    reason: str = Field(min_length=1, max_length=2000)
+    changed_at: datetime = Field(default_factory=_utc_now)
+
+
 class ProblemRecord(BaseModel):
     problem_id: str = Field(default_factory=_new_id)
     title: str = Field(min_length=1, max_length=200)
@@ -32,6 +40,7 @@ class ProblemRecord(BaseModel):
     created_by: str = Field(min_length=1, max_length=200)
     case_ids: list[str] = Field(min_length=1, max_length=200)
     recurrence_notes: str | None = Field(default=None, max_length=4000)
+    status_history: list[ProblemStatusChange] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=_utc_now)
     updated_at: datetime = Field(default_factory=_utc_now)
 

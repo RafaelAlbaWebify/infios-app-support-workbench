@@ -25,6 +25,7 @@ from app.api.operational_trends import router as operational_trends_router
 from app.api.playbooks import router as playbooks_router
 from app.api.problem_action_workload import router as problem_action_workload_router
 from app.api.problem_actions import router as problem_actions_router
+from app.api.problem_lifecycle import router as problem_lifecycle_router
 from app.api.problem_rca import router as problem_rca_router
 from app.api.problem_readiness import router as problem_readiness_router
 from app.api.problems import router as problems_router
@@ -47,6 +48,7 @@ app.include_router(problems_router)
 app.include_router(problem_rca_router)
 app.include_router(problem_actions_router)
 app.include_router(problem_readiness_router)
+app.include_router(problem_lifecycle_router)
 app.include_router(analytics_router)
 app.include_router(operational_trends_router)
 app.include_router(problem_action_workload_router)
