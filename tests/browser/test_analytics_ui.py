@@ -47,7 +47,7 @@ def test_operator_can_open_refresh_and_change_window(page: Page, analytics_base_
     expect(page.get_by_role("heading", name="Support analytics")).to_be_visible()
     expect(page.get_by_text("Recorded activity trends")).to_be_visible()
     expect(page.get_by_text("Separate attention signals")).to_be_visible()
-    expect(page.get_by_role("link", name="Incident workbench")).to_have_attribute("href", "/")
+    expect(page.get_by_role("link", name="Incidents")).to_have_attribute("href", "/")
     expect(page.locator("#analytics-error")).to_be_hidden()
     expect(page.locator("#analytics-status")).to_contain_text("30-day activity window")
     expect(page.locator("#trend-window-label")).to_have_text("30 days")
