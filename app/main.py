@@ -18,6 +18,7 @@ from app.api.handovers import router as handovers_router
 from app.api.lifecycle import router as lifecycle_router
 from app.api.observations import router as observations_router
 from app.api.playbooks import router as playbooks_router
+from app.api.problem_actions import router as problem_actions_router
 from app.api.problem_rca import router as problem_rca_router
 from app.api.problems import router as problems_router
 from app.api.recovery import router as recovery_router
@@ -41,6 +42,7 @@ app.include_router(catalogue_router)
 app.include_router(handovers_router)
 app.include_router(problems_router)
 app.include_router(problem_rca_router)
+app.include_router(problem_actions_router)
 app.include_router(database_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
