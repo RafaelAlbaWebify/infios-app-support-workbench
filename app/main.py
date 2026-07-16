@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.analyzer import analyze_incident
 from app.api.actions import router as actions_router
+from app.api.analytics import router as analytics_router
 from app.api.cases import router as cases_router
 from app.api.catalogue import router as catalogue_router
 from app.api.database import router as database_router
@@ -45,6 +46,7 @@ app.include_router(problems_router)
 app.include_router(problem_rca_router)
 app.include_router(problem_actions_router)
 app.include_router(problem_readiness_router)
+app.include_router(analytics_router)
 app.include_router(database_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
