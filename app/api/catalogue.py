@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from app.api.cases import DEFAULT_CASE_DATABASE, get_case_repository
 from app.catalogue_models import CaseServiceLink, CaseServiceRole, Criticality, DependencyType, ServiceCatalogueEntry, ServiceDependency, ServiceKind
+from app.dependency_context import CaseDependencyContextReport, build_case_dependency_context
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 from app.persistence.sqlite_catalogue_repository import SQLiteCatalogueRepository
 
@@ -125,3 +126,35 @@ def list_case_services(
     links = repository.list_case_links(case_id)
     services = [service for link in links if (service := repository.get_service(link.service_id)) is not None]
     return CaseServiceLinkListResponse(links=links, services=services, count=len(links))
+
+
+@router.get("/cases/{case_id}/dependency-context", response_model=CaseDependencyContextReport)
+def case_dependency_context(
+    case_id: str,
+    case_repository: SQLiteCaseRepository = Depends(get_case_repository),
+    repository: SQLiteCatalogueRepository = Depends(get_catalogue_repository),
+) -> CaseDependencyContextReport:
+    if case_repository.get(case_id) is None:
+        raise HTTPException(status_code=404, detail="Support case not found")
+
+    links = repository.list_case_links(case_id)
+    services_by_id: dict[str, ServiceCatalogueEntry] = {}
+    dependencies_by_id: dict[str, ServiceDependency] = {}
+
+    for link in links:
+        linked_service = repository.get_service(link.service_id)
+        if linked_service is not None:
+            services_by_id[linked_service.service_id] = linked_service
+        for dependency in repository.list_dependencies_for_service(link.service_id):
+            dependencies_by_id[dependency.dependency_id] = dependency
+            for related_service_id in (dependency.source_service_id, dependency.target_service_id):
+                related_service = repository.get_service(related_service_id)
+                if related_service is not None:
+                    services_by_id[related_service.service_id] = related_service
+
+    return build_case_dependency_context(
+        case_id=case_id,
+        links=links,
+        services_by_id=services_by_id,
+        dependencies=list(dependencies_by_id.values()),
+    )
