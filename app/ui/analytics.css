@@ -1,0 +1,28 @@
+.analytics-layout { width: min(1380px, calc(100% - 40px)); margin: 32px auto 60px; display: grid; gap: 22px; }
+.top-actions { display: flex; align-items: center; gap: 12px; }
+.top-link { color: white; font-weight: 750; text-decoration: none; padding: 8px 10px; border-radius: 8px; }
+.top-link:hover, .top-link:focus-visible { background: rgba(255,255,255,.12); }
+.analytics-intro, .analytics-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: clamp(24px, 4vw, 40px); }
+.analytics-intro { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.analytics-intro h2, .analytics-panel h2 { margin: 8px 0; }
+.analytics-intro .lead { margin-bottom: 0; max-width: 800px; }
+.metric-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.metric-card { padding: 20px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); box-shadow: var(--shadow); }
+.metric-card span { display: block; color: var(--muted); font-size: 13px; }
+.metric-card strong { display: block; margin-top: 8px; font-size: clamp(28px, 4vw, 40px); }
+.analytics-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.table-wrap { overflow-x: auto; margin-top: 20px; }
+table { width: 100%; border-collapse: collapse; min-width: 980px; }
+th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+tbody tr:hover { background: var(--surface-soft); }
+.empty-cell { color: var(--muted); text-align: center; padding: 28px; }
+.signal-list { display: grid; grid-template-columns: 1fr auto; gap: 0; margin: 18px 0 0; }
+.signal-list dt, .signal-list dd { margin: 0; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.signal-list dt { color: var(--muted); }
+.signal-list dd { font-weight: 800; }
+.analytics-disclaimer { padding: 18px 20px; border-left: 4px solid var(--warning); border-radius: 10px; background: #fff8e6; }
+.analytics-disclaimer p { margin: 7px 0 0; color: #664d03; line-height: 1.5; }
+@media (max-width: 1050px) { .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .analytics-layout { width: min(100% - 24px, 760px); margin-top: 18px; } .analytics-intro, .analytics-columns { grid-template-columns: 1fr; } .analytics-intro { display: grid; } .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .top-actions { align-items: flex-end; flex-direction: column-reverse; } }
+@media (max-width: 480px) { .metric-grid { grid-template-columns: 1fr; } }
