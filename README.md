@@ -137,9 +137,10 @@ The earlier scenario analyzer, CLI, sample incidents, reports, JSON output and l
 
 ```powershell
 python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
+python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
 ```
 
-Additional public-safe examples cover access failures, SQL timeouts and log-pattern correlation.
+Additional public-safe examples cover access failures and log-pattern correlation.
 
 ## Demo Reports
 
