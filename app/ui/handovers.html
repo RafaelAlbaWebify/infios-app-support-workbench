@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFIOS — Shift Handovers</title>
+  <link rel="stylesheet" href="/ui/static/styles.css">
+  <link rel="stylesheet" href="/ui/static/handovers.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="topbar">
+    <div><p class="eyebrow">Application Incident Investigation Workbench</p><h1>INFIOS</h1></div>
+    <nav class="top-actions" aria-label="Primary"><a class="top-link" href="/">Incident workbench</a><a class="top-link" href="/problems">Problems</a><a class="top-link" href="/analytics">Analytics</a><span class="mode-pill">Shift handovers</span></nav>
+  </header>
+  <main class="handover-layout" id="main-content" tabindex="-1">
+    <section class="handover-intro"><div><p class="step-label">Operator-authored snapshots</p><h2>Shift handovers</h2><p class="lead">Review immutable handover records, linked cases, current status summaries, next actions, blockers, and attention flags.</p></div><button id="refresh-handovers" class="secondary" type="button">Refresh handovers</button></section>
+    <p id="handover-status" class="muted" role="status" aria-live="polite">Loading handovers…</p>
+    <p id="handover-error" class="error" role="alert" hidden></p>
+    <div class="handover-columns">
+      <section class="handover-panel"><div class="section-heading"><h2>Recent handovers</h2><span id="handover-count" class="status-badge">0 handovers</span></div><div id="handover-list" class="handover-list empty-state">Loading handovers…</div></section>
+      <section class="handover-panel" id="handover-detail" hidden>
+        <div class="detail-heading"><div><p class="step-label">Selected snapshot</p><h2 id="handover-title"></h2><p id="handover-summary" class="lead"></p></div><span id="handover-created" class="status-badge"></span></div>
+        <dl class="handover-metadata"><dt>Prepared by</dt><dd id="handover-prepared-by"></dd><dt>Cases</dt><dd id="handover-case-count"></dd><dt>Attention required</dt><dd id="handover-attention-count"></dd></dl>
+        <section><h3>Case snapshots</h3><div id="handover-cases" class="empty-state">No case snapshots.</div></section>
+      </section>
+    </div>
+    <section class="analytics-disclaimer"><strong>Interpretation boundary</strong><p>Handovers are immutable operator-authored snapshots. They do not independently prove incident severity, root cause, service health, handover quality, or operator performance.</p></section>
+  </main>
+  <script src="/ui/static/handovers.js" defer></script>
+</body>
+</html>
