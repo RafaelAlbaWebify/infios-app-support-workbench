@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>INFIOS — Operational Analytics</title>
+  <link rel="stylesheet" href="/ui/static/styles.css">
+  <link rel="stylesheet" href="/ui/static/analytics.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="topbar">
+    <div><p class="eyebrow">Application Incident Investigation Workbench</p><h1>INFIOS</h1></div>
+    <nav class="top-actions" aria-label="Primary"><a class="top-link" href="/">Incident workbench</a><span class="mode-pill">Read-only analytics</span></nav>
+  </header>
+  <main class="analytics-layout" id="main-content" tabindex="-1">
+    <section class="analytics-intro">
+      <div><p class="step-label">Operational visibility</p><h2>Support analytics</h2><p class="lead">Review stored workload and attention signals without changing any case, problem, action, handover, or evidence record.</p></div>
+      <button class="secondary" id="refresh-analytics" type="button">Refresh reports</button>
+    </section>
+    <p id="analytics-status" class="muted" role="status" aria-live="polite">Loading reports…</p>
+    <p id="analytics-error" class="error" role="alert" hidden></p>
+
+    <section class="metric-grid" aria-label="Operational snapshot">
+      <article class="metric-card"><span>Active cases</span><strong id="metric-active-cases">—</strong></article>
+      <article class="metric-card"><span>Unassigned active</span><strong id="metric-unassigned">—</strong></article>
+      <article class="metric-card"><span>Active problems</span><strong id="metric-active-problems">—</strong></article>
+      <article class="metric-card"><span>Overdue actions</span><strong id="metric-overdue-actions">—</strong></article>
+      <article class="metric-card"><span>Evidence review cases</span><strong id="metric-evidence-attention">—</strong></article>
+    </section>
+
+    <section class="analytics-panel">
+      <div class="section-heading"><div><p class="step-label">Application view</p><h2>Separate attention signals</h2><p class="muted">Ordering helps presentation only. It is not a risk score or service-health assessment.</p></div><span id="application-count" class="status-badge">0 applications</span></div>
+      <div class="table-wrap"><table><thead><tr><th>Application</th><th>Active</th><th>High severity</th><th>Unassigned</th><th>Blocked / waiting</th><th>Active problems</th><th>Overdue actions</th><th>Evidence flags</th><th>No evidence</th></tr></thead><tbody id="application-attention-body"><tr><td colspan="9" class="empty-cell">Loading application signals…</td></tr></tbody></table></div>
+    </section>
+
+    <div class="analytics-columns">
+      <section class="analytics-panel"><div class="section-heading"><div><p class="step-label">Corrective actions</p><h2>Workload requiring review</h2></div></div><dl class="signal-list" id="action-signals"></dl></section>
+      <section class="analytics-panel"><div class="section-heading"><div><p class="step-label">Evidence metadata</p><h2>Coverage and automated flags</h2></div></div><dl class="signal-list" id="evidence-signals"></dl></section>
+    </div>
+
+    <section class="analytics-disclaimer" aria-label="Analytics limitations"><strong>Interpretation boundary</strong><p id="analytics-disclaimer">These reports describe explicitly stored metadata. They do not prove root cause, causation, service quality, ownership, or support-team performance.</p></section>
+  </main>
+  <script src="/ui/static/analytics.js" defer></script>
+</body>
+</html>
