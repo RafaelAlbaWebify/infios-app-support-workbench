@@ -95,7 +95,7 @@ function addOperationalNavigation() {
     ['open-problems', '/problems', 'Problems'],
     ['open-handovers', '/handovers', 'Handovers'],
     ['open-catalogue', '/catalogue', 'Catalogue'],
-    ['open-analytics', '/analytics', 'Analytics'],
+    ['open-analytics', '/analytics', 'Operational analytics'],
   ].forEach(([id, href, label]) => {
     const link = document.createElement('a');
     link.id = id;
