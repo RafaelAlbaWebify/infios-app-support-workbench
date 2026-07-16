@@ -62,5 +62,8 @@ def test_catalogue_list_detail_and_completeness(page: Page, catalogue_base_url: 
     expect(page.get_by_text("service-app → service-db")).to_be_visible()
     expect(page.get_by_text("Missing operational context: status page reference.")).to_be_visible()
     expect(page.get_by_text("They do not prove service failure", exact=False)).to_be_visible()
+    navigation = page.get_by_role("navigation", name="Primary")
+    for destination in ("/", "/problems", "/handovers", "/analytics"):
+        expect(navigation.locator(f'a[href="{destination}"]')).to_be_visible()
     Path("browser-artifacts").mkdir(exist_ok=True)
     page.screenshot(path="browser-artifacts/catalogue-ui.png", full_page=True)
