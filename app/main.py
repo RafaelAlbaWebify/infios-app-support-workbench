@@ -14,6 +14,7 @@ from app.api.database import router as database_router
 from app.api.escalations import router as escalations_router
 from app.api.evidence import router as evidence_router
 from app.api.explanations import router as explanations_router
+from app.api.handovers import router as handovers_router
 from app.api.lifecycle import router as lifecycle_router
 from app.api.observations import router as observations_router
 from app.api.playbooks import router as playbooks_router
@@ -35,6 +36,7 @@ app.mount("/ui/static", StaticFiles(directory=UI_DIR), name="ui-static")
 app.include_router(ui_router)
 app.include_router(cases_router)
 app.include_router(catalogue_router)
+app.include_router(handovers_router)
 app.include_router(database_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
