@@ -14,6 +14,7 @@ from app.api.catalogue import router as catalogue_router
 from app.api.database import router as database_router
 from app.api.escalations import router as escalations_router
 from app.api.evidence import router as evidence_router
+from app.api.evidence_quality_analytics import router as evidence_quality_analytics_router
 from app.api.explanations import router as explanations_router
 from app.api.handover_analytics import router as handover_analytics_router
 from app.api.handovers import router as handovers_router
@@ -53,6 +54,7 @@ app.include_router(analytics_router)
 app.include_router(operational_trends_router)
 app.include_router(problem_action_workload_router)
 app.include_router(handover_analytics_router)
+app.include_router(evidence_quality_analytics_router)
 app.include_router(database_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
