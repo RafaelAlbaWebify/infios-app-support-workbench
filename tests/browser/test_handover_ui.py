@@ -68,7 +68,7 @@ def test_handover_list_and_detail(page: Page, handover_base_url: str) -> None:
     expect(page.get_by_text("Two incidents require follow-up.")).to_be_visible()
     expect(page.get_by_role("heading", name="case-100")).to_be_visible()
     expect(page.get_by_text("Constraint: Waiting for the application owner.")).to_be_visible()
-    expect(page.get_by_text("Attention required", exact=True)).to_be_visible()
+    expect(page.locator("#handover-cases").get_by_text("Attention required", exact=True)).to_be_visible()
     expect(page.get_by_text("They do not independently prove incident severity", exact=False)).to_be_visible()
     Path("browser-artifacts").mkdir(exist_ok=True)
     page.screenshot(path="browser-artifacts/shift-handover-ui.png", full_page=True)
