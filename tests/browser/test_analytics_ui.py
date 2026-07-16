@@ -41,18 +41,24 @@ def analytics_base_url() -> str:
             process.kill()
 
 
-def test_operator_can_open_and_refresh_analytics(page: Page, analytics_base_url: str) -> None:
+def test_operator_can_open_refresh_and_change_window(page: Page, analytics_base_url: str) -> None:
     page.goto(f"{analytics_base_url}/analytics")
 
     expect(page.get_by_role("heading", name="Support analytics")).to_be_visible()
+    expect(page.get_by_text("Recorded activity trends")).to_be_visible()
     expect(page.get_by_text("Separate attention signals")).to_be_visible()
     expect(page.get_by_role("link", name="Incident workbench")).to_have_attribute("href", "/")
     expect(page.locator("#analytics-error")).to_be_hidden()
-    expect(page.locator("#analytics-status")).to_contain_text("Reports refreshed")
+    expect(page.locator("#analytics-status")).to_contain_text("30-day activity window")
+    expect(page.locator("#trend-window-label")).to_have_text("30 days")
+
+    page.locator("#analytics-window").select_option("7")
+    expect(page.locator("#analytics-status")).to_contain_text("7-day activity window")
+    expect(page.locator("#trend-window-label")).to_have_text("7 days")
 
     page.get_by_role("button", name="Refresh reports").click()
     expect(page.locator("#analytics-status")).to_contain_text("Reports refreshed")
 
     artifact_dir = Path("browser-artifacts")
     artifact_dir.mkdir(exist_ok=True)
-    page.screenshot(path=str(artifact_dir / "analytics-ui.png"), full_page=True)
+    page.screenshot(path=str(artifact_dir / "analytics-ui-time-window.png"), full_page=True)
