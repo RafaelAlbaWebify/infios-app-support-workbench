@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
 from app.api.cases import DEFAULT_CASE_DATABASE, get_case_repository
+from app.catalogue_completeness import CatalogueCompletenessReport, build_catalogue_completeness_report
 from app.catalogue_models import CaseServiceLink, CaseServiceRole, Criticality, DependencyType, ServiceCatalogueEntry, ServiceDependency, ServiceKind
 from app.dependency_context import CaseDependencyContextReport, build_case_dependency_context
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
@@ -71,6 +72,17 @@ def create_service(request: CreateServiceRequest, repository: SQLiteCatalogueRep
 def list_services(active_only: bool = Query(default=True), repository: SQLiteCatalogueRepository = Depends(get_catalogue_repository)) -> ServiceListResponse:
     services = repository.list_services(active_only=active_only)
     return ServiceListResponse(services=services, count=len(services))
+
+
+@router.get("/completeness-report", response_model=CatalogueCompletenessReport)
+def catalogue_completeness_report(
+    include_inactive: bool = Query(default=False),
+    repository: SQLiteCatalogueRepository = Depends(get_catalogue_repository),
+) -> CatalogueCompletenessReport:
+    return build_catalogue_completeness_report(
+        services=repository.list_services(active_only=not include_inactive),
+        dependencies=repository.list_dependencies(),
+    )
 
 
 @router.get("/services/{service_id}", response_model=ServiceCatalogueEntry)
