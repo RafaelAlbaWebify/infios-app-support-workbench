@@ -91,7 +91,7 @@ def test_problem_detail_audit_and_known_error_review(page: Page, problems_base_u
     page.goto(f"{problems_base_url}/problems")
     expect(page.get_by_role("heading", name="Repeated order issue")).to_be_visible()
     expect(page.get_by_text("Temporary order recovery guidance")).to_be_visible()
-    expect(page.get_by_text("approved change required", exact=False)).to_be_visible()
+    expect(page.locator("#problem-known-errors").get_by_text("approved change required", exact=False)).to_be_visible()
     page.get_by_role("button", name="Review and publish").click()
     page.locator("#known-error-approved-by").fill("Rafael")
     page.locator("#known-error-approval-reason").fill("Reviewed for operational use")

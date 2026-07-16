@@ -13,6 +13,7 @@
 .problem-list strong, .problem-list span { display: block; }
 .problem-list span { margin-top: 5px; color: var(--muted); font-size: 12px; }
 .detail-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
+.section-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .problem-metadata { display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; padding: 18px; background: var(--surface-soft); border-radius: 12px; }
 .problem-metadata dt { color: var(--muted); }
 .problem-metadata dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
@@ -24,6 +25,8 @@
 .known-error-section { background: #fbfcfd; }
 .known-error-review { background: #f5f8ff; border-left: 4px solid var(--accent); }
 .known-error-review form { margin-top: 18px; }
+.checkbox-row { display: flex; flex-direction: row; align-items: center; gap: 10px; }
+.checkbox-row input { width: auto; }
 .known-error-draft { border-left: 4px solid var(--warning); }
 .known-error-published { border-left: 4px solid #2e7d32; }
 .known-error-retired { opacity: .78; border-left: 4px solid var(--muted); }
