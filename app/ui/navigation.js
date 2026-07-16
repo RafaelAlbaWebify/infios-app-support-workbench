@@ -96,6 +96,20 @@ function buildWorkAreaNavigation() {
   summaryGrid.insertAdjacentElement('afterend', navigation);
 }
 
+function addAnalyticsNavigation() {
+  const topbar = document.querySelector('.topbar');
+  const modePill = topbar?.querySelector('.mode-pill');
+  if (!topbar || !modePill || document.querySelector('#open-analytics')) return;
+  const link = document.createElement('a');
+  link.id = 'open-analytics';
+  link.className = 'mode-pill';
+  link.href = '/analytics';
+  link.textContent = 'Operational analytics';
+  link.style.color = 'white';
+  link.style.textDecoration = 'none';
+  topbar.insertBefore(link, modePill);
+}
+
 function updateCaseSummaryDownload(caseId) {
   const footer = document.querySelector('.footer-actions');
   if (!footer || !caseId) return;
@@ -115,4 +129,5 @@ window.addEventListener('infios:case-opened', (event) => {
   updateCaseSummaryDownload(event.detail?.caseId);
 });
 
+addAnalyticsNavigation();
 buildWorkAreaNavigation();
