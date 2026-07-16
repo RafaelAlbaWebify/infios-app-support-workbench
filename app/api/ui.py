@@ -16,3 +16,8 @@ def guided_workbench() -> FileResponse:
 @router.get("/analytics", include_in_schema=False)
 def operational_analytics() -> FileResponse:
     return FileResponse(UI_DIR / "analytics.html", media_type="text/html")
+
+
+@router.get("/problems", include_in_schema=False)
+def problem_management() -> FileResponse:
+    return FileResponse(UI_DIR / "problems.html", media_type="text/html")
