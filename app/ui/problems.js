@@ -48,18 +48,6 @@ function renderProblemList() {
   });
 }
 
-function renderCards(targetId, items, render) {
-  const target = document.getElementById(targetId);
-  target.replaceChildren();
-  if (!items.length) {
-    target.className = 'empty-state';
-    target.textContent = targetId === 'problem-rca' ? 'No RCA statements.' : 'No corrective actions.';
-    return;
-  }
-  target.className = 'record-list';
-  items.forEach((item) => target.append(render(item)));
-}
-
 function recordCard(title, lines) {
   const article = document.createElement('article');
   article.className = 'record-card';
@@ -74,6 +62,64 @@ function recordCard(title, lines) {
   return article;
 }
 
+function renderCards(targetId, items, render) {
+  const target = document.getElementById(targetId);
+  target.replaceChildren();
+  if (!items.length) {
+    target.className = 'empty-state';
+    target.textContent = targetId === 'problem-rca' ? 'No RCA statements.' : 'No corrective actions.';
+    return;
+  }
+  target.className = 'record-list';
+  items.forEach((item) => target.append(render(item)));
+}
+
+function openKnownErrorReview(record) {
+  const panel = document.getElementById('known-error-review');
+  document.getElementById('known-error-id').value = record.known_error_id;
+  document.getElementById('known-error-action').value = record.status === 'draft' ? 'publish' : 'retire';
+  document.getElementById('known-error-approved-by').value = '';
+  document.getElementById('known-error-approval-reason').value = '';
+  text('known-error-review-title', `${record.status === 'draft' ? 'Publish' : 'Retire'}: ${record.title}`);
+  updateKnownErrorReviewRequirements();
+  panel.hidden = false;
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function renderKnownErrors(records) {
+  const target = document.getElementById('problem-known-errors');
+  target.replaceChildren();
+  text('known-error-count', `${records.length} record${records.length === 1 ? '' : 's'}`);
+  document.getElementById('known-error-review').hidden = true;
+  if (!records.length) {
+    target.className = 'empty-state';
+    target.textContent = 'No known-error records.';
+    return;
+  }
+  target.className = 'record-list';
+  records.forEach((record) => {
+    const card = recordCard(record.title, [
+      `Status: ${readable(record.status)} · Safety: ${readable(record.safety)}`,
+      `Owner: ${record.owner}`,
+      `Symptoms: ${record.symptom_summary}`,
+      `Workaround: ${(record.workaround_steps || []).join(' → ')}`,
+      `Limitations: ${record.workaround_limitations}`,
+      `Validation: ${record.validation_guidance}`,
+      record.approved_by ? `Approved by ${record.approved_by}: ${record.approval_reason}` : 'Not yet published.',
+    ]);
+    card.classList.add(`known-error-${record.status}`);
+    if (record.status === 'draft' || record.status === 'published') {
+      const button = document.createElement('button');
+      button.className = 'secondary compact-action';
+      button.type = 'button';
+      button.textContent = record.status === 'draft' ? 'Review and publish' : 'Retire guidance';
+      button.addEventListener('click', () => openKnownErrorReview(record));
+      card.append(button);
+    }
+    target.append(card);
+  });
+}
+
 function renderHistory(history) {
   const target = document.getElementById('problem-history');
   target.replaceChildren();
@@ -83,25 +129,24 @@ function renderHistory(history) {
     return;
   }
   target.className = 'record-list';
-  [...history].reverse().forEach((event) => {
-    target.append(recordCard(`${readable(event.from_status)} → ${readable(event.to_status)}`, [
-      `${event.changed_by} · ${new Date(event.changed_at).toLocaleString()}`,
-      event.reason,
-    ]));
-  });
+  [...history].reverse().forEach((event) => target.append(recordCard(`${readable(event.from_status)} → ${readable(event.to_status)}`, [
+    `${event.changed_by} · ${new Date(event.changed_at).toLocaleString()}`,
+    event.reason,
+  ])));
 }
 
 function renderReadiness(report) {
   text('readiness-state', report.ready_for_operator_review ? 'Ready for operator review' : 'Not ready');
   const blockers = document.getElementById('readiness-blockers');
   blockers.replaceChildren();
-  if (!report.blockers?.length) {
+  const values = report.blockers || [];
+  if (!values.length) {
     const item = document.createElement('li');
     item.textContent = 'No readiness blockers are currently recorded.';
     blockers.append(item);
     return;
   }
-  report.blockers.forEach((blocker) => {
+  values.forEach((blocker) => {
     const item = document.createElement('li');
     item.textContent = readable(blocker);
     blockers.append(item);
@@ -116,10 +161,11 @@ async function openProblem(problemId) {
   error.hidden = true;
   text('problem-status-message', 'Loading selected problem…');
   try {
-    const [problem, rca, actions, readiness] = await Promise.all([
+    const [problem, rca, actions, knownErrors, readiness] = await Promise.all([
       requestJson(`/api/problems/${problemId}`),
       requestJson(`/api/problems/${problemId}/rca`),
       requestJson(`/api/problems/${problemId}/actions`),
+      requestJson(`/api/problems/${problemId}/known-errors`),
       requestJson(`/api/problems/${problemId}/closure-readiness`),
     ]);
     text('problem-title', problem.title);
@@ -128,14 +174,9 @@ async function openProblem(problemId) {
     text('problem-owner', problem.owner);
     text('problem-cases', (problem.case_ids || []).join(', '));
     text('problem-occurrences', problem.occurrence_count ?? problem.case_ids?.length ?? 0);
-    renderCards('problem-rca', rca.statements || [], (item) => recordCard(item.statement, [
-      `Status: ${readable(item.status)}`,
-      `Supporting explanations: ${item.supporting_explanation_ids?.length || 0}`,
-    ]));
-    renderCards('problem-actions', actions.actions || [], (item) => recordCard(item.title, [
-      `Status: ${readable(item.status)} · Type: ${readable(item.action_type)}`,
-      `Owner: ${item.owner}${item.due_date ? ` · Due: ${item.due_date}` : ''}`,
-    ]));
+    renderCards('problem-rca', rca.statements || [], (item) => recordCard(item.statement, [`Status: ${readable(item.status)}`, `Supporting explanations: ${item.supporting_explanation_ids?.length || 0}`]));
+    renderCards('problem-actions', actions.actions || [], (item) => recordCard(item.title, [`Status: ${readable(item.status)} · Type: ${readable(item.action_type)}`, `Owner: ${item.owner}${item.due_date ? ` · Due: ${item.due_date}` : ''}`]));
+    renderKnownErrors(knownErrors.records || []);
     renderReadiness(readiness);
     renderHistory(problem.status_history || []);
     document.getElementById('new-problem-status').value = '';
@@ -157,9 +198,7 @@ async function loadProblems({ preserveSelection = true } = {}) {
   try {
     const report = await requestJson('/api/problems?active_only=false');
     problemRecords = report.problems || [];
-    if (!preserveSelection || !problemRecords.some((item) => item.problem_id === selectedProblemId)) {
-      selectedProblemId = problemRecords[0]?.problem_id || null;
-    }
+    if (!preserveSelection || !problemRecords.some((item) => item.problem_id === selectedProblemId)) selectedProblemId = problemRecords[0]?.problem_id || null;
     renderProblemList();
     if (selectedProblemId) await openProblem(selectedProblemId);
     else text('problem-status-message', 'No problem records found.');
@@ -177,18 +216,10 @@ async function submitStatusChange(event) {
   if (!selectedProblemId) return;
   const error = document.getElementById('problem-error');
   error.hidden = true;
-  const body = {
-    to_status: document.getElementById('new-problem-status').value,
-    changed_by: document.getElementById('problem-changed-by').value.trim(),
-    reason: document.getElementById('problem-change-reason').value.trim(),
-  };
+  const body = { to_status: document.getElementById('new-problem-status').value, changed_by: document.getElementById('problem-changed-by').value.trim(), reason: document.getElementById('problem-change-reason').value.trim() };
   text('problem-status-message', 'Saving audited status change…');
   try {
-    await requestJson(`/api/problems/${selectedProblemId}/status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
+    await requestJson(`/api/problems/${selectedProblemId}/status`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     document.getElementById('problem-status-form').reset();
     await loadProblems({ preserveSelection: true });
     text('problem-status-message', 'Status change saved with operator audit details.');
@@ -199,6 +230,42 @@ async function submitStatusChange(event) {
   }
 }
 
+function updateKnownErrorReviewRequirements() {
+  const publish = document.getElementById('known-error-action').value === 'publish';
+  document.getElementById('known-error-approved-by').required = publish;
+  document.getElementById('known-error-approval-reason').required = publish;
+  document.getElementById('known-error-reason-label').hidden = !publish;
+}
+
+async function submitKnownErrorAction(event) {
+  event.preventDefault();
+  if (!selectedProblemId) return;
+  const id = document.getElementById('known-error-id').value;
+  const action = document.getElementById('known-error-action').value;
+  const error = document.getElementById('problem-error');
+  error.hidden = true;
+  const options = { method: 'POST' };
+  if (action === 'publish') {
+    options.headers = { 'Content-Type': 'application/json' };
+    options.body = JSON.stringify({ approved_by: document.getElementById('known-error-approved-by').value.trim(), approval_reason: document.getElementById('known-error-approval-reason').value.trim() });
+  }
+  text('problem-status-message', `${action === 'publish' ? 'Publishing' : 'Retiring'} known-error guidance…`);
+  try {
+    await requestJson(`/api/problems/${selectedProblemId}/known-errors/${id}/${action}`, options);
+    document.getElementById('known-error-review-form').reset();
+    document.getElementById('known-error-review').hidden = true;
+    await openProblem(selectedProblemId);
+    text('problem-status-message', `Known-error guidance ${action === 'publish' ? 'published with approval audit' : 'retired'}.`);
+  } catch (cause) {
+    error.textContent = `Known-error action was not saved. ${cause.message}`;
+    error.hidden = false;
+    text('problem-status-message', 'Known-error action blocked.');
+  }
+}
+
 document.getElementById('refresh-problems')?.addEventListener('click', () => loadProblems());
 document.getElementById('problem-status-form')?.addEventListener('submit', submitStatusChange);
+document.getElementById('known-error-review-form')?.addEventListener('submit', submitKnownErrorAction);
+document.getElementById('known-error-action')?.addEventListener('change', updateKnownErrorReviewRequirements);
+document.getElementById('cancel-known-error-review')?.addEventListener('click', () => { document.getElementById('known-error-review').hidden = true; });
 loadProblems({ preserveSelection: false });
