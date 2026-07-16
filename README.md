@@ -131,18 +131,27 @@ The API provides case, evidence, observation, playbook, diagnostic-action, possi
 
 The browser workflow and generated exports use the same persistent case model. See the local OpenAPI page for the complete endpoint contract.
 
-## Legacy scenario analyzer
+## Demo Commands
 
 The earlier scenario analyzer, CLI, sample incidents, reports, JSON output and local run history remain available for compatibility and focused demonstrations.
 
-Example:
-
 ```powershell
-python -m app.cli analyze samples/incident-503-dependency.json `
-  --out reports/generated/cli-503-demo.md
+python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
 ```
 
 Additional public-safe examples cover access failures, SQL timeouts and log-pattern correlation.
+
+## Demo Reports
+
+Generated examples remain available under `reports/`, including:
+
+- `reports/sample-500-login-report.md`
+- `reports/sample-403-access-report.md`
+- `reports/sample-503-dependency-report.md`
+- `reports/sample-sql-query-timeout-report.md`
+- `reports/sample-log-pattern-report.md`
+
+These reports demonstrate incident summaries, user impact, evidence tables, unconfirmed possible causes, missing evidence, safe next steps, escalation notes and cautious RCA material.
 
 ## Exports
 
