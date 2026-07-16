@@ -14,7 +14,7 @@
     <nav class="top-actions" aria-label="Primary"><a class="top-link" href="/">Incident workbench</a><a class="top-link" href="/problems">Problems</a><a class="top-link" href="/analytics">Analytics</a><span class="mode-pill">Shift handovers</span></nav>
   </header>
   <main class="handover-layout" id="main-content" tabindex="-1">
-    <section class="handover-intro"><div><p class="step-label">Operator-authored snapshots</p><h2>Shift handovers</h2><p class="lead">Review immutable handover records, linked cases, current status summaries, next actions, blockers, and attention flags.</p></div><button id="refresh-handovers" class="secondary" type="button">Refresh handovers</button></section>
+    <section class="handover-intro"><div><p class="step-label">Operator-authored snapshots</p><h2>Shift handovers</h2><p class="lead">Review immutable handover records, linked cases, current status summaries, next actions, constraints, and attention flags.</p></div><button id="refresh-handovers" class="secondary" type="button">Refresh handovers</button></section>
     <p id="handover-status" class="muted" role="status" aria-live="polite">Loading handovers…</p>
     <p id="handover-error" class="error" role="alert" hidden></p>
     <div class="handover-columns">
@@ -27,6 +27,38 @@
     </div>
     <section class="analytics-disclaimer"><strong>Interpretation boundary</strong><p>Handovers are immutable operator-authored snapshots. They do not independently prove incident severity, root cause, service health, handover quality, or operator performance.</p></section>
   </main>
-  <script src="/ui/static/handovers.js" defer></script>
+  <script>
+    let records = [];
+    let selectedId = null;
+    const writeText = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = String(value ?? ''); };
+    const when = (value) => value ? new Date(value).toLocaleString() : 'Unknown time';
+    async function getJson(url) { const response = await fetch(url, { headers: { Accept: 'application/json' } }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `HTTP ${response.status}`); return data; }
+    function showList() {
+      const target = document.getElementById('handover-list'); target.replaceChildren();
+      writeText('handover-count', `${records.length} handover${records.length === 1 ? '' : 's'}`);
+      if (!records.length) { target.className = 'handover-list empty-state'; target.textContent = 'No shift handovers are currently stored.'; document.getElementById('handover-detail').hidden = true; return; }
+      target.className = 'handover-list';
+      records.forEach((record) => { const button = document.createElement('button'); button.type = 'button'; button.setAttribute('aria-current', record.handover_id === selectedId ? 'true' : 'false'); const title = document.createElement('strong'); title.textContent = record.shift_label; const meta = document.createElement('span'); const attention = (record.cases || []).filter((item) => item.attention_required).length; meta.textContent = `${when(record.created_at)} · ${record.prepared_by} · ${attention} attention flag${attention === 1 ? '' : 's'}`; button.append(title, meta); button.addEventListener('click', () => openRecord(record.handover_id)); target.append(button); });
+    }
+    function showCases(cases) {
+      const target = document.getElementById('handover-cases'); target.replaceChildren();
+      if (!cases.length) { target.className = 'empty-state'; target.textContent = 'No case snapshots.'; return; }
+      target.className = 'case-snapshot-list';
+      cases.forEach((item) => { const card = document.createElement('article'); card.className = `case-snapshot${item.attention_required ? ' attention' : ''}`; const heading = document.createElement('h4'); heading.textContent = item.case_id; const status = document.createElement('p'); status.textContent = `Status summary: ${item.status_summary}`; const next = document.createElement('p'); next.textContent = `Next action: ${item.next_action}`; card.append(heading, status, next); if (item.blocker) { const constraint = document.createElement('p'); constraint.textContent = `Constraint: ${item.blocker}`; card.append(constraint); } if (item.attention_required) { const flag = document.createElement('strong'); flag.textContent = 'Attention required'; card.append(flag); } target.append(card); });
+    }
+    async function openRecord(id) {
+      selectedId = id; showList(); document.getElementById('handover-error').hidden = true; writeText('handover-status', 'Loading selected handover…');
+      try { const record = await getJson(`/api/handovers/${id}`); writeText('handover-title', record.shift_label); writeText('handover-summary', record.summary); writeText('handover-created', when(record.created_at)); writeText('handover-prepared-by', record.prepared_by); writeText('handover-case-count', (record.cases || []).length); writeText('handover-attention-count', (record.cases || []).filter((item) => item.attention_required).length); showCases(record.cases || []); document.getElementById('handover-detail').hidden = false; writeText('handover-status', `Handover ${record.handover_id} loaded.`); }
+      catch (error) { const target = document.getElementById('handover-error'); target.textContent = `Handover details could not be loaded. ${error.message}`; target.hidden = false; writeText('handover-status', 'Handover detail loading failed.'); }
+    }
+    async function loadRecords() {
+      const refresh = document.getElementById('refresh-handovers'); const error = document.getElementById('handover-error'); refresh.disabled = true; error.hidden = true; writeText('handover-status', 'Loading handovers…');
+      try { const report = await getJson('/api/handovers?limit=100'); records = report.handovers || []; if (!records.some((item) => item.handover_id === selectedId)) selectedId = records[0]?.handover_id || null; showList(); if (selectedId) await openRecord(selectedId); else writeText('handover-status', 'No shift handovers found.'); }
+      catch (cause) { error.textContent = `Shift handovers could not be loaded. ${cause.message}`; error.hidden = false; writeText('handover-status', 'Handover loading failed.'); }
+      finally { refresh.disabled = false; }
+    }
+    document.getElementById('refresh-handovers').addEventListener('click', loadRecords);
+    loadRecords();
+  </script>
 </body>
 </html>
