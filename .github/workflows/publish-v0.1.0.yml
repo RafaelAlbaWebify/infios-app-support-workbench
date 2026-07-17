@@ -1,0 +1,51 @@
+name: Publish INFIOS 0.1.0
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/publish-v0.1.0.yml
+      - docs/RELEASE_NOTES_0.1.0.md
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out exact release commit
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build tooling
+        run: python -m pip install --upgrade pip build
+
+      - name: Build Windows distribution
+        run: python tools/build_windows_package.py --output dist
+
+      - name: Verify release asset
+        run: test -f dist/INFIOS-0.1.0-windows.zip
+
+      - name: Create or update GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: v0.1.0
+          ASSET: dist/INFIOS-0.1.0-windows.zip
+          NOTES: docs/RELEASE_NOTES_0.1.0.md
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "INFIOS 0.1.0" --notes-file "$NOTES"
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" "$ASSET" \
+              --target "$GITHUB_SHA" \
+              --title "INFIOS 0.1.0" \
+              --notes-file "$NOTES"
+          fi
