@@ -6,12 +6,17 @@
 .problem-intro { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
 .problem-intro h2, .problem-panel h2 { margin: 8px 0; }
 .problem-intro .lead { margin-bottom: 0; }
-.problem-columns { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 2fr); gap: 22px; align-items: start; }
+.problem-columns { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(0, 2fr); gap: 22px; align-items: start; }
+.problem-filter-form { display: grid; gap: 12px; margin-top: 18px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft); }
+.problem-filter-form label { margin: 0; }
+.problem-filter-form input, .problem-filter-form select { margin-top: 6px; }
+.problem-filter-form button { justify-self: start; }
 .problem-list { display: grid; gap: 10px; margin-top: 18px; }
 .problem-list button { width: 100%; padding: 16px; text-align: left; border: 1px solid var(--border); border-radius: 12px; background: white; color: var(--text); }
 .problem-list button:hover, .problem-list button[aria-current="true"] { border-color: var(--accent); background: #f5f8ff; }
 .problem-list strong, .problem-list span { display: block; }
 .problem-list span { margin-top: 5px; color: var(--muted); font-size: 12px; }
+.problem-list[data-filtered-empty="true"]::after { content: "No problems match the current filters."; display: block; padding: 18px; border: 1px dashed var(--border); border-radius: 10px; color: var(--muted); text-align: center; }
 .detail-heading { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; }
 .section-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .problem-metadata { display: grid; grid-template-columns: max-content 1fr; gap: 10px 18px; padding: 18px; background: var(--surface-soft); border-radius: 12px; }
