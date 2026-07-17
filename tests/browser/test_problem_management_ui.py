@@ -42,7 +42,7 @@ def problems_base_url() -> str:
             process.kill()
 
 
-def test_problem_detail_audit_and_known_error_review(page: Page, problems_base_url: str) -> None:
+def test_problem_detail_audit_known_error_and_action_filters(page: Page, problems_base_url: str) -> None:
     status_submitted = []
     publish_submitted = []
     problem = {
@@ -52,6 +52,10 @@ def test_problem_detail_audit_and_known_error_review(page: Page, problems_base_u
         "created_at": "2026-07-16T07:00:00Z", "updated_at": "2026-07-16T07:00:00Z",
         "occurrence_count": 2,
     }
+    actions = [
+        {"title": "Review action plan", "status": "planned", "action_type": "corrective", "owner": "Engineering", "due_date": "2026-07-20"},
+        {"title": "Monitor order queue", "status": "implemented", "action_type": "monitoring", "owner": "L2 Support", "due_date": None},
+    ]
     known_error = {
         "known_error_id": "known-1", "problem_id": "problem-1", "title": "Temporary order recovery guidance",
         "symptom_summary": "Order processing remains pending.", "workaround_steps": ["Verify case scope", "Follow approved runbook"],
@@ -68,7 +72,7 @@ def test_problem_detail_audit_and_known_error_review(page: Page, problems_base_u
         elif url.endswith("/api/problems/problem-1/rca"):
             route.fulfill(json={"statements": [{"statement": "Cause statement under review", "status": "draft", "supporting_explanation_ids": []}], "count": 1})
         elif url.endswith("/api/problems/problem-1/actions"):
-            route.fulfill(json={"actions": [{"title": "Review action plan", "status": "planned", "action_type": "corrective", "owner": "Engineering"}], "count": 1})
+            route.fulfill(json={"actions": actions, "count": len(actions)})
         elif url.endswith("/api/problems/problem-1/known-errors/known-1/publish") and route.request.method == "POST":
             publish_submitted.append(json.loads(route.request.post_data or "{}"))
             known_error.update({"status": "published", "approved_by": "Rafael", "approval_reason": "Reviewed for operational use"})
@@ -90,6 +94,29 @@ def test_problem_detail_audit_and_known_error_review(page: Page, problems_base_u
     page.route("**/api/problems**", api)
     page.goto(f"{problems_base_url}/problems")
     expect(page.get_by_role("heading", name="Repeated order issue")).to_be_visible()
+    expect(page.locator("#action-count")).to_have_text("2 actions")
+
+    page.locator("#action-search").fill("queue")
+    expect(page.locator("#action-count")).to_have_text("1 of 2 actions")
+    expect(page.get_by_text("Monitor order queue")).to_be_visible()
+    expect(page.get_by_text("Review action plan")).to_be_hidden()
+
+    page.locator("#action-search").fill("")
+    page.locator("#action-status-filter").select_option("planned")
+    expect(page.locator("#action-count")).to_have_text("1 of 2 actions")
+    expect(page.get_by_text("Review action plan")).to_be_visible()
+
+    page.locator("#action-status-filter").select_option("")
+    page.locator("#action-type-filter").select_option("monitoring")
+    page.locator("#action-owner-filter").fill("L2")
+    expect(page.locator("#action-count")).to_have_text("1 of 2 actions")
+    expect(page.get_by_text("Monitor order queue")).to_be_visible()
+
+    page.locator("#action-owner-filter").fill("missing")
+    expect(page.locator("#action-filter-empty")).to_be_visible()
+    page.locator("#clear-action-filters").click()
+    expect(page.locator("#action-count")).to_have_text("2 actions")
+
     expect(page.get_by_text("Temporary order recovery guidance")).to_be_visible()
     expect(page.locator("#problem-known-errors").get_by_text("approved change required", exact=False)).to_be_visible()
     page.get_by_role("button", name="Review and publish").click()
