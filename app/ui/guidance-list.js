@@ -75,4 +75,5 @@ if (guidanceTarget && guidanceForm) {
     applyGuidanceFilters();
     guidanceSearch.focus();
   });
+  refreshGuidanceList();
 }
