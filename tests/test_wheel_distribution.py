@@ -56,7 +56,7 @@ from app.main import app
 from app.version import VERSION
 required = {'index.html', 'analytics.html', 'problems.html', 'handovers.html', 'catalogue.html', 'styles.css'}
 assert required <= {path.name for path in UI_DIR.iterdir() if path.is_file()}
-paths = {route.path for route in app.routes}
+paths = {path for route in app.routes if (path := getattr(route, 'path', None))}
 assert {'/', '/analytics', '/problems', '/handovers', '/catalogue', '/api/health'} <= paths
 assert VERSION == '0.1.0'
 """
