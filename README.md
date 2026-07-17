@@ -32,7 +32,8 @@ The current persistent workflow supports:
 - descriptive operational analytics and configurable activity windows;
 - responsive browser interfaces with read-only list filtering;
 - a tested local Windows launcher;
-- an installable wheel verified outside the developer checkout.
+- an installable wheel verified outside the developer checkout;
+- a published versioned Windows distribution ZIP.
 
 ## Operator surfaces
 
@@ -80,6 +81,22 @@ Related cases can then be explicitly grouped into a problem record, reviewed thr
 - Analytics describe stored metadata and do not measure operator performance, service quality, reliability or causality.
 - Browser filters operate only on loaded records and never change stored data.
 - Backend validation remains authoritative for all lifecycle and safety rules.
+
+## Published release
+
+The completed portfolio-ready v1 is published as [`v0.1.0`](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/releases/tag/v0.1.0).
+
+Windows package:
+
+[`INFIOS-0.1.0-windows.zip`](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/releases/download/v0.1.0/INFIOS-0.1.0-windows.zip)
+
+After extraction, run `Start-INFIOS.ps1`. The package creates a private Python environment and stores its default SQLite database under the package-local `data` directory.
+
+Requirements:
+
+- Windows 10 or newer;
+- Python 3.10 or newer available as `python`;
+- internet access during first launch to install Python dependencies.
 
 ## Quick demo on Windows
 
@@ -186,14 +203,15 @@ A change is considered complete only after all required jobs pass on the exact p
 
 ## Project status
 
-The working estimate is **95% complete**, with **5% remaining** for the defined portfolio-ready v1 scope. The remaining work is concentrated in the final end-user distribution/publication workflow, one blocked API-boundary regression, expanded portfolio documentation and Git tag/GitHub Release verification.
+The defined portfolio-ready local-first v1 scope is **100% complete**, with **0% remaining**.
 
-See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the weighted calculation, completed capability inventory and remaining v1 work.
+See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the completed capability inventory, final weighted calculation and intentionally excluded post-v1 scope.
 
 ## Documentation
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — current runtime, module boundaries, persistence, packaging and delivery proof.
 - [`docs/PORTFOLIO_DEMO.md`](docs/PORTFOLIO_DEMO.md) — ten-minute demonstration, interview talking points and safe demo boundaries.
-- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — weighted completion estimate and remaining scope.
+- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — final completion statement and optional post-v1 scope.
+- [`docs/RELEASE_NOTES_0.1.0.md`](docs/RELEASE_NOTES_0.1.0.md) — published release contents, verification and boundaries.
 
 Additional workflow, sample-incident and interview material is available under `docs/`.
