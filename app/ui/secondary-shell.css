@@ -8,7 +8,7 @@ body:not(.infios-shell-ready) > .topbar .top-link,
 body:not(.infios-shell-ready) > .topbar .mode-pill { display: block; width: 100%; padding: .72rem .8rem; border: 1px solid transparent; border-radius: .7rem; background: transparent; color: rgba(255,255,255,.9); font-size: .85rem; font-weight: 730; line-height: 1.2; text-decoration: none; }
 body:not(.infios-shell-ready) > .topbar .top-link:hover,
 body:not(.infios-shell-ready) > .topbar .top-link:focus-visible { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.09); }
-body:not(.infios-shell-ready) > .topbar .mode-pill[aria-current="page"] { border-color: rgba(255,255,255,.08); background: linear-gradient(90deg,rgba(25,118,233,.96),rgba(25,118,233,.72)); color: #fff; }
+body:not(.infios-shell-ready) > .topbar .mode-pill { border-color: rgba(255,255,255,.08); background: linear-gradient(90deg,rgba(25,118,233,.96),rgba(25,118,233,.72)); color: #fff; }
 body:not(.infios-shell-ready) > main { width: min(calc(100% - 3rem),100rem); max-width: 100%; margin: 0 auto; padding-top: 2rem; }
 body:not(.infios-shell-ready) > main > :first-child { padding-bottom: 1.25rem; border-bottom: 1px solid #e1e6ee; }
 body:not(.infios-shell-ready) .problem-panel,
