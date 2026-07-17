@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import venv
 import zipfile
 from pathlib import Path
 
@@ -39,17 +40,17 @@ def test_wheel_contains_runtime_assets_and_imports_outside_checkout(tmp_path) ->
     assert REQUIRED_UI_FILES <= packaged_ui
     assert any(name.endswith(".dist-info/entry_points.txt") for name in names)
 
-    target = tmp_path / "installed"
+    environment = tmp_path / "runtime"
+    venv.EnvBuilder(with_pip=True, system_site_packages=True).create(environment)
+    python = environment / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--no-deps", "--target", str(target), str(wheels[0])],
+        [str(python), "-m", "pip", "install", "--no-deps", str(wheels[0])],
         check=True,
         capture_output=True,
         text=True,
     )
 
     probe = """
-import sys
-sys.path.insert(0, sys.argv[1])
 from app.api.ui import UI_DIR
 from app.main import app
 from app.version import VERSION
@@ -59,10 +60,10 @@ paths = {route.path for route in app.routes}
 assert {'/', '/analytics', '/problems', '/handovers', '/catalogue', '/api/health'} <= paths
 assert VERSION == '0.1.0'
 """
-    subprocess.run(
-        [sys.executable, "-I", "-c", probe, str(target)],
+    result = subprocess.run(
+        [str(python), "-I", "-c", probe],
         cwd=tmp_path,
-        check=True,
         capture_output=True,
         text=True,
     )
+    assert result.returncode == 0, result.stderr
