@@ -41,8 +41,8 @@ def handover_base_url() -> str:
             process.kill()
 
 
-def test_handover_list_and_detail(page: Page, handover_base_url: str) -> None:
-    handover = {
+def test_handover_list_detail_and_filters(page: Page, handover_base_url: str) -> None:
+    evening = {
         "handover_id": "handover-1",
         "shift_label": "Evening shift",
         "prepared_by": "L2 Support",
@@ -53,12 +53,24 @@ def test_handover_list_and_detail(page: Page, handover_base_url: str) -> None:
             {"case_id": "case-101", "status_summary": "User impact has stopped.", "next_action": "Confirm the monitoring result.", "blocker": None, "attention_required": False},
         ],
     }
+    morning = {
+        "handover_id": "handover-2",
+        "shift_label": "Morning shift",
+        "prepared_by": "L1 Support",
+        "summary": "Routine monitoring handover.",
+        "created_at": "2026-07-17T06:00:00Z",
+        "cases": [
+            {"case_id": "case-102", "status_summary": "Monitoring remains stable.", "next_action": "Continue observation.", "blocker": None, "attention_required": False},
+        ],
+    }
 
     def api(route: Route) -> None:
         if route.request.url.endswith("/api/handovers?limit=100"):
-            route.fulfill(json={"handovers": [handover], "count": 1})
+            route.fulfill(json={"handovers": [evening, morning], "count": 2})
         elif route.request.url.endswith("/api/handovers/handover-1"):
-            route.fulfill(json=handover)
+            route.fulfill(json=evening)
+        elif route.request.url.endswith("/api/handovers/handover-2"):
+            route.fulfill(json=morning)
         else:
             route.continue_()
 
@@ -69,6 +81,21 @@ def test_handover_list_and_detail(page: Page, handover_base_url: str) -> None:
     expect(page.get_by_role("heading", name="case-100")).to_be_visible()
     expect(page.get_by_text("Constraint: Waiting for the application owner.")).to_be_visible()
     expect(page.locator("#handover-cases").get_by_text("Attention required", exact=True)).to_be_visible()
+
+    page.get_by_label("Search handovers").fill("Morning")
+    expect(page.locator("#handover-count")).to_have_text("1 of 2 handovers")
+    expect(page.get_by_role("heading", name="Morning shift")).to_be_visible()
+    expect(page.get_by_text("Routine monitoring handover.")).to_be_visible()
+
+    page.get_by_label("Search handovers").fill("")
+    page.get_by_label("Only snapshots with attention flags").check()
+    expect(page.locator("#handover-count")).to_have_text("1 of 2 handovers")
+    expect(page.get_by_role("heading", name="Evening shift")).to_be_visible()
+
+    page.get_by_label("Search handovers").fill("missing")
+    expect(page.get_by_text("No handovers match the current filters.")).to_be_visible()
+    page.get_by_role("button", name="Clear filters").click()
+    expect(page.locator("#handover-count")).to_have_text("2 handovers")
     expect(page.get_by_text("They do not independently prove incident severity", exact=False)).to_be_visible()
     Path("browser-artifacts").mkdir(exist_ok=True)
     page.screenshot(path="browser-artifacts/shift-handover-ui.png", full_page=True)
