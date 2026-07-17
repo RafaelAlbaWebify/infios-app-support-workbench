@@ -192,4 +192,8 @@ See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the weighted calculat
 
 ## Documentation
 
-Additional architecture, workflow, sample-incident and interview material is available under `docs/`.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — current runtime, module boundaries, persistence, packaging and delivery proof.
+- [`docs/PORTFOLIO_DEMO.md`](docs/PORTFOLIO_DEMO.md) — ten-minute demonstration, interview talking points and safe demo boundaries.
+- [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — weighted completion estimate and remaining scope.
+
+Additional workflow, sample-incident and interview material is available under `docs/`.
