@@ -11,6 +11,12 @@ from playwright.sync_api import Page, expect
 
 
 SURFACES = ("/", "/problems", "/handovers", "/catalogue", "/analytics")
+SECONDARY_SURFACES = (
+    ("/problems", "Problems"),
+    ("/handovers", "Handovers"),
+    ("/catalogue", "Service catalogue"),
+    ("/analytics", "Read-only analytics"),
+)
 
 
 @pytest.fixture(scope="module")
@@ -99,6 +105,49 @@ def test_incident_surface_uses_shared_product_shell(page: Page, usability_base_u
     assert 220 <= geometry["sidebarWidth"] <= 280
     assert geometry["sidebarHeight"] >= 900
     assert geometry["contentLeft"] >= geometry["sidebarWidth"] - 1
+
+    overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+    assert overflow <= 1
+
+
+@pytest.mark.parametrize(("surface", "active_label"), SECONDARY_SURFACES)
+def test_secondary_surfaces_use_trace_aligned_sidebar(
+    page: Page,
+    usability_base_url: str,
+    surface: str,
+    active_label: str,
+) -> None:
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    response = page.goto(f"{usability_base_url}{surface}")
+    assert response is not None and response.status == 200
+
+    sidebar = page.locator("body > .topbar")
+    navigation = page.get_by_role("navigation", name="Primary")
+    active = navigation.locator(".mode-pill")
+    expect(sidebar).to_be_visible()
+    expect(navigation).to_be_visible()
+    expect(active).to_have_text(active_label)
+
+    geometry = page.evaluate(
+        """() => {
+          const sidebar = document.querySelector('body > .topbar').getBoundingClientRect();
+          const content = document.querySelector('#main-content').getBoundingClientRect();
+          const active = document.querySelector('body > .topbar .mode-pill');
+          const activeStyle = getComputedStyle(active);
+          return {
+            sidebarWidth: sidebar.width,
+            sidebarHeight: sidebar.height,
+            sidebarLeft: sidebar.left,
+            contentLeft: content.left,
+            activeBackground: activeStyle.backgroundImage,
+          };
+        }"""
+    )
+    assert geometry["sidebarLeft"] == 0
+    assert 220 <= geometry["sidebarWidth"] <= 280
+    assert geometry["sidebarHeight"] >= 900
+    assert geometry["contentLeft"] >= geometry["sidebarWidth"]
+    assert "linear-gradient" in geometry["activeBackground"]
 
     overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
     assert overflow <= 1
