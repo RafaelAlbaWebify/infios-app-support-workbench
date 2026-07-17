@@ -1,3 +1,8 @@
+const secondaryShellStylesheet = document.createElement('link');
+secondaryShellStylesheet.rel = 'stylesheet';
+secondaryShellStylesheet.href = '/ui/static/secondary-shell.css';
+document.head.append(secondaryShellStylesheet);
+
 const problemFilterScript = document.createElement('script');
 problemFilterScript.src = '/ui/static/problem-filters.js';
 document.head.append(problemFilterScript);
