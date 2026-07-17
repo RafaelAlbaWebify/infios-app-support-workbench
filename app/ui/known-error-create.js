@@ -1,3 +1,7 @@
+const problemFilterScript = document.createElement('script');
+problemFilterScript.src = '/ui/static/problem-filters.js';
+document.head.append(problemFilterScript);
+
 function showKnownErrorCreate() {
   const panel = document.getElementById('known-error-create');
   document.getElementById('known-error-review').hidden = true;

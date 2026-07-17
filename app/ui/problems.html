@@ -18,7 +18,16 @@
     <p id="problem-status-message" class="muted" role="status" aria-live="polite">Loading problem records…</p>
     <p id="problem-error" class="error" role="alert" hidden></p>
     <div class="problem-columns">
-      <section class="problem-panel"><div class="section-heading"><h2>Problem list</h2><span id="problem-count" class="status-badge">0 problems</span></div><div id="problem-list" class="problem-list empty-state">Loading problems…</div></section>
+      <section class="problem-panel">
+        <div class="section-heading"><h2>Problem list</h2><span id="problem-count" class="status-badge">0 problems</span></div>
+        <form id="problem-filter-form" class="problem-filter-form" role="search">
+          <label>Search problems<input id="problem-search" type="search" placeholder="Title, summary, problem ID, or owner" autocomplete="off"></label>
+          <label>Status<select id="problem-status-filter"><option value="">All statuses</option><option value="open">Open</option><option value="investigating">Investigating</option><option value="known_error">Known error</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></label>
+          <label>Owner<input id="problem-owner-filter" type="search" placeholder="Exact or partial owner" autocomplete="off"></label>
+          <button id="clear-problem-filters" class="secondary" type="button">Clear filters</button>
+        </form>
+        <div id="problem-list" class="problem-list empty-state">Loading problems…</div>
+      </section>
       <section class="problem-panel" id="problem-detail" hidden>
         <div class="detail-heading"><div><p class="step-label">Selected problem</p><h2 id="problem-title"></h2><p id="problem-summary" class="lead"></p></div><span id="problem-current-status" class="status-badge"></span></div>
         <dl class="problem-metadata"><dt>Owner</dt><dd id="problem-owner"></dd><dt>Linked cases</dt><dd id="problem-cases"></dd><dt>Occurrences</dt><dd id="problem-occurrences"></dd></dl>
