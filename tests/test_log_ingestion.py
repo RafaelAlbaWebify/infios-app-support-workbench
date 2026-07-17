@@ -78,6 +78,35 @@ def test_log_import_api_persists_only_sanitized_evidence(tmp_path) -> None:
         app.dependency_overrides.clear()
 
 
+def test_rejected_log_imports_do_not_persist_evidence(tmp_path, monkeypatch) -> None:
+    case_repository = SQLiteCaseRepository(tmp_path / "cases.sqlite3")
+    evidence_repository = SQLiteEvidenceRepository(tmp_path / "cases.sqlite3")
+    support_case = case_repository.save(
+        SupportCase(case_id="case-rejected-log", title="Rejected import", application="Orders")
+    )
+    app.dependency_overrides[get_case_repository] = lambda: case_repository
+    app.dependency_overrides[get_evidence_repository] = lambda: evidence_repository
+    client = TestClient(app)
+
+    try:
+        binary_response = client.post(
+            f"/api/cases/{support_case.case_id}/evidence/import-log",
+            json={"source": "Rejected input", "content": "abc\x00def"},
+        )
+        assert binary_response.status_code == 422
+        assert evidence_repository.list_for_case(support_case.case_id) == []
+
+        monkeypatch.setattr("app.log_ingestion.MAX_LOG_BYTES", 4)
+        oversized_response = client.post(
+            f"/api/cases/{support_case.case_id}/evidence/import-log",
+            json={"source": "Rejected input", "content": "12345"},
+        )
+        assert oversized_response.status_code == 422
+        assert evidence_repository.list_for_case(support_case.case_id) == []
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_log_import_requires_existing_case(tmp_path) -> None:
     case_repository = SQLiteCaseRepository(tmp_path / "cases.sqlite3")
     evidence_repository = SQLiteEvidenceRepository(tmp_path / "cases.sqlite3")
