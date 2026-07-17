@@ -22,7 +22,10 @@ The current product supports:
 - browser-side filters for problems, corrective actions and known-error guidance;
 - descriptive operational analytics and configurable activity windows;
 - unified navigation across incident, problem, handover, catalogue and analytics surfaces;
-- SQLite persistence, FastAPI endpoints, responsive browser UI and Windows launcher validation;
+- SQLite persistence, FastAPI endpoints and responsive browser UI;
+- tested Windows bootstrap, restart persistence and Markdown exports;
+- guided interactive Windows release validation with an upload-ready evidence archive;
+- prepared release notes, changelog and release checklist;
 - repository-native Python, Playwright and Windows CI gates.
 
 ## Interpretation and safety boundaries
@@ -33,7 +36,7 @@ The backend remains authoritative for lifecycle and safety validation. Browser f
 
 ## Completion estimate
 
-The project is estimated at **82% complete**, with **18% remaining** for the defined portfolio-ready v1 scope.
+The project is estimated at **88% complete**, with **12% remaining** for the defined portfolio-ready v1 scope.
 
 This estimate is based on weighted workstreams rather than commit count:
 
@@ -43,24 +46,36 @@ This estimate is based on weighted workstreams rather than commit count:
 | Evidence safety, sanitization and validation | 15% | 100% | 15.0% |
 | Problem, known-error and handover operations | 20% | 100% | 20.0% |
 | Catalogue, dependency context and analytics | 15% | 95% | 14.25% |
-| Browser usability and operator navigation | 10% | 90% | 9.0% |
-| Packaging and release engineering | 8% | 35% | 2.8% |
-| Security, performance and resilience hardening | 5% | 15% | 0.75% |
-| Final documentation and portfolio presentation | 2% | 10% | 0.2% |
-| **Total** | **100%** |  | **87.0% raw** |
+| Browser usability and operator navigation | 10% | 92% | 9.2% |
+| Packaging and release engineering | 8% | 70% | 5.6% |
+| Security, performance and resilience hardening | 5% | 25% | 1.25% |
+| Final documentation and portfolio presentation | 2% | 55% | 1.1% |
+| **Total** | **100%** |  | **91.4% raw** |
 
-The raw weighted result is 87%. A five-point delivery-risk reserve is applied because release packaging, security/performance evidence and final usability validation can expose cross-cutting defects. The working completion estimate is therefore **82%**.
+The raw weighted result is 91.4%. A three-point delivery-risk reserve is applied because standalone packaging, security/performance evidence and final cross-surface usability validation can expose cross-cutting defects. The rounded working estimate is therefore **88% complete**.
+
+This is an engineering estimate, not a mathematically exact measurement. It is intended to show the remaining scope honestly and prevent optional enterprise features from being counted as unfinished local-first v1 work.
 
 ## Remaining v1 work
 
 ### Required before calling the project complete
 
-1. Build and verify a repeatable Windows distribution package that does not require a developer checkout.
-2. Add security-focused tests for unsafe input boundaries, secret handling, oversized payloads and write-action enforcement.
+1. Produce and verify a repeatable Windows distribution package that can be used without a developer checkout or editable installation.
+2. Add focused security tests for unsafe input boundaries, secret handling, oversized payloads and write-action enforcement.
 3. Add performance and resilience tests for representative local datasets, repeated imports and concurrent read activity.
 4. Perform a final end-to-end usability review across all five browser surfaces, including keyboard and narrow-screen behavior.
-5. Bring README, architecture and demonstration material fully in line with the implemented product.
+5. Complete architecture and portfolio demonstration documentation for the expanded product.
 6. Verify or create the intended Git tag and GitHub Release once repository tooling exposes release operations.
+
+### Already complete within release engineering
+
+- authoritative `0.1.0` runtime version;
+- changelog and prepared release notes;
+- release checklist;
+- guided Windows release-validation script;
+- Windows browser-open and export validation evidence;
+- upload-ready Windows validation archive;
+- Windows CI bootstrap, persistence and export gate.
 
 ### Optional post-v1 work
 
