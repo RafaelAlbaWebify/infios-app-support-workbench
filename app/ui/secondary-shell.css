@@ -1,0 +1,34 @@
+body:not(.infios-shell-ready) { padding-left: 15.5rem; overflow-x: hidden; background: #f6f8fb; }
+body:not(.infios-shell-ready) > .topbar { position: fixed; inset: 0 auto 0 0; z-index: 50; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; width: 15.5rem; min-height: 100vh; padding: 1.5rem .9rem; background: linear-gradient(180deg,#071a33,#0b2342); color: #fff; }
+body:not(.infios-shell-ready) > .topbar > div { padding: 0 .35rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+body:not(.infios-shell-ready) > .topbar h1 { margin: .2rem 0 0; font-size: 1rem; letter-spacing: .055em; }
+body:not(.infios-shell-ready) > .topbar .eyebrow { color: rgba(255,255,255,.55); font-size: .68rem; line-height: 1.35; letter-spacing: .04em; text-transform: none; }
+body:not(.infios-shell-ready) > .topbar .top-actions { display: grid; gap: .28rem; margin-top: 1rem; }
+body:not(.infios-shell-ready) > .topbar .top-link,
+body:not(.infios-shell-ready) > .topbar .mode-pill { display: block; width: 100%; padding: .72rem .8rem; border: 1px solid transparent; border-radius: .7rem; background: transparent; color: rgba(255,255,255,.9); font-size: .85rem; font-weight: 730; line-height: 1.2; text-decoration: none; }
+body:not(.infios-shell-ready) > .topbar .top-link:hover,
+body:not(.infios-shell-ready) > .topbar .top-link:focus-visible { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.09); }
+body:not(.infios-shell-ready) > .topbar .mode-pill { border-color: rgba(255,255,255,.08); background: linear-gradient(90deg,rgba(25,118,233,.96),rgba(25,118,233,.72)); color: #fff; }
+body:not(.infios-shell-ready) > main { width: min(calc(100% - 3rem),100rem); max-width: 100%; margin: 0 auto; padding-top: 2rem; }
+body:not(.infios-shell-ready) > main > :first-child { padding-bottom: 1.25rem; border-bottom: 1px solid #e1e6ee; }
+body:not(.infios-shell-ready) .problem-panel,
+body:not(.infios-shell-ready) .handover-panel,
+body:not(.infios-shell-ready) .catalogue-panel,
+body:not(.infios-shell-ready) .analytics-panel,
+body:not(.infios-shell-ready) .metric-card,
+body:not(.infios-shell-ready) .readiness-card,
+body:not(.infios-shell-ready) .status-change-card,
+body:not(.infios-shell-ready) .known-error-review { border-radius: .95rem; box-shadow: 0 1px 2px rgba(16,34,61,.04),0 8px 24px rgba(16,34,61,.045); }
+body:not(.infios-shell-ready) button,
+body:not(.infios-shell-ready) input,
+body:not(.infios-shell-ready) select,
+body:not(.infios-shell-ready) textarea { border-radius: .45rem; }
+@media (max-width: 980px) {
+  body:not(.infios-shell-ready) { padding-left: 0; }
+  body:not(.infios-shell-ready) > .topbar { position: static; width: 100%; min-height: auto; padding: .8rem 1rem; }
+  body:not(.infios-shell-ready) > .topbar > div { display: flex; align-items: baseline; justify-content: space-between; padding: 0 0 .65rem; }
+  body:not(.infios-shell-ready) > .topbar .top-actions { display: flex; width: 100%; max-width: 100%; margin-top: .65rem; overflow-x: auto; }
+  body:not(.infios-shell-ready) > .topbar .top-link,
+  body:not(.infios-shell-ready) > .topbar .mode-pill { flex: 0 0 8rem; width: auto; }
+  body:not(.infios-shell-ready) > main { width: min(calc(100% - 1.25rem),70rem); padding-top: 1rem; }
+}
