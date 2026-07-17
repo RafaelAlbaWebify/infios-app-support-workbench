@@ -148,16 +148,26 @@ The API provides resources for:
 
 The browser workflow and generated exports use the same persistent models and backend validation. The local OpenAPI page is the complete endpoint contract.
 
-## Compatibility demos
+## Demo Commands
 
-The earlier scenario analyzer, CLI, sample incidents, reports, JSON output and local run history remain available for focused demonstrations.
+The earlier scenario analyzer, CLI, sample incidents, JSON output and local run history remain available for focused demonstrations.
 
 ```powershell
 python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
 python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
 ```
 
+## Demo Reports
+
 Generated examples under `reports/` demonstrate incident summaries, user impact, evidence tables, unconfirmed possible causes, missing evidence, safe next steps, escalation notes and cautious RCA material.
+
+Examples include:
+
+- `reports/sample-500-login-report.md`;
+- `reports/sample-403-access-report.md`;
+- `reports/sample-503-dependency-report.md`;
+- `reports/sample-sql-query-timeout-report.md`;
+- `reports/sample-log-pattern-report.md`.
 
 ## Automated verification
 
