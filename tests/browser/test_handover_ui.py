@@ -93,7 +93,7 @@ def test_handover_list_detail_and_filters(page: Page, handover_base_url: str) ->
     expect(page.get_by_role("heading", name="Evening shift")).to_be_visible()
 
     page.get_by_label("Search handovers").fill("missing")
-    expect(page.get_by_text("No handovers match the current filters.")).to_be_visible()
+    expect(page.locator("#handover-list").get_by_text("No handovers match the current filters.")).to_be_visible()
     page.get_by_role("button", name="Clear filters").click()
     expect(page.locator("#handover-count")).to_have_text("2 handovers")
     expect(page.get_by_text("They do not independently prove incident severity", exact=False)).to_be_visible()
