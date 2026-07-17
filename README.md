@@ -4,75 +4,81 @@
 
 **Incident Flow & Information Operations Support**
 
-INFIOS is a local-first Application Support investigation workbench. It helps turn fragmented application incidents into structured, evidence-backed cases that are easier to troubleshoot, escalate and validate after recovery.
+INFIOS is a local-first Application Support investigation and operations workbench. It turns fragmented incident information into structured, evidence-backed cases and connects those cases to problem management, known-error guidance, shift handovers, service context and descriptive operational analytics.
 
-## The support problem
+It is designed as portfolio proof for Application Support Engineer, Software Support Engineer, Technical Support Engineer II, Production Support and SaaS Support roles.
 
-Application incidents often arrive as a mixture of user reports, logs, screenshots, HTTP errors, database clues, previous actions and assumptions.
+## What INFIOS does
 
-INFIOS keeps those elements separate so the operator can distinguish:
+The current persistent workflow supports:
 
-- what the user reported;
-- what the available evidence confirms;
-- what remains a possible explanation;
-- which diagnostic actions were performed;
-- what information is still missing;
-- whether recovery was actually validated.
+- SQLite-backed incident cases and local history;
+- evidence, observations and diagnostic actions;
+- guided investigation playbooks;
+- evidence-backed possible explanations;
+- sanitized log ingestion and residual-secret review;
+- correlation-ID extraction from sanitized evidence;
+- L2 escalation packages and Markdown exports;
+- recovery validation with supporting evidence;
+- complete investigation timelines;
+- reusable service and dependency catalogue records;
+- explicit case-to-service links and direct dependency context;
+- catalogue completeness reporting;
+- immutable operator-authored shift handovers;
+- problem records, RCA statements and corrective actions;
+- advisory problem closure-readiness reporting;
+- audited problem lifecycle changes and explicit safe closure;
+- reviewed known-error guidance with draft, publish and retire controls;
+- descriptive operational analytics and configurable activity windows;
+- responsive browser interfaces with read-only list filtering;
+- a tested local Windows launcher.
 
-It is not an autonomous root-cause engine and does not turn pattern matches into confirmed causes.
+## Operator surfaces
 
-## Operator workflow
+| Surface | Purpose |
+|---|---|
+| `/` | Incident investigation workbench |
+| `/problems` | Problem management, corrective actions and known errors |
+| `/handovers` | Immutable shift handover snapshots |
+| `/catalogue` | Service catalogue, dependencies and completeness context |
+| `/analytics` | Descriptive operational analytics |
+
+The browser surfaces share unified navigation and preserve the same interpretation boundaries as the backend.
+
+## Investigation workflow
 
 ```text
 create a case
-  -> add evidence
+  -> add or import sanitized evidence
   -> record evidence-backed observations
   -> evaluate a guided playbook
   -> plan and complete diagnostic actions
   -> track possible explanations
+  -> link explicit service context when appropriate
   -> generate an L2 escalation package
   -> validate recovery with supporting evidence
-  -> export the case summary and handover
+  -> export the case summary or handover
 ```
 
-The current persistent L1-to-L2 workflow includes:
+Related cases can then be explicitly grouped into a problem record, reviewed through evidence-backed RCA, tracked with corrective actions, documented through known-error guidance and moved through an audited lifecycle.
 
-- SQLite-backed cases and local history;
-- evidence, observations and diagnostic actions;
-- guided investigation playbooks;
-- possible-explanation tracking;
-- escalation packages and Markdown exports;
-- recovery validation;
-- complete investigation timeline;
-- responsive browser interface;
-- tested local Windows launcher.
-
-## What this project demonstrates
-
-INFIOS is portfolio proof for Application Support Engineer, Software Support Engineer, Technical Support Engineer II and Production Support roles.
-
-It demonstrates how I approach support work:
-
-- begin with user and business impact;
-- preserve evidence provenance;
-- avoid presenting assumptions as facts;
-- perform controlled diagnostic actions;
-- document missing information and uncertainty;
-- prepare escalation-ready technical handovers;
-- validate recovery rather than assuming resolution.
-
-## Safety principles
+## Safety and interpretation principles
 
 - Sample or sanitized data only.
-- No production credentials or unrestricted production logs.
+- No production credentials, MFA codes, recovery codes, tokens or session cookies.
 - No automated remediation.
 - No SQL writes or production configuration changes.
-- Restart or write actions cannot be represented as L1-safe.
+- Restart or write actions cannot be represented as L1-safe or read-only.
 - Every factual observation must reference evidence from the same case.
 - Possible explanations must reference same-case observations and actions.
-- Pattern matching can propose explanations but cannot confirm root cause.
+- Pattern matches, failure codes and recent changes are evidence or context, not automatic diagnosis.
 - A confirmed explanation requires explicit operator confirmation and supporting observations.
 - A passed recovery validation requires supporting evidence from the same case.
+- Catalogue links and dependencies are operational context, not proof of failure or causation.
+- Problem grouping and known-error records do not independently prove shared root cause or permanent resolution.
+- Analytics describe stored metadata and do not measure operator performance, service quality, reliability or causality.
+- Browser filters operate only on loaded records and never change stored data.
+- Backend validation remains authoritative for all lifecycle and safety rules.
 
 ## Quick demo on Windows
 
@@ -95,12 +101,14 @@ Suggested walkthrough:
 
 1. Create a sanitized case.
 2. Add evidence and record one evidence-backed observation.
-3. Review the guided post-login feature-failure playbook.
+3. Review a guided playbook.
 4. Create and complete a diagnostic action.
 5. Record a possible explanation without confirming it prematurely.
-6. Generate an L2 escalation package.
-7. Add recovery evidence and validate the outcome.
-8. Review the timeline and download the case summary.
+6. Link explicit service context.
+7. Generate an L2 escalation package.
+8. Add recovery evidence and validate the outcome.
+9. Review the timeline and download the case summary.
+10. Review the related problem, handover, catalogue and analytics surfaces.
 
 ## Local development
 
@@ -127,49 +135,57 @@ http://127.0.0.1:8000/docs
 
 ## Main API areas
 
-The API provides case, evidence, observation, playbook, diagnostic-action, possible-explanation, escalation, recovery-validation and timeline resources under `/api/cases`.
+The API provides resources for:
 
-The browser workflow and generated exports use the same persistent case model. See the local OpenAPI page for the complete endpoint contract.
+- cases, evidence, observations and diagnostic actions;
+- playbooks, possible explanations and recovery validation;
+- escalation packages, timelines and exports;
+- service catalogue entries, dependencies and case links;
+- shift handovers;
+- problems, RCA statements, corrective actions and known errors;
+- closure readiness and lifecycle history;
+- operational analytics.
+
+The browser workflow and generated exports use the same persistent models and backend validation. The local OpenAPI page is the complete endpoint contract.
 
 ## Demo Commands
 
-The earlier scenario analyzer, CLI, sample incidents, reports, JSON output and local run history remain available for compatibility and focused demonstrations.
+The earlier scenario analyzer, CLI, sample incidents, JSON output and local run history remain available for focused demonstrations.
 
 ```powershell
 python -m app.cli analyze samples/incident-503-dependency.json --out reports/generated/cli-503-demo.md
 python -m app.cli analyze samples/incident-sql-query-timeout.json --out reports/generated/cli-sql-timeout-demo.md
 ```
 
-Additional public-safe examples cover access failures and log-pattern correlation.
-
 ## Demo Reports
 
-Generated examples remain available under `reports/`, including:
+Generated examples under `reports/` demonstrate incident summaries, user impact, evidence tables, unconfirmed possible causes, missing evidence, safe next steps, escalation notes and cautious RCA material.
 
-- `reports/sample-500-login-report.md`
-- `reports/sample-403-access-report.md`
-- `reports/sample-503-dependency-report.md`
-- `reports/sample-sql-query-timeout-report.md`
-- `reports/sample-log-pattern-report.md`
+Examples include:
 
-These reports demonstrate incident summaries, user impact, evidence tables, unconfirmed possible causes, missing evidence, safe next steps, escalation notes and cautious RCA material.
-
-## Exports
-
-The active-case footer provides **Download case summary**. Generated L2 handovers provide a Markdown download next to the copy control.
-
-Exports keep reported information, confirmed observations, possible explanations, diagnostic actions, missing information and recovery validation visibly separated.
+- `reports/sample-500-login-report.md`;
+- `reports/sample-403-access-report.md`;
+- `reports/sample-503-dependency-report.md`;
+- `reports/sample-sql-query-timeout-report.md`;
+- `reports/sample-log-pattern-report.md`.
 
 ## Automated verification
 
 Every pull-request update runs:
 
 - Python tests;
-- browser workflow verification with Chromium Playwright;
-- responsive navigation checks;
+- Chromium Playwright browser tests;
+- responsive navigation and operator-flow checks;
+- Windows bootstrap, persistence and export smoke tests;
 - screenshot, browser-log and trace artifact generation.
 
-Repository-native CI is the default proof loop. Local testing is reserved for Windows-specific launcher validation and controlled usability review.
+A change is considered complete only after all required jobs pass on the exact pull-request head and that head is merged.
+
+## Project status
+
+The working estimate is **88% complete**, with **12% remaining** for the defined portfolio-ready v1 scope. The remaining work is concentrated in standalone Windows packaging, security/performance hardening, final cross-surface usability validation and release verification.
+
+See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the weighted calculation, completed capability inventory and remaining v1 work.
 
 ## Documentation
 
