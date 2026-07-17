@@ -19,7 +19,12 @@ const databaseScript = document.createElement('script');
 databaseScript.src = '/ui/static/database.js';
 document.head.append(databaseScript);
 
+const caseLinksScript = document.createElement('script');
+caseLinksScript.src = '/ui/static/case-links.js';
+document.head.append(caseLinksScript);
+
 const workAreaDefinitions = [
+  { selector: '#case-catalogue-panel', id: 'work-service-context', label: 'Service context', advanced: false },
   { selector: '.quick-actions', id: 'work-evidence', label: 'Evidence', advanced: false },
   { selector: '.observation-section', id: 'work-observations', label: 'Observations', advanced: false },
   { selector: '.guided-checks', id: 'work-checks', label: 'Safe checks', advanced: false },
@@ -128,4 +133,4 @@ window.addEventListener('infios:case-opened', (event) => {
 });
 
 addOperationalNavigation();
-buildWorkAreaNavigation();
+caseLinksScript.addEventListener('load', buildWorkAreaNavigation);
