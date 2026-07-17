@@ -2,6 +2,10 @@ const problemFilterScript = document.createElement('script');
 problemFilterScript.src = '/ui/static/problem-filters.js';
 document.head.append(problemFilterScript);
 
+const guidanceListScript = document.createElement('script');
+guidanceListScript.src = '/ui/static/guidance-list.js';
+document.head.append(guidanceListScript);
+
 function showKnownErrorCreate() {
   const panel = document.getElementById('known-error-create');
   document.getElementById('known-error-review').hidden = true;
