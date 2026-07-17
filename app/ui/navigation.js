@@ -96,6 +96,12 @@ function addOperationalNavigation() {
   const topbar = document.querySelector('.topbar');
   const modePill = topbar?.querySelector('.mode-pill');
   if (!topbar || !modePill || document.querySelector('#open-analytics')) return;
+  const navigation = document.createElement('nav');
+  navigation.className = 'operational-navigation';
+  navigation.setAttribute('aria-label', 'Primary');
+  navigation.style.display = 'flex';
+  navigation.style.flexWrap = 'wrap';
+  navigation.style.gap = '10px';
   [
     ['open-problems', '/problems', 'Problems'],
     ['open-handovers', '/handovers', 'Handovers'],
@@ -109,8 +115,9 @@ function addOperationalNavigation() {
     link.textContent = label;
     link.style.color = 'white';
     link.style.textDecoration = 'none';
-    topbar.insertBefore(link, modePill);
+    navigation.append(link);
   });
+  topbar.insertBefore(navigation, modePill);
 }
 
 function updateCaseSummaryDownload(caseId) {
