@@ -42,7 +42,7 @@ def problems_base_url() -> str:
             process.kill()
 
 
-def test_problem_detail_audit_known_error_and_action_filters(page: Page, problems_base_url: str) -> None:
+def test_problem_detail_audit_and_browser_filters(page: Page, problems_base_url: str) -> None:
     status_submitted = []
     publish_submitted = []
     problem = {
@@ -56,13 +56,21 @@ def test_problem_detail_audit_known_error_and_action_filters(page: Page, problem
         {"title": "Review action plan", "status": "planned", "action_type": "corrective", "owner": "Engineering", "due_date": "2026-07-20"},
         {"title": "Monitor order queue", "status": "implemented", "action_type": "monitoring", "owner": "L2 Support", "due_date": None},
     ]
-    known_error = {
+    draft_guidance = {
         "known_error_id": "known-1", "problem_id": "problem-1", "title": "Temporary order recovery guidance",
         "symptom_summary": "Order processing remains pending.", "workaround_steps": ["Verify case scope", "Follow approved runbook"],
         "workaround_limitations": "Use only for the documented symptom.", "validation_guidance": "Confirm the affected order resumes.",
         "safety": "approved_change_required", "requires_write_or_restart": True, "owner": "L2 Support", "created_by": "L2 Support",
         "status": "draft", "approved_by": None, "approval_reason": None, "approved_at": None,
         "created_at": "2026-07-16T07:00:00Z", "updated_at": "2026-07-16T07:00:00Z",
+    }
+    published_guidance = {
+        "known_error_id": "known-2", "problem_id": "problem-1", "title": "Read-only queue verification",
+        "symptom_summary": "Queue state needs confirmation.", "workaround_steps": ["Inspect queue state"],
+        "workaround_limitations": "Observation only.", "validation_guidance": "Record the observed queue state.",
+        "safety": "read_only", "requires_write_or_restart": False, "owner": "Operations", "created_by": "Operations",
+        "status": "published", "approved_by": "L2 Lead", "approval_reason": "Read-only verification reviewed", "approved_at": "2026-07-16T08:00:00Z",
+        "created_at": "2026-07-16T07:30:00Z", "updated_at": "2026-07-16T08:00:00Z",
     }
 
     def api(route: Route) -> None:
@@ -75,10 +83,10 @@ def test_problem_detail_audit_known_error_and_action_filters(page: Page, problem
             route.fulfill(json={"actions": actions, "count": len(actions)})
         elif url.endswith("/api/problems/problem-1/known-errors/known-1/publish") and route.request.method == "POST":
             publish_submitted.append(json.loads(route.request.post_data or "{}"))
-            known_error.update({"status": "published", "approved_by": "Rafael", "approval_reason": "Reviewed for operational use"})
-            route.fulfill(json=known_error)
+            draft_guidance.update({"status": "published", "approved_by": "Rafael", "approval_reason": "Reviewed for operational use"})
+            route.fulfill(json=draft_guidance)
         elif url.endswith("/api/problems/problem-1/known-errors"):
-            route.fulfill(json={"records": [known_error], "count": 1})
+            route.fulfill(json={"records": [draft_guidance, published_guidance], "count": 2})
         elif url.endswith("/api/problems/problem-1/closure-readiness"):
             route.fulfill(json={"ready_for_operator_review": False, "blockers": ["no_confirmed_rca", "actions_not_validated"]})
         elif url.endswith("/api/problems/problem-1/status") and route.request.method == "POST":
@@ -117,14 +125,35 @@ def test_problem_detail_audit_known_error_and_action_filters(page: Page, problem
     page.locator("#clear-action-filters").click()
     expect(page.locator("#action-count")).to_have_text("2 actions")
 
+    expect(page.locator("#known-error-count")).to_have_text("2 records")
+    page.locator("#known-error-search").fill("queue verification")
+    expect(page.locator("#known-error-count")).to_have_text("1 of 2 records")
+    expect(page.get_by_text("Read-only queue verification")).to_be_visible()
+    expect(page.get_by_text("Temporary order recovery guidance")).to_be_hidden()
+
+    page.locator("#known-error-search").fill("")
+    page.locator("#known-error-status-filter").select_option("draft")
+    expect(page.locator("#known-error-count")).to_have_text("1 of 2 records")
     expect(page.get_by_text("Temporary order recovery guidance")).to_be_visible()
+
+    page.locator("#known-error-status-filter").select_option("")
+    page.locator("#known-error-safety-filter").select_option("read only")
+    page.locator("#known-error-owner-filter").fill("Operations")
+    expect(page.locator("#known-error-count")).to_have_text("1 of 2 records")
+    expect(page.get_by_text("Read-only queue verification")).to_be_visible()
+
+    page.locator("#known-error-owner-filter").fill("missing")
+    expect(page.locator("#known-error-filter-empty")).to_be_visible()
+    page.locator("#clear-known-error-filters").click()
+    expect(page.locator("#known-error-count")).to_have_text("2 records")
+
     expect(page.locator("#problem-known-errors").get_by_text("approved change required", exact=False)).to_be_visible()
     page.get_by_role("button", name="Review and publish").click()
     page.locator("#known-error-approved-by").fill("Rafael")
     page.locator("#known-error-approval-reason").fill("Reviewed for operational use")
     page.get_by_role("button", name="Apply known-error action").click()
     expect(page.locator("#problem-status-message")).to_contain_text("published with approval audit")
-    expect(page.get_by_role("button", name="Retire guidance")).to_be_visible()
+    expect(page.get_by_role("button", name="Retire guidance")).to_have_count(2)
     page.locator("#new-problem-status").select_option("investigating")
     page.locator("#problem-changed-by").fill("Rafael")
     page.locator("#problem-change-reason").fill("Accepted for investigation")
