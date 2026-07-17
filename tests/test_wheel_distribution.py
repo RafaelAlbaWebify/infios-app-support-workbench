@@ -51,14 +51,19 @@ def test_wheel_contains_runtime_assets_and_imports_outside_checkout(tmp_path) ->
     )
 
     probe = """
+from fastapi.testclient import TestClient
 from app.api.ui import UI_DIR
 from app.main import app
 from app.version import VERSION
 required = {'index.html', 'analytics.html', 'problems.html', 'handovers.html', 'catalogue.html', 'styles.css'}
 assert required <= {path.name for path in UI_DIR.iterdir() if path.is_file()}
-paths = {path for route in app.routes if (path := getattr(route, 'path', None))}
-assert {'/', '/analytics', '/problems', '/handovers', '/catalogue', '/api/health'} <= paths
-assert VERSION == '0.1.0'
+client = TestClient(app)
+for path in ('/', '/analytics', '/problems', '/handovers', '/catalogue'):
+    response = client.get(path)
+    assert response.status_code == 200, (path, response.status_code)
+health = client.get('/api/health')
+assert health.status_code == 200
+assert health.json()['version'] == VERSION == '0.1.0'
 """
     result = subprocess.run(
         [str(python), "-I", "-c", probe],
