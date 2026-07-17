@@ -5,7 +5,13 @@
 .handover-intro, .handover-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: clamp(24px, 4vw, 40px); }
 .handover-intro { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
 .handover-intro h2, .handover-panel h2 { margin: 8px 0; }
-.handover-columns { display: grid; grid-template-columns: minmax(280px, .8fr) minmax(0, 2fr); gap: 22px; align-items: start; }
+.handover-columns { display: grid; grid-template-columns: minmax(300px, .85fr) minmax(0, 2fr); gap: 22px; align-items: start; }
+.handover-filter-form { display: grid; gap: 12px; margin-top: 18px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-soft); }
+.handover-filter-form label { margin: 0; }
+.handover-filter-form input[type="search"] { margin-top: 6px; }
+.checkbox-row { display: flex; align-items: center; gap: 10px; }
+.checkbox-row input { width: auto; }
+.handover-filter-form button { justify-self: start; }
 .handover-list { display: grid; gap: 10px; margin-top: 18px; }
 .handover-list button { width: 100%; padding: 16px; text-align: left; border: 1px solid var(--border); border-radius: 12px; background: white; color: var(--text); }
 .handover-list button:hover, .handover-list button[aria-current="true"] { border-color: var(--accent); background: #f5f8ff; }
