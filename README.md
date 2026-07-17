@@ -31,7 +31,8 @@ The current persistent workflow supports:
 - reviewed known-error guidance with draft, publish and retire controls;
 - descriptive operational analytics and configurable activity windows;
 - responsive browser interfaces with read-only list filtering;
-- a tested local Windows launcher.
+- a tested local Windows launcher;
+- an installable wheel verified outside the developer checkout.
 
 ## Operator surfaces
 
@@ -177,13 +178,15 @@ Every pull-request update runs:
 - Chromium Playwright browser tests;
 - responsive navigation and operator-flow checks;
 - Windows bootstrap, persistence and export smoke tests;
+- standalone wheel build, installation and HTTP checks;
+- representative bulk, concurrent-read and repeated-import consistency checks;
 - screenshot, browser-log and trace artifact generation.
 
 A change is considered complete only after all required jobs pass on the exact pull-request head and that head is merged.
 
 ## Project status
 
-The working estimate is **88% complete**, with **12% remaining** for the defined portfolio-ready v1 scope. The remaining work is concentrated in standalone Windows packaging, security/performance hardening, final cross-surface usability validation and release verification.
+The working estimate is **95% complete**, with **5% remaining** for the defined portfolio-ready v1 scope. The remaining work is concentrated in the final end-user distribution/publication workflow, one blocked API-boundary regression, expanded portfolio documentation and Git tag/GitHub Release verification.
 
 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the weighted calculation, completed capability inventory and remaining v1 work.
 
