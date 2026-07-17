@@ -183,7 +183,7 @@ A change is considered complete only after all required jobs pass on the exact p
 
 ## Project status
 
-The working estimate is **82% complete**, with **18% remaining** for the defined portfolio-ready v1 scope. The remaining work is concentrated in repeatable Windows packaging, security/performance hardening, final cross-surface usability validation and release verification.
+The working estimate is **88% complete**, with **12% remaining** for the defined portfolio-ready v1 scope. The remaining work is concentrated in standalone Windows packaging, security/performance hardening, final cross-surface usability validation and release verification.
 
 See [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) for the weighted calculation, completed capability inventory and remaining v1 work.
 
