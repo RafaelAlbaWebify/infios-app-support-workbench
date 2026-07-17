@@ -14,5 +14,5 @@ def test_analytics_page_is_served() -> None:
 def test_navigation_script_links_analytics() -> None:
     response = TestClient(app).get("/ui/static/navigation.js")
     assert response.status_code == 200
-    assert "Operational analytics" in response.text
+    assert "'Analytics'" in response.text
     assert "/analytics" in response.text
