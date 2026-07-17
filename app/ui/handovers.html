@@ -18,7 +18,15 @@
     <p id="handover-status" class="muted" role="status" aria-live="polite">Loading handovers…</p>
     <p id="handover-error" class="error" role="alert" hidden></p>
     <div class="handover-columns">
-      <section class="handover-panel"><div class="section-heading"><h2>Recent handovers</h2><span id="handover-count" class="status-badge">0 handovers</span></div><div id="handover-list" class="handover-list empty-state">Loading handovers…</div></section>
+      <section class="handover-panel">
+        <div class="section-heading"><h2>Recent handovers</h2><span id="handover-count" class="status-badge">0 handovers</span></div>
+        <form id="handover-filter-form" class="handover-filter-form" role="search">
+          <label>Search handovers<input id="handover-search" type="search" placeholder="Shift, preparer, or handover ID" autocomplete="off"></label>
+          <label class="checkbox-row"><input id="handover-attention-filter" type="checkbox">Only snapshots with attention flags</label>
+          <button id="clear-handover-filters" class="secondary" type="button">Clear filters</button>
+        </form>
+        <div id="handover-list" class="handover-list empty-state">Loading handovers…</div>
+      </section>
       <section class="handover-panel" id="handover-detail" hidden>
         <div class="detail-heading"><div><p class="step-label">Selected snapshot</p><h2 id="handover-title"></h2><p id="handover-summary" class="lead"></p></div><span id="handover-created" class="status-badge"></span></div>
         <dl class="handover-metadata"><dt>Prepared by</dt><dd id="handover-prepared-by"></dd><dt>Cases</dt><dd id="handover-case-count"></dd><dt>Attention required</dt><dd id="handover-attention-count"></dd></dl>
@@ -32,13 +40,26 @@
     let selectedId = null;
     const writeText = (id, value) => { const node = document.getElementById(id); if (node) node.textContent = String(value ?? ''); };
     const when = (value) => value ? new Date(value).toLocaleString() : 'Unknown time';
+    const normalize = (value) => String(value || '').trim().toLowerCase();
     async function getJson(url) { const response = await fetch(url, { headers: { Accept: 'application/json' } }); const data = await response.json().catch(() => ({})); if (!response.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `HTTP ${response.status}`); return data; }
+    function visibleRecords() {
+      const query = normalize(document.getElementById('handover-search').value);
+      const attentionOnly = document.getElementById('handover-attention-filter').checked;
+      return records.filter((record) => {
+        const attention = (record.cases || []).some((item) => item.attention_required);
+        const searchable = normalize(`${record.shift_label} ${record.prepared_by} ${record.handover_id}`);
+        return (!query || searchable.includes(query)) && (!attentionOnly || attention);
+      });
+    }
     function showList() {
       const target = document.getElementById('handover-list'); target.replaceChildren();
-      writeText('handover-count', `${records.length} handover${records.length === 1 ? '' : 's'}`);
-      if (!records.length) { target.className = 'handover-list empty-state'; target.textContent = 'No shift handovers are currently stored.'; document.getElementById('handover-detail').hidden = true; return; }
+      const visible = visibleRecords();
+      writeText('handover-count', visible.length === records.length ? `${records.length} handover${records.length === 1 ? '' : 's'}` : `${visible.length} of ${records.length} handovers`);
+      if (!records.length) { target.className = 'handover-list empty-state'; target.textContent = 'No shift handovers are currently stored.'; document.getElementById('handover-detail').hidden = true; return visible; }
+      if (!visible.length) { target.className = 'handover-list empty-state'; target.textContent = 'No handovers match the current filters.'; document.getElementById('handover-detail').hidden = true; return visible; }
       target.className = 'handover-list';
-      records.forEach((record) => { const button = document.createElement('button'); button.type = 'button'; button.setAttribute('aria-current', record.handover_id === selectedId ? 'true' : 'false'); const title = document.createElement('strong'); title.textContent = record.shift_label; const meta = document.createElement('span'); const attention = (record.cases || []).filter((item) => item.attention_required).length; meta.textContent = `${when(record.created_at)} · ${record.prepared_by} · ${attention} attention flag${attention === 1 ? '' : 's'}`; button.append(title, meta); button.addEventListener('click', () => openRecord(record.handover_id)); target.append(button); });
+      visible.forEach((record) => { const button = document.createElement('button'); button.type = 'button'; button.setAttribute('aria-current', record.handover_id === selectedId ? 'true' : 'false'); const title = document.createElement('strong'); title.textContent = record.shift_label; const meta = document.createElement('span'); const attention = (record.cases || []).filter((item) => item.attention_required).length; meta.textContent = `${when(record.created_at)} · ${record.prepared_by} · ${attention} attention flag${attention === 1 ? '' : 's'}`; button.append(title, meta); button.addEventListener('click', () => openRecord(record.handover_id)); target.append(button); });
+      return visible;
     }
     function showCases(cases) {
       const target = document.getElementById('handover-cases'); target.replaceChildren();
@@ -51,13 +72,22 @@
       try { const record = await getJson(`/api/handovers/${id}`); writeText('handover-title', record.shift_label); writeText('handover-summary', record.summary); writeText('handover-created', when(record.created_at)); writeText('handover-prepared-by', record.prepared_by); writeText('handover-case-count', (record.cases || []).length); writeText('handover-attention-count', (record.cases || []).filter((item) => item.attention_required).length); showCases(record.cases || []); document.getElementById('handover-detail').hidden = false; writeText('handover-status', `Handover ${record.handover_id} loaded.`); }
       catch (error) { const target = document.getElementById('handover-error'); target.textContent = `Handover details could not be loaded. ${error.message}`; target.hidden = false; writeText('handover-status', 'Handover detail loading failed.'); }
     }
+    async function applyFilters() {
+      const visible = showList();
+      if (!visible.some((item) => item.handover_id === selectedId)) selectedId = visible[0]?.handover_id || null;
+      if (selectedId) await openRecord(selectedId); else writeText('handover-status', records.length ? 'No handovers match the current filters.' : 'No shift handovers found.');
+    }
     async function loadRecords() {
       const refresh = document.getElementById('refresh-handovers'); const error = document.getElementById('handover-error'); refresh.disabled = true; error.hidden = true; writeText('handover-status', 'Loading handovers…');
-      try { const report = await getJson('/api/handovers?limit=100'); records = report.handovers || []; if (!records.some((item) => item.handover_id === selectedId)) selectedId = records[0]?.handover_id || null; showList(); if (selectedId) await openRecord(selectedId); else writeText('handover-status', 'No shift handovers found.'); }
+      try { const report = await getJson('/api/handovers?limit=100'); records = report.handovers || []; if (!records.some((item) => item.handover_id === selectedId)) selectedId = records[0]?.handover_id || null; await applyFilters(); }
       catch (cause) { error.textContent = `Shift handovers could not be loaded. ${cause.message}`; error.hidden = false; writeText('handover-status', 'Handover loading failed.'); }
       finally { refresh.disabled = false; }
     }
     document.getElementById('refresh-handovers').addEventListener('click', loadRecords);
+    document.getElementById('handover-filter-form').addEventListener('submit', (event) => { event.preventDefault(); applyFilters(); });
+    document.getElementById('handover-search').addEventListener('input', applyFilters);
+    document.getElementById('handover-attention-filter').addEventListener('change', applyFilters);
+    document.getElementById('clear-handover-filters').addEventListener('click', () => { document.getElementById('handover-filter-form').reset(); applyFilters(); document.getElementById('handover-search').focus(); });
     loadRecords();
   </script>
 </body>
