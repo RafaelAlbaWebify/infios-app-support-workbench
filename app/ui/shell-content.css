@@ -1,0 +1,29 @@
+.infios-app-content > .topbar { min-height: auto; margin: 0 auto; padding: 2rem max(1.5rem,3vw) 1.35rem; border-bottom: 1px solid var(--infios-slate-200); background: transparent; color: var(--infios-slate-950); }
+.infios-app-content > .topbar h1 { margin: .2rem 0 0; color: var(--infios-slate-950); font-size: clamp(1.7rem,2.5vw,2.2rem); letter-spacing: -.03em; }
+.infios-app-content > .topbar .eyebrow { color: var(--infios-blue-700); font-size: .7rem; }
+.infios-app-content > .topbar .mode-pill { border: 1px solid var(--infios-slate-200); background: var(--infios-white); color: var(--infios-slate-600); box-shadow: none; }
+.infios-app-content > .layout { grid-template-columns: minmax(12rem,15rem) minmax(0,1fr); gap: 1.25rem; width: min(calc(100% - 3rem),var(--infios-content-max)); margin: 1.5rem auto 3rem; }
+.infios-app-content .sidebar,.infios-app-content .panel { border: 1px solid var(--infios-slate-200); border-radius: var(--infios-radius-lg); background: var(--infios-white); box-shadow: var(--infios-shadow-panel); }
+.infios-app-content .sidebar { top: 1rem; padding: 1.15rem; }
+.infios-app-content .sidebar h2 { margin-bottom: 1rem; font-size: .95rem; }
+.infios-app-content .steps li { margin-bottom: .85rem; padding-left: 2rem; font-size: .78rem; }
+.infios-app-content .steps li::before { width: 1.45rem; height: 1.45rem; }
+.infios-app-content .safety-card { margin-top: 1rem; padding: .8rem; border-left-color: var(--infios-warning-700); border-radius: var(--infios-radius-md); background: var(--infios-warning-100); }
+.infios-app-content .panel { padding: clamp(1.15rem,2vw,1.65rem); }
+.infios-app-content .panel h2 { font-size: clamp(1.45rem,2vw,1.9rem); }
+.infios-app-content .lead { margin-bottom: 1.25rem; font-size: .9rem; }
+.infios-app-content .summary-grid article,.infios-app-content .evidence-editor,.infios-app-content .evidence-card,.infios-app-content .empty-state { border-radius: var(--infios-radius-md); }
+.infios-app-content .summary-grid article { padding: 1rem; background: var(--infios-slate-050); }
+.infios-app-content input,.infios-app-content select,.infios-app-content textarea { padding: .65rem .75rem; border-radius: var(--infios-radius-sm); }
+.infios-app-content button,.infios-app-content .text-link { padding: .62rem .82rem; border-radius: var(--infios-radius-sm); font-size: .78rem; }
+.infios-app-content .primary { border-color: var(--infios-blue-700); background: var(--infios-blue-700); }
+.infios-app-content .status-badge { padding: .32rem .55rem; background: var(--infios-blue-100); color: var(--infios-blue-700); font-size: .7rem; }
+.infios-app-content .quick-actions,.infios-app-content .evidence-editor,.infios-app-content #case-panel>section { margin-top: 1.2rem; }
+.infios-app-content .case-card { padding: 1rem; border-radius: var(--infios-radius-md); }
+.infios-app-content .status-row { margin-bottom: .65rem; }
+.infios-app-content .operational-navigation { display: none !important; }
+@media (max-width: 760px) {
+  .infios-app-content > .topbar { padding: 1.2rem 1rem .9rem; }
+  .infios-app-content > .layout { grid-template-columns: 1fr; width: min(calc(100% - 1.25rem),46rem); margin-top: 1rem; }
+  .infios-app-content .sidebar { position: static; }
+}

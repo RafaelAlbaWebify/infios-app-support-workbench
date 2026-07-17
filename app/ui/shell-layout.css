@@ -1,0 +1,26 @@
+body.infios-shell-ready { margin: 0; background: #f6f8fb; color: var(--infios-slate-950); }
+.infios-app-shell { display: grid; grid-template-columns: var(--infios-sidebar-width) minmax(0,1fr); width: 100%; max-width: 100%; min-height: 100vh; overflow-x: clip; }
+.infios-product-sidebar { position: sticky; top: 0; min-width: 0; height: 100vh; overflow-y: auto; padding: 1.5rem .9rem; background: linear-gradient(180deg,var(--infios-navy-950),var(--infios-navy-900)); color: #fff; }
+.infios-brand { display: grid; gap: .15rem; padding: 0 .35rem 1.35rem; border-bottom: 1px solid rgba(255,255,255,.1); }
+.infios-brand strong { font-size: 1rem; letter-spacing: .055em; }
+.infios-brand span { color: rgba(255,255,255,.56); font-size: .68rem; line-height: 1.35; }
+.infios-primary-nav { display: grid; gap: .28rem; max-width: 100%; margin-top: 1rem; }
+.infios-primary-nav a { display: grid; gap: .1rem; min-width: 0; padding: .72rem .8rem; border: 1px solid transparent; border-radius: var(--infios-radius-md); color: rgba(255,255,255,.9); font-size: .85rem; font-weight: 730; text-decoration: none; transition: background .16s ease,border-color .16s ease,transform .16s ease; }
+.infios-primary-nav a span { color: rgba(255,255,255,.52); font-size: .68rem; font-weight: 500; }
+.infios-primary-nav a[aria-current="page"] { border-color: rgba(255,255,255,.08); background: linear-gradient(90deg,rgba(25,118,233,.96),rgba(25,118,233,.72)); }
+.infios-primary-nav a:hover,.infios-primary-nav a:focus-visible { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.09); transform: translateX(2px); }
+.infios-shell-note { margin-top: 1.25rem; padding: .85rem; border: 1px solid rgba(255,255,255,.1); border-radius: var(--infios-radius-md); background: rgba(255,255,255,.055); color: rgba(255,255,255,.68); font-size: .72rem; line-height: 1.45; }
+.infios-shell-note strong { display: block; margin-bottom: .25rem; color: #fff; }
+.infios-app-content { min-width: 0; max-width: 100%; overflow-x: clip; }
+@media (max-width: 980px) {
+  .infios-app-shell { grid-template-columns: minmax(0,1fr); }
+  .infios-product-sidebar { position: static; width: 100%; max-width: 100%; height: auto; padding: .8rem 1rem; overflow-x: hidden; }
+  .infios-brand { display: flex; align-items: baseline; justify-content: space-between; padding: 0 0 .65rem; }
+  .infios-primary-nav { display: flex; width: 100%; max-width: 100%; margin-top: .65rem; overflow-x: auto; overscroll-behavior-inline: contain; }
+  .infios-primary-nav a { flex: 0 0 8rem; }
+  .infios-shell-note { display: none; }
+}
+@media (max-width: 520px) {
+  .infios-primary-nav a { flex-basis: 7.5rem; }
+  .infios-primary-nav a span { display: none; }
+}

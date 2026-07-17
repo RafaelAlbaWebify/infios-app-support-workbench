@@ -71,3 +71,34 @@ def test_operator_surfaces_remain_keyboard_accessible_without_mobile_overflow(
 
     assert page_errors == []
     assert console_errors == []
+
+
+def test_incident_surface_uses_shared_product_shell(page: Page, usability_base_url: str) -> None:
+    page.set_viewport_size({"width": 1440, "height": 1000})
+    page.goto(f"{usability_base_url}/")
+
+    shell = page.locator(".infios-app-shell")
+    sidebar = page.locator(".infios-product-sidebar")
+    navigation = page.get_by_role("navigation", name="Primary")
+    expect(shell).to_be_visible()
+    expect(sidebar).to_be_visible()
+    expect(navigation.get_by_role("link")).to_have_count(5)
+    expect(page.locator("#open-incidents")).to_have_attribute("aria-current", "page")
+    expect(page.locator("#open-problems")).to_have_attribute("href", "/problems")
+    expect(page.locator("#open-handovers")).to_have_attribute("href", "/handovers")
+    expect(page.locator("#open-catalogue")).to_have_attribute("href", "/catalogue")
+    expect(page.locator("#open-analytics")).to_have_attribute("href", "/analytics")
+
+    geometry = page.evaluate(
+        """() => {
+          const sidebar = document.querySelector('.infios-product-sidebar').getBoundingClientRect();
+          const content = document.querySelector('.infios-app-content').getBoundingClientRect();
+          return { sidebarWidth: sidebar.width, sidebarHeight: sidebar.height, contentLeft: content.left };
+        }"""
+    )
+    assert 220 <= geometry["sidebarWidth"] <= 280
+    assert geometry["sidebarHeight"] >= 900
+    assert geometry["contentLeft"] >= geometry["sidebarWidth"] - 1
+
+    overflow = page.evaluate("document.documentElement.scrollWidth - window.innerWidth")
+    assert overflow <= 1

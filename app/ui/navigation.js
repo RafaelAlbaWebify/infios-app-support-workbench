@@ -1,7 +1,14 @@
-const navigationStylesheet = document.createElement('link');
-navigationStylesheet.rel = 'stylesheet';
-navigationStylesheet.href = '/ui/static/navigation.css';
-document.head.append(navigationStylesheet);
+[
+  '/ui/static/design-system.css',
+  '/ui/static/navigation.css',
+  '/ui/static/shell-layout.css',
+  '/ui/static/shell-content.css',
+].forEach((href) => {
+  const stylesheet = document.createElement('link');
+  stylesheet.rel = 'stylesheet';
+  stylesheet.href = href;
+  document.head.append(stylesheet);
+});
 
 const metadataScript = document.createElement('script');
 metadataScript.src = '/ui/static/metadata.js';
@@ -92,32 +99,53 @@ function buildWorkAreaNavigation() {
   summaryGrid.insertAdjacentElement('afterend', navigation);
 }
 
-function addOperationalNavigation() {
+function createProductLink(id, href, label, description, current = false) {
+  const link = document.createElement('a');
+  link.id = id;
+  link.href = href;
+  if (current) link.setAttribute('aria-current', 'page');
+  const name = document.createElement('strong');
+  name.textContent = label;
+  const detail = document.createElement('span');
+  detail.textContent = description;
+  link.append(name, detail);
+  return link;
+}
+
+function buildProductShell() {
   const topbar = document.querySelector('.topbar');
-  const modePill = topbar?.querySelector('.mode-pill');
-  if (!topbar || !modePill || document.querySelector('#open-analytics')) return;
+  const layout = document.querySelector('main.layout');
+  if (!topbar || !layout || document.querySelector('.infios-app-shell')) return;
+
+  const shell = document.createElement('div');
+  shell.className = 'infios-app-shell';
+  const sidebar = document.createElement('aside');
+  sidebar.className = 'infios-product-sidebar';
+  sidebar.setAttribute('aria-label', 'Product navigation');
+  const brand = document.createElement('div');
+  brand.className = 'infios-brand';
+  brand.innerHTML = '<strong>INFIOS</strong><span>Application Support Workbench</span>';
   const navigation = document.createElement('nav');
-  navigation.className = 'operational-navigation';
+  navigation.className = 'infios-primary-nav';
   navigation.setAttribute('aria-label', 'Primary');
-  navigation.style.display = 'flex';
-  navigation.style.flexWrap = 'wrap';
-  navigation.style.gap = '10px';
-  [
-    ['open-problems', '/problems', 'Problems'],
-    ['open-handovers', '/handovers', 'Handovers'],
-    ['open-catalogue', '/catalogue', 'Catalogue'],
-    ['open-analytics', '/analytics', 'Operational analytics'],
-  ].forEach(([id, href, label]) => {
-    const link = document.createElement('a');
-    link.id = id;
-    link.className = 'mode-pill';
-    link.href = href;
-    link.textContent = label;
-    link.style.color = 'white';
-    link.style.textDecoration = 'none';
-    navigation.append(link);
-  });
-  topbar.insertBefore(navigation, modePill);
+  navigation.append(
+    createProductLink('open-incidents', '/', 'Incidents', 'Investigate and escalate', true),
+    createProductLink('open-problems', '/problems', 'Problems', 'RCA and corrective actions'),
+    createProductLink('open-handovers', '/handovers', 'Handovers', 'Immutable shift snapshots'),
+    createProductLink('open-catalogue', '/catalogue', 'Catalogue', 'Services and dependencies'),
+    createProductLink('open-analytics', '/analytics', 'Analytics', 'Descriptive operations'),
+  );
+  const note = document.createElement('div');
+  note.className = 'infios-shell-note';
+  note.innerHTML = '<strong>Evidence-led by design</strong>Context and patterns do not prove cause. Backend validation remains authoritative.';
+  sidebar.append(brand, navigation, note);
+
+  const content = document.createElement('div');
+  content.className = 'infios-app-content';
+  topbar.parentNode.insertBefore(shell, topbar);
+  shell.append(sidebar, content);
+  content.append(topbar, layout);
+  document.body.classList.add('infios-shell-ready');
 }
 
 function updateCaseSummaryDownload(caseId) {
@@ -139,5 +167,5 @@ window.addEventListener('infios:case-opened', (event) => {
   updateCaseSummaryDownload(event.detail?.caseId);
 });
 
-addOperationalNavigation();
+buildProductShell();
 caseLinksScript.addEventListener('load', buildWorkAreaNavigation);
