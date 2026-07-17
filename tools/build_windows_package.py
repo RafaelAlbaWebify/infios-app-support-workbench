@@ -8,10 +8,11 @@ import tempfile
 import zipfile
 from pathlib import Path
 
-from app.version import VERSION
-
 
 ROOT = Path(__file__).resolve().parents[1]
+_version_namespace: dict[str, object] = {}
+exec((ROOT / "app" / "version.py").read_text(encoding="utf-8"), _version_namespace)
+VERSION = str(_version_namespace["VERSION"])
 PACKAGE_NAME = f"INFIOS-{VERSION}-windows"
 
 
