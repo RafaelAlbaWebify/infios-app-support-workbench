@@ -1,3 +1,6 @@
+@import url('/ui/static/secondary-components-layout.css');
+@import url('/ui/static/secondary-components-controls.css');
+
 body:not(.infios-shell-ready) { padding-left: 15.5rem; overflow-x: hidden; background: #f6f8fb; }
 body:not(.infios-shell-ready) > .topbar { position: fixed; inset: 0 auto 0 0; z-index: 50; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; width: 15.5rem; min-height: 100vh; padding: 1.5rem .9rem; background: linear-gradient(180deg,#071a33,#0b2342); color: #fff; }
 body:not(.infios-shell-ready) > .topbar > div { padding: 0 .35rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,.1); }
