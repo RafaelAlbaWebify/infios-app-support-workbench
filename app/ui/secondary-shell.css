@@ -18,10 +18,10 @@ body:not(.infios-shell-ready) .problem-panel,
 body:not(.infios-shell-ready) .handover-panel,
 body:not(.infios-shell-ready) .catalogue-panel,
 body:not(.infios-shell-ready) .analytics-panel,
-body:not(.infios-shell-ready) .metric-card,
 body:not(.infios-shell-ready) .readiness-card,
 body:not(.infios-shell-ready) .status-change-card,
-body:not(.infios-shell-ready) .known-error-review { border-radius: .95rem; box-shadow: 0 1px 2px rgba(16,34,61,.04),0 8px 24px rgba(16,34,61,.045); }
+body:not(.infios-shell-ready) .known-error-review { border-radius: .7rem; box-shadow: 0 1px 2px rgba(16,34,61,.04),0 8px 24px rgba(16,34,61,.045); }
+body:not(.infios-shell-ready) .metric-card { border-radius: .6rem; box-shadow: 0 1px 2px rgba(16,34,61,.04); }
 body:not(.infios-shell-ready) button,
 body:not(.infios-shell-ready) input,
 body:not(.infios-shell-ready) select,
