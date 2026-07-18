@@ -1,3 +1,6 @@
+@import url('/ui/static/secondary-components-layout.css');
+@import url('/ui/static/secondary-components-controls.css');
+
 body:not(.infios-shell-ready) { padding-left: 15.5rem; overflow-x: hidden; background: #f6f8fb; }
 body:not(.infios-shell-ready) > .topbar { position: fixed; inset: 0 auto 0 0; z-index: 50; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; width: 15.5rem; min-height: 100vh; padding: 1.5rem .9rem; background: linear-gradient(180deg,#071a33,#0b2342); color: #fff; }
 body:not(.infios-shell-ready) > .topbar > div { padding: 0 .35rem 1.25rem; border-bottom: 1px solid rgba(255,255,255,.1); }
@@ -15,10 +18,10 @@ body:not(.infios-shell-ready) .problem-panel,
 body:not(.infios-shell-ready) .handover-panel,
 body:not(.infios-shell-ready) .catalogue-panel,
 body:not(.infios-shell-ready) .analytics-panel,
-body:not(.infios-shell-ready) .metric-card,
 body:not(.infios-shell-ready) .readiness-card,
 body:not(.infios-shell-ready) .status-change-card,
-body:not(.infios-shell-ready) .known-error-review { border-radius: .95rem; box-shadow: 0 1px 2px rgba(16,34,61,.04),0 8px 24px rgba(16,34,61,.045); }
+body:not(.infios-shell-ready) .known-error-review { border-radius: .7rem; box-shadow: 0 1px 2px rgba(16,34,61,.04),0 8px 24px rgba(16,34,61,.045); }
+body:not(.infios-shell-ready) .metric-card { border-radius: .6rem; box-shadow: 0 1px 2px rgba(16,34,61,.04); }
 body:not(.infios-shell-ready) button,
 body:not(.infios-shell-ready) input,
 body:not(.infios-shell-ready) select,

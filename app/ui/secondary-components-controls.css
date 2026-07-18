@@ -1,0 +1,43 @@
+body:not(.infios-shell-ready) .problem-filter-form,
+body:not(.infios-shell-ready) .action-filter-form,
+body:not(.infios-shell-ready) .known-error-filter-form,
+body:not(.infios-shell-ready) .handover-filter-form,
+body:not(.infios-shell-ready) .catalogue-filter-form { gap: .65rem; margin-top: .8rem; padding: .75rem; border-color: #e1e6ee; border-radius: .55rem; background: #f7f9fc; }
+body:not(.infios-shell-ready) label { font-size: .72rem; }
+body:not(.infios-shell-ready) input,
+body:not(.infios-shell-ready) select,
+body:not(.infios-shell-ready) textarea { margin-top: .3rem; padding: .58rem .65rem; border-color: #d8e0ea; font-size: .78rem; }
+body:not(.infios-shell-ready) button,
+body:not(.infios-shell-ready) .text-link { padding: .58rem .8rem; font-size: .75rem; }
+body:not(.infios-shell-ready) .problem-list,
+body:not(.infios-shell-ready) .handover-list,
+body:not(.infios-shell-ready) .catalogue-list,
+body:not(.infios-shell-ready) .record-list { gap: .45rem; margin-top: .8rem; }
+body:not(.infios-shell-ready) .problem-list button,
+body:not(.infios-shell-ready) .handover-list button,
+body:not(.infios-shell-ready) .catalogue-list button,
+body:not(.infios-shell-ready) .record-card,
+body:not(.infios-shell-ready) .history-card { padding: .75rem; border-radius: .5rem; box-shadow: none; }
+body:not(.infios-shell-ready) .problem-metadata,
+body:not(.infios-shell-ready) .handover-metadata,
+body:not(.infios-shell-ready) .service-metadata { gap: .45rem .8rem; padding: .8rem; border: 1px solid #e6ebf1; border-radius: .55rem; background: #f7f9fc; font-size: .78rem; }
+body:not(.infios-shell-ready) .known-error-section,
+body:not(.infios-shell-ready) .known-error-review,
+body:not(.infios-shell-ready) .readiness-card,
+body:not(.infios-shell-ready) .status-change-card,
+body:not(.infios-shell-ready) .completeness-card { margin-top: 1rem; padding: 1rem; border-radius: .6rem; }
+body:not(.infios-shell-ready) .metric-grid { gap: .65rem; }
+body:not(.infios-shell-ready) .metric-card { padding: .85rem; border-color: #e1e6ee; border-radius: .6rem; box-shadow: 0 1px 2px rgba(16,34,61,.035); }
+body:not(.infios-shell-ready) .metric-card span { font-size: .68rem; letter-spacing: .035em; text-transform: uppercase; }
+body:not(.infios-shell-ready) .metric-card strong { margin-top: .35rem; color: #135fca; font-size: clamp(1.35rem,2.4vw,2rem); }
+body:not(.infios-shell-ready) .trend-summary { gap: .55rem; margin-top: .8rem; }
+body:not(.infios-shell-ready) .trend-summary span { padding: .7rem; border: 1px solid #e6ebf1; border-radius: .5rem; background: #f7f9fc; font-size: .7rem; }
+body:not(.infios-shell-ready) .trend-summary strong { font-size: 1.15rem; }
+body:not(.infios-shell-ready) .table-wrap { margin-top: .8rem; border: 1px solid #e1e6ee; border-radius: .55rem; background: #fff; }
+body:not(.infios-shell-ready) th,
+body:not(.infios-shell-ready) td { padding: .65rem .6rem; font-size: .72rem; }
+body:not(.infios-shell-ready) th { background: #f7f9fc; font-size: .64rem; }
+body:not(.infios-shell-ready) tbody tr:hover { background: #f4f8ff; }
+body:not(.infios-shell-ready) .summary-strip { gap: .65rem; }
+body:not(.infios-shell-ready) .summary-strip article { padding: .8rem; border-color: #e1e6ee; border-radius: .6rem; box-shadow: 0 1px 2px rgba(16,34,61,.035); }
+body:not(.infios-shell-ready) .analytics-disclaimer { padding: .8rem 1rem; border-left-width: 3px; border-radius: .5rem; font-size: .75rem; }
