@@ -1,0 +1,24 @@
+.infios-app-content > .topbar { padding-top: 1.4rem; padding-bottom: 1rem; }
+.infios-app-content > .topbar h1 { font-size: clamp(1.45rem,2vw,1.85rem); }
+.infios-app-content > .layout { gap: 1rem; margin-top: 1rem; }
+.infios-app-content .sidebar,.infios-app-content .panel { border-radius: .7rem; box-shadow: 0 1px 2px rgba(16,34,61,.035); }
+.infios-app-content .sidebar { padding: .95rem; }
+.infios-app-content .panel { padding: 1.1rem; }
+.infios-app-content .panel h2 { font-size: clamp(1.25rem,1.8vw,1.55rem); }
+.infios-app-content .panel h3 { font-size: .95rem; }
+.infios-app-content .lead { margin-bottom: 1rem; font-size: .84rem; line-height: 1.5; }
+.infios-app-content form,.infios-app-content .evidence-editor { gap: .75rem; }
+.infios-app-content label,.infios-app-content legend { font-size: .75rem; }
+.infios-app-content input,.infios-app-content select,.infios-app-content textarea { margin-top: .35rem; padding: .58rem .65rem; font-size: .78rem; }
+.infios-app-content .summary-grid { gap: .65rem; }
+.infios-app-content .summary-grid article { padding: .75rem; border: 1px solid var(--infios-slate-200); border-radius: .55rem; }
+.infios-app-content .summary-grid p { font-size: .76rem; }
+.infios-app-content .quick-actions,.infios-app-content .evidence-editor,.infios-app-content #case-panel>section { margin-top: 1rem; }
+.infios-app-content .evidence-editor { padding: .9rem; border-radius: .55rem; }
+.infios-app-content .evidence-card,.infios-app-content .case-card { padding: .75rem; border-radius: .5rem; box-shadow: none; }
+.infios-app-content .empty-state { padding: 1rem; border-radius: .5rem; }
+.infios-app-content .timeline-item { gap: .75rem; padding-top: .7rem; padding-bottom: .8rem; }
+.infios-app-content .case-work-navigation { margin-top: .8rem; }
+@media (max-width: 760px) {
+  .infios-app-content .panel,.infios-app-content .sidebar { padding: .85rem; }
+}
