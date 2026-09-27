@@ -302,6 +302,24 @@ function populateCaseHeader(supportCase) {
   });
 }
 
+document.querySelector('#load-demo')?.addEventListener('click', async () => {
+  const button = document.querySelector('#load-demo');
+  button.disabled = true;
+  button.textContent = 'Loading demo…';
+  clearError(dashboardError);
+  try {
+    const demo = await api('/api/demo/seed', { method: 'POST' });
+    await loadCases();
+    await openCase(demo.primary_case_id);
+    document.querySelector('#save-state').textContent = 'N2 portfolio demo loaded';
+  } catch (error) {
+    showError(dashboardError, error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Load N2 demo';
+  }
+});
+
 document.querySelector('#new-incident').addEventListener('click', () => {
   state.caseId = null;
   caseForm.reset();
