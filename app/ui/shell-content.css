@@ -4,7 +4,10 @@
 .infios-app-content > .topbar h1 { margin: .2rem 0 0; color: var(--infios-slate-950); font-size: clamp(1.45rem,2vw,1.85rem); letter-spacing: -.03em; }
 .infios-app-content > .topbar .eyebrow { color: var(--infios-blue-700); font-size: .7rem; }
 .infios-app-content > .topbar .mode-pill { border: 1px solid var(--infios-slate-200); background: var(--infios-white); color: var(--infios-slate-600); box-shadow: none; }
-.infios-app-content > .layout { grid-template-columns: minmax(12rem,15rem) minmax(0,1fr); gap: 1rem; width: min(calc(100% - 3rem),var(--infios-content-max)); margin: 1rem auto 3rem; }
+.infios-app-content > .layout { display: block; width: min(calc(100% - 3rem),var(--infios-content-max)); margin: 1rem auto 3rem; }
+.infios-app-content > .layout > .sidebar { display: none; }
+.infios-app-content .workspace { width: 100%; }
+.infios-app-content #case-panel { max-width: 88rem; margin-inline: auto; }
 .infios-app-content .sidebar,.infios-app-content .panel { border: 1px solid var(--infios-slate-200); border-radius: .7rem; background: var(--infios-white); box-shadow: 0 1px 2px rgba(16,34,61,.035); }
 .infios-app-content .sidebar { top: 1rem; padding: .95rem; }
 .infios-app-content .sidebar h2 { margin-bottom: .85rem; font-size: .9rem; }
@@ -27,7 +30,7 @@
 .infios-app-content .operational-navigation { display: none !important; }
 @media (max-width: 760px) {
   .infios-app-content > .topbar { padding: 1rem .85rem .75rem; }
-  .infios-app-content > .layout { grid-template-columns: 1fr; width: min(calc(100% - 1.25rem),46rem); margin-top: .8rem; }
+  .infios-app-content > .layout { width: min(calc(100% - 1.25rem),46rem); margin-top: .8rem; }
   .infios-app-content .sidebar { position: static; }
   .infios-app-content .panel,.infios-app-content .sidebar { padding: .85rem; }
 }
