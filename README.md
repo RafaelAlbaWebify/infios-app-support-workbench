@@ -82,11 +82,13 @@ Related cases can then be explicitly grouped into a problem record, reviewed thr
 - Browser filters operate only on loaded records and never change stored data.
 - Backend validation remains authoritative for all lifecycle and safety rules.
 
-## Published release
+## Portfolio review path
 
-The first complete portfolio release is [`v0.1.0`](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/releases/tag/v0.1.0).
+The current portfolio version is maintained on `main`. For the fastest review, launch the workbench and use **Load N2 demo** to open the deterministic SQL-timeout investigation described below.
 
-Windows package:
+The repository also retains the earlier packaged [`v0.1.0`](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/releases/tag/v0.1.0) release for version history. It predates the current recruiter-facing incident operations and demo improvements on `main`.
+
+Earlier Windows package:
 
 [`INFIOS-0.1.0-windows.zip`](https://github.com/RafaelAlbaWebify/infios-app-support-workbench/releases/download/v0.1.0/INFIOS-0.1.0-windows.zip)
 
