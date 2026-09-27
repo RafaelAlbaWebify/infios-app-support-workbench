@@ -12,6 +12,7 @@ from app.api.explanations import get_explanation_repository
 from app.api.escalations import get_escalation_repository
 from app.api.recovery import get_recovery_repository
 from app.api.observations import get_observation_repository
+from app.domain.recovery import RecoveryOutcome, RecoveryValidation
 from app.domain.models import (
     ActionSafetyLevel,
     ActionStatus,
