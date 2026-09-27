@@ -58,7 +58,7 @@ def test_demo_seed_is_idempotent_and_builds_evidence_backed_n2_case(tmp_path) ->
         sql_actions = actions.list_for_case(sql_case.case_id)
         sql_explanations = explanations.list_for_case(sql_case.case_id)
 
-        assert len(sql_evidence) == 3
+        assert len(sql_evidence) == 4
         assert len(sql_observations) == 2
         assert len(sql_actions) == 1
         assert sql_actions[0].actual_result
