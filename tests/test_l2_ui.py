@@ -9,7 +9,8 @@ def test_l2_investigation_ui_and_asset_are_served() -> None:
     script = client.get("/ui/static/l2.js")
 
     assert page.status_code == 200
-    assert "Guided L1 + L2 mode" in page.text
+    assert "Operational workbench" in page.text
+    assert "Evidence to recovery" in page.text
     assert "Possible explanations" in page.text
     assert "Supporting observations" in page.text
     assert "Contradicting observations" in page.text

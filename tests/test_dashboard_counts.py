@@ -49,11 +49,11 @@ def test_dashboard_counts_group_operational_statuses(tmp_path) -> None:
 def test_dashboard_counter_assets_are_served_and_loaded() -> None:
     client = TestClient(app)
     dashboard = client.get("/ui/static/dashboard.js")
-    navigation = client.get("/ui/static/navigation.js")
+    page = client.get("/")
 
     assert dashboard.status_code == 200
     assert "Operational case counters" in dashboard.text
     assert "/api/cases/dashboard" in dashboard.text
     assert "Resolved today" in dashboard.text
-    assert navigation.status_code == 200
-    assert "/ui/static/dashboard.js" in navigation.text
+    assert page.status_code == 200
+    assert page.text.count('/ui/static/dashboard.js') == 1

@@ -97,3 +97,31 @@ Requirements:
 - Windows 10 or newer;
 - Python 3.10 or newer available as `python`;
 - internet access during first launch to install Python dependencies.
+
+
+## Demo Commands
+
+For the fastest reviewer path on Windows, start the local workbench and use **Load N2 demo** on the incident queue. The seeded demo is sanitized, deterministic and can be loaded repeatedly without creating duplicate incidents.
+
+```powershell
+.\tools\start-infios.ps1
+```
+
+The original evidence-analysis samples remain available from the CLI, including the SQL timeout scenario:
+
+```powershell
+python -m app.cli samples/incident-sql-query-timeout.json
+```
+
+The portfolio demo intentionally separates captured evidence, evidence-backed observations, diagnostic actions and possible explanations. A temporal relationship or correlation identifier is not treated as proof of root cause.
+
+## Demo Reports
+
+Representative generated reports are kept in the repository for review without launching the application:
+
+- `reports/sample-sql-query-timeout-report.md` — SQL timeout evidence and bounded database-support reasoning.
+- `reports/sample-log-pattern-correlation-report.md` — repeated log pattern and correlation-ID investigation.
+- `reports/sample-500-report.md` — application HTTP 500 triage.
+- `reports/sample-503-dependency-report.md` — dependency/service-health triage.
+
+The source scenario for the SQL example is `samples/incident-sql-query-timeout.json`.

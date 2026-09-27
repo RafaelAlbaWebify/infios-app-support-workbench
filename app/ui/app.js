@@ -187,11 +187,24 @@ async function loadCases() {
       title.textContent = supportCase.title;
       const meta = document.createElement('p');
       meta.className = 'muted';
-      meta.textContent = `${supportCase.application} · ${formatValue(supportCase.affected_scope)} · ${formatValue(supportCase.impact)} · Owner: ${supportCase.owner || 'Unassigned'}`;
+      meta.textContent = supportCase.application;
+      const operationalMeta = document.createElement('div');
+      operationalMeta.className = 'case-operational-meta';
+      [
+        `Severity: ${formatValue(supportCase.severity)}`,
+        `Environment: ${formatValue(supportCase.environment)}`,
+        `Scope: ${formatValue(supportCase.affected_scope)}`,
+        `Owner: ${supportCase.owner || 'Unassigned'}`,
+        `Impact: ${formatValue(supportCase.impact)}`,
+      ].forEach((value) => {
+        const item = document.createElement('span');
+        item.textContent = value;
+        operationalMeta.append(item);
+      });
       const updated = document.createElement('p');
       updated.className = 'case-updated';
       updated.textContent = `Updated ${formatDate(supportCase.updated_at)} · ${caseAgeLabel(supportCase)}`;
-      content.append(title, meta, updated);
+      content.append(title, meta, operationalMeta, updated);
 
       const status = document.createElement('span');
       status.className = 'status-badge';
@@ -270,10 +283,42 @@ async function openCase(caseId) {
 
 function populateCaseHeader(supportCase) {
   document.querySelector('#case-title').textContent = supportCase.title;
-  document.querySelector('#case-context').textContent = `${supportCase.application} · ${formatValue(supportCase.affected_scope)} · ${formatValue(supportCase.impact)}`;
+  document.querySelector('#case-context').textContent = supportCase.application;
   document.querySelector('#case-status').textContent = formatValue(supportCase.status);
   document.querySelector('#workspace-status').textContent = 'Current incident';
+  const metadata = document.querySelector('#case-metadata');
+  metadata.replaceChildren();
+  [
+    `ID: ${supportCase.case_id}`,
+    `Severity: ${formatValue(supportCase.severity)}`,
+    `Environment: ${formatValue(supportCase.environment)}`,
+    `Scope: ${formatValue(supportCase.affected_scope)}`,
+    `Impact: ${formatValue(supportCase.impact)}`,
+    `Owner: ${supportCase.owner || 'Unassigned'}`,
+  ].forEach((value) => {
+    const item = document.createElement('span');
+    item.textContent = value;
+    metadata.append(item);
+  });
 }
+
+document.querySelector('#load-demo')?.addEventListener('click', async () => {
+  const button = document.querySelector('#load-demo');
+  button.disabled = true;
+  button.textContent = 'Loading demo…';
+  clearError(dashboardError);
+  try {
+    const demo = await api('/api/demo/seed', { method: 'POST' });
+    await loadCases();
+    await openCase(demo.primary_case_id);
+    document.querySelector('#save-state').textContent = 'N2 portfolio demo loaded';
+  } catch (error) {
+    showError(dashboardError, error.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Load N2 demo';
+  }
+});
 
 document.querySelector('#new-incident').addEventListener('click', () => {
   state.caseId = null;

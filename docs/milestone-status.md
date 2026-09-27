@@ -2,52 +2,45 @@
 
 ## Current status
 
-INFIOS is an API-first Application Support Engineering workbench with a CLI runner, local run history, SQL evidence scenario, log-pattern evidence scenario, and cleaned demo documentation.
+INFIOS is a local-first Application Support investigation and operations workbench. The current portfolio release combines persistent incident investigation with problem management, service context, shift handovers and descriptive operational analytics.
 
-| Milestone | Scenario | Status | Proof |
-|---|---|---|---|
-| M1 | HTTP 500 after login | Published | Sample incident, analyzer rules, report, tests |
-| M2 | HTTP 403 after login | Published | Sample incident, authorization rules, report, tests |
-| M2.1 | Cleanup and interview proof | Published | Cleaner report wording, quality tests, interview notes, milestone status |
-| M3 | HTTP 503 dependency unavailable | Published | Sample incident, dependency/service-health rules, report, tests |
-| M4 | CLI runner | Published | `python -m app.cli`, console script entry point, CLI tests, generated CLI demo report |
-| M5 | Local run history | Published | Timestamped JSON run records, CLI history flag, API history endpoint, tests, generated history demo |
-| M6 | SQL evidence scenario | Published | Sample SQL timeout incident, SQL/database rules, report, tests, CLI history demo |
-| M6.1 | README and demo polish | Published | Clean demo commands, README quality tests, and improved demo documentation |
-| M7 | Log-pattern evidence scenario | Published | Sample repeated-log incident, log-pattern analyzer rules, report, tests, CLI history demo |
+The original analyzer/CLI milestones remain useful as scenario evidence, but they no longer describe the whole product.
 
-## Current capabilities
+## Delivered capability areas
 
-- FastAPI backend.
-- CLI runner.
-- Local run-history records.
-- Pydantic incident and analysis models.
-- Sample incident loading.
-- Evidence-first analyzer rules.
-- Markdown report generation.
-- JSON analysis output from CLI.
-- GitHub Actions CI.
-- Local pytest suite.
-- Sample reports for portfolio review.
-- Interview notes explaining the support reasoning.
-- Clean demo command documentation.
-- HTTP 500 application failure triage.
-- HTTP 403 access/authorization triage.
-- HTTP 503 dependency/service-health triage.
-- SQL/database evidence triage.
-- Application log-pattern evidence triage.
+| Capability area | Status | Proof |
+|---|---|---|
+| Incident investigation | Delivered | Persistent cases, evidence, observations, diagnostic actions, timelines |
+| Guided technical triage | Delivered | HTTP 500/403/503, SQL timeout and log-pattern sample scenarios |
+| Log evidence handling | Delivered | Sanitized log ingestion, secret review and correlation-ID extraction |
+| L2 reasoning | Delivered | Evidence-backed observations, possible explanations, validation actions |
+| Escalation | Delivered | Persisted L2 escalation packages and Markdown export |
+| Recovery | Delivered | Recovery validation with same-case supporting evidence |
+| Service context | Delivered | Service/dependency catalogue and explicit case links |
+| Shift continuity | Delivered | Immutable operator-authored handovers |
+| Problem management | Delivered | Problem records, RCA, corrective actions and known-error lifecycle |
+| Operations view | Delivered | Incident queue, operational counters, filters and descriptive analytics |
+| Local distribution | Delivered | Windows launcher, wheel validation and versioned ZIP release |
+| Portfolio demo | In validation | Deterministic N2 demo covering SQL timeout and log/correlation investigation |
 
-## Not yet included
+## Current reviewer path
 
-- Frontend dashboard.
-- Real log parser.
-- Real production integrations.
-- Saved incident archive UI.
-- Search/filter over history records.
-- API/integration failure scenario.
+1. Launch the workbench.
+2. Open the incident operations queue.
+3. Select **Load N2 demo**.
+4. Review the SQL timeout case through Evidence, Investigation, Timeline, Escalation and Recovery.
+5. Inspect Problems, Handovers, Catalogue and Analytics for the wider operational model.
 
-## Next recommended milestone
+The demo uses sanitized synthetic data. It deliberately keeps observations, hypotheses and confirmed conclusions separate.
 
-M8 should add a simple local log parser for public-safe sample logs.
+## Remaining portfolio-readiness work
 
-That would turn the M7 scenario into a more practical artifact: a sample log file could be parsed into repeated error signatures, correlation IDs, and a compact evidence summary.
+- Validate the revised incident-operations UI in browser and Windows CI.
+- Complete the demo path so escalation and recovery are immediately inspectable.
+- Capture current screenshots only after the revised UI is stable.
+- Reconcile the README/release presentation with the validated product state.
+- Publish a new version only after the recruiter path passes end-to-end validation.
+
+## Scope boundaries
+
+INFIOS does not claim live production integrations or automated production remediation. It is a local portfolio workbench for demonstrating Application Support investigation structure, evidence handling, safe diagnostic reasoning, escalation quality, recovery validation and operational continuity.
