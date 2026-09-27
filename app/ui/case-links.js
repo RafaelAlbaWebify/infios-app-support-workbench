@@ -1,7 +1,7 @@
 function label(value) { return String(value || 'unknown').replaceAll('_', ' '); }
 
 function ensurePanel() {
-  const anchor = document.querySelector('#case-panel .summary-grid');
+  const anchor = document.querySelector('#case-overview');
   if (!anchor) return null;
   let panel = document.querySelector('#case-catalogue-panel');
   if (panel) return panel;
