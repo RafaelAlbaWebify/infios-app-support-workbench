@@ -5,12 +5,16 @@ from app.api.cases import get_case_repository
 from app.api.evidence import get_evidence_repository
 from app.api.explanations import get_explanation_repository
 from app.api.observations import get_observation_repository
+from app.api.escalations import get_escalation_repository
+from app.api.recovery import get_recovery_repository
 from app.main import app
 from app.persistence.sqlite_action_repository import SQLiteActionRepository
 from app.persistence.sqlite_case_repository import SQLiteCaseRepository
 from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
 from app.persistence.sqlite_explanation_repository import SQLiteExplanationRepository
 from app.persistence.sqlite_observation_repository import SQLiteObservationRepository
+from app.persistence.sqlite_escalation_repository import SQLiteEscalationRepository
+from app.persistence.sqlite_recovery_repository import SQLiteRecoveryRepository
 
 
 def test_demo_seed_is_idempotent_and_builds_evidence_backed_n2_case(tmp_path) -> None:
@@ -20,12 +24,16 @@ def test_demo_seed_is_idempotent_and_builds_evidence_backed_n2_case(tmp_path) ->
     observations = SQLiteObservationRepository(database)
     actions = SQLiteActionRepository(database)
     explanations = SQLiteExplanationRepository(database)
+    escalations = SQLiteEscalationRepository(database)
+    recoveries = SQLiteRecoveryRepository(database)
 
     app.dependency_overrides[get_case_repository] = lambda: cases
     app.dependency_overrides[get_evidence_repository] = lambda: evidence
     app.dependency_overrides[get_observation_repository] = lambda: observations
     app.dependency_overrides[get_action_repository] = lambda: actions
     app.dependency_overrides[get_explanation_repository] = lambda: explanations
+    app.dependency_overrides[get_escalation_repository] = lambda: escalations
+    app.dependency_overrides[get_recovery_repository] = lambda: recoveries
     client = TestClient(app)
 
     try:
@@ -57,5 +65,13 @@ def test_demo_seed_is_idempotent_and_builds_evidence_backed_n2_case(tmp_path) ->
         assert len(sql_explanations) == 1
         assert sql_explanations[0].status.value == "supported"
         assert sql_explanations[0].confirmed_by_operator is False
+
+        sql_escalations = escalations.list_for_case(sql_case.case_id)
+        sql_recoveries = recoveries.list_for_case(sql_case.case_id)
+        assert len(sql_escalations) == 1
+        assert "do not prove root cause" in sql_escalations[0].report_text.lower()
+        assert len(sql_recoveries) == 1
+        assert sql_recoveries[0].outcome.value == "passed"
+        assert sql_recoveries[0].evidence_ids == ["evidence-demo-sql-recovery"]
     finally:
         app.dependency_overrides.clear()
