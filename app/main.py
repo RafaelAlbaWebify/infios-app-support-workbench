@@ -13,6 +13,7 @@ from app.api.application_attention import router as application_attention_router
 from app.api.cases import router as cases_router
 from app.api.catalogue import router as catalogue_router
 from app.api.database import router as database_router
+from app.api.demo import router as demo_router
 from app.api.escalations import router as escalations_router
 from app.api.evidence import router as evidence_router
 from app.api.evidence_quality_analytics import router as evidence_quality_analytics_router
@@ -58,6 +59,7 @@ app.include_router(handover_analytics_router)
 app.include_router(evidence_quality_analytics_router)
 app.include_router(application_attention_router)
 app.include_router(database_router)
+app.include_router(demo_router)
 app.include_router(evidence_router)
 app.include_router(observations_router)
 app.include_router(playbooks_router)
