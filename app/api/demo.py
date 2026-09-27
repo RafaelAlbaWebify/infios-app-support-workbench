@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
-from app.api.cases import DEFAULT_CASE_DATABASE
+from app.api.actions import get_action_repository
+from app.api.cases import get_case_repository
+from app.api.evidence import get_evidence_repository
+from app.api.explanations import get_explanation_repository
+from app.api.observations import get_observation_repository
 from app.domain.models import (
     ActionSafetyLevel,
     ActionStatus,
@@ -19,11 +23,6 @@ from app.domain.models import (
     PossibleExplanation,
     SupportCase,
 )
-from app.persistence.sqlite_action_repository import SQLiteActionRepository
-from app.persistence.sqlite_case_repository import SQLiteCaseRepository
-from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
-from app.persistence.sqlite_explanation_repository import SQLiteExplanationRepository
-from app.persistence.sqlite_observation_repository import SQLiteObservationRepository
 
 router = APIRouter(prefix="/api/demo", tags=["demo"])
 
@@ -34,24 +33,19 @@ class DemoSeedResponse(BaseModel):
     created_or_refreshed: int
 
 
-def _repositories():
-    return (
-        SQLiteCaseRepository(DEFAULT_CASE_DATABASE),
-        SQLiteEvidenceRepository(DEFAULT_CASE_DATABASE),
-        SQLiteObservationRepository(DEFAULT_CASE_DATABASE),
-        SQLiteActionRepository(DEFAULT_CASE_DATABASE),
-        SQLiteExplanationRepository(DEFAULT_CASE_DATABASE),
-    )
-
-
 @router.post("/seed", response_model=DemoSeedResponse)
-def seed_portfolio_demo() -> DemoSeedResponse:
+def seed_portfolio_demo(
+    cases=Depends(get_case_repository),
+    evidence=Depends(get_evidence_repository),
+    observations=Depends(get_observation_repository),
+    actions=Depends(get_action_repository),
+    explanations=Depends(get_explanation_repository),
+) -> DemoSeedResponse:
     """Create a deterministic, sanitized portfolio dataset.
 
     Re-running the endpoint refreshes the same records rather than creating
     duplicate demo incidents.
     """
-    cases, evidence, observations, actions, explanations = _repositories()
     now = datetime.now(timezone.utc)
 
     sql_case = SupportCase(
