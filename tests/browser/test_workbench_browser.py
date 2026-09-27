@@ -102,7 +102,7 @@ def _create_case(page: Page, title: str = "Orders page fails after login") -> No
 def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     page.goto(BASE_URL)
     expect(page.get_by_role("heading", name="Application support queue")).to_be_visible()
-    expect(page.get_by_text("Unknown is valid")).to_be_visible()
+    expect(page.get_by_text("Facts, hypotheses and actions remain separate. Production changes require explicit approval.")).to_be_visible()
 
     page.get_by_role("button", name="New incident").click()
     page.get_by_label("Application or service").fill("Order Management")
