@@ -9,6 +9,8 @@ from app.api.actions import get_action_repository
 from app.api.cases import get_case_repository
 from app.api.evidence import get_evidence_repository
 from app.api.explanations import get_explanation_repository
+from app.api.escalations import get_escalation_repository
+from app.api.recovery import get_recovery_repository
 from app.api.observations import get_observation_repository
 from app.domain.models import (
     ActionSafetyLevel,
@@ -19,6 +21,7 @@ from app.domain.models import (
     EvidenceItem,
     EvidenceSensitivity,
     ExplanationStatus,
+    EscalationPackage,
     Observation,
     PossibleExplanation,
     SupportCase,
@@ -40,6 +43,8 @@ def seed_portfolio_demo(
     observations=Depends(get_observation_repository),
     actions=Depends(get_action_repository),
     explanations=Depends(get_explanation_repository),
+    escalations=Depends(get_escalation_repository),
+    recoveries=Depends(get_recovery_repository),
 ) -> DemoSeedResponse:
     """Create a deterministic, sanitized portfolio dataset.
 
@@ -183,6 +188,56 @@ def seed_portfolio_demo(
         statement="A deployment-specific application path may be contributing to the repeated mapping exception on app-02.",
         status=ExplanationStatus.SUPPORTED,
         supporting_observation_ids=[log_obs.observation_id],
+    ))
+
+    escalation_report = """# Escalation: Daily order report returns HTTP 500 after SQL timeout
+
+## Confirmed observations
+- HTTP 500 and SQL timeout share correlation ID demo-sql-0905.
+- 7-day range succeeds while 90-day range reproduces the timeout.
+
+## Diagnostic result
+- Safe range comparison reproduced the 30-second timeout without database writes or configuration changes.
+
+## Possible explanation — unconfirmed
+- A data-volume or execution-plan regression may affect larger report ranges.
+
+## Requested support
+- DBA/Application Engineering: review the sanitized execution context and query-plan evidence for the large-range request. Do not perform production changes from this demo.
+
+## Safety statement
+Correlation and timing narrow the investigation; they do not prove root cause.
+"""
+    escalations.save(EscalationPackage(
+        package_id="escalation-demo-sql-dba",
+        case_id=sql_case.case_id,
+        target_team="DBA / Application Engineering",
+        included_evidence_ids=[sql_http.evidence_id, sql_log.evidence_id, sql_compare.evidence_id],
+        requested_action="Review execution context and query-plan evidence for the reproducible large-range timeout.",
+        report_text=escalation_report,
+        generated_at=now,
+    ))
+
+    recovery_evidence = evidence.save(EvidenceItem(
+        evidence_id="evidence-demo-sql-recovery",
+        case_id=sql_case.case_id,
+        evidence_type="recovery_validation",
+        source="Sanitized post-change validation",
+        content="After the simulated downstream remediation, the 90-day sample completed successfully twice and returned the expected record count.",
+        certainty=CertaintyLevel.REPRODUCED,
+        sensitivity=EvidenceSensitivity.PUBLIC_SAMPLE,
+        redacted=True,
+    ))
+    recoveries.save(RecoveryValidation(
+        validation_id="recovery-demo-sql-passed",
+        case_id=sql_case.case_id,
+        outcome=RecoveryOutcome.PASSED,
+        method="Repeat the previously failing 90-day report twice and compare expected record count.",
+        result="Both validation runs completed successfully with the expected sample result.",
+        performed_by="Application Support L2",
+        evidence_ids=[recovery_evidence.evidence_id],
+        notes="Recovery evidence demonstrates restored behavior; it does not independently prove the underlying root cause.",
+        tested_at=now,
     ))
 
     return DemoSeedResponse(
