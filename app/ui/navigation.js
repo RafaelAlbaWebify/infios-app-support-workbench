@@ -14,10 +14,6 @@ const metadataScript = document.createElement('script');
 metadataScript.src = '/ui/static/metadata.js';
 document.head.append(metadataScript);
 
-const dashboardScript = document.createElement('script');
-dashboardScript.src = '/ui/static/dashboard.js';
-document.head.append(dashboardScript);
-
 const archiveScript = document.createElement('script');
 archiveScript.src = '/ui/static/archive.js';
 document.head.append(archiveScript);
@@ -35,10 +31,10 @@ const workAreaDefinitions = [
   { selector: '.quick-actions', id: 'work-evidence', label: 'Evidence', advanced: false },
   { selector: '.observation-section', id: 'work-observations', label: 'Observations', advanced: false },
   { selector: '.guided-checks', id: 'work-checks', label: 'Safe checks', advanced: false },
-  { selector: '.timeline-section', id: 'work-timeline', label: 'Timeline', advanced: true, open: true },
-  { selector: '.l2-section', id: 'work-explanations', label: 'L2 explanations', advanced: true },
-  { selector: '.escalation-section', id: 'work-escalation', label: 'Escalation', advanced: true },
-  { selector: '.lifecycle-section', id: 'work-recovery', label: 'Lifecycle & recovery', advanced: true },
+  { selector: '.timeline-section', id: 'work-timeline', label: 'Timeline', advanced: false },
+  { selector: '.l2-section', id: 'work-explanations', label: 'Hypotheses', advanced: false },
+  { selector: '.escalation-section', id: 'work-escalation', label: 'Escalation', advanced: false },
+  { selector: '.lifecycle-section', id: 'work-recovery', label: 'Lifecycle & recovery', advanced: false },
 ];
 
 function wrapAdvancedArea(section, definition) {
