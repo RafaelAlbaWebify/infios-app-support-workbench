@@ -32,7 +32,7 @@ metadataSection.innerHTML = `
   <div id="metadata-history" class="empty-state">No case-detail changes recorded yet.</div>
 `;
 
-document.querySelector('#case-panel .summary-grid')?.insertAdjacentElement('afterend', metadataSection);
+document.querySelector('#case-overview')?.insertAdjacentElement('afterend', metadataSection);
 
 function metadataError(message = '') {
   const element = document.querySelector('#metadata-error');

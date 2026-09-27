@@ -58,8 +58,8 @@ function wrapAdvancedArea(section, definition) {
 
 function buildWorkAreaNavigation() {
   const casePanel = document.querySelector('#case-panel');
-  const summaryGrid = casePanel?.querySelector('.summary-grid');
-  if (!casePanel || !summaryGrid || document.querySelector('#case-work-navigation')) return;
+  const overview = casePanel?.querySelector('#case-overview');
+  if (!casePanel || !overview || document.querySelector('#case-work-navigation')) return;
   const navigation = document.createElement('nav');
   navigation.id = 'case-work-navigation';
   navigation.className = 'case-work-navigation';
@@ -92,7 +92,7 @@ function buildWorkAreaNavigation() {
     links.append(link);
   });
   navigation.append(heading, links);
-  summaryGrid.insertAdjacentElement('afterend', navigation);
+  overview.insertAdjacentElement('afterend', navigation);
 }
 
 function createProductLink(id, href, label, description, current = false) {

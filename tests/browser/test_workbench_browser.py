@@ -244,6 +244,10 @@ def test_n2_portfolio_demo_exposes_complete_investigation_chain(runtime_clean_pa
     expect(page.locator("#case-context")).to_have_text("Order Reporting Portal")
     expect(page.get_by_text(re.compile(r"demo-sql-0905", re.I)).first).to_be_visible()
     expect(page.get_by_text(re.compile(r"90-day range", re.I)).first).to_be_visible()
+    expect(page.locator("#case-evidence-summary")).to_have_text("4 items")
+    expect(page.locator("#case-investigation-summary")).to_have_text("2 observations · 1 completed actions")
+    expect(page.locator("#case-escalation-summary")).to_have_text("1 package ready")
+    expect(page.locator("#case-recovery-summary")).to_have_text("1 passed validation")
 
     navigation = page.get_by_role("navigation", name="Case work areas")
     expect(navigation).to_be_visible()

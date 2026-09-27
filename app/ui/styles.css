@@ -120,3 +120,11 @@ button, .text-link { border-radius: 10px; padding: 11px 16px; border: 1px solid 
 .case-card .case-operational-meta span { padding: 4px 7px; border-radius: 6px; background: var(--surface-soft); color: var(--muted); font-size: 11px; font-weight: 700; }
 @media (max-width: 1000px) { #dashboard-panel > .summary-grid { grid-template-columns: repeat(3, minmax(0,1fr)); } }
 @media (max-width: 620px) { #dashboard-panel > .summary-grid { grid-template-columns: repeat(2, minmax(0,1fr)); } .case-nav { position: static; } }
+
+.case-command-summary { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 10px; margin-top: 18px; }
+.case-command-summary article { min-width: 0; padding: 14px 15px; border: 1px solid var(--border); border-radius: 10px; background: #f8fafc; }
+.case-command-summary .summary-label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.case-command-summary strong { display: block; margin-bottom: 5px; color: var(--text); font-size: 15px; line-height: 1.25; }
+.case-command-summary p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+@media (max-width: 1000px) { .case-command-summary { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 620px) { .case-command-summary { grid-template-columns: 1fr; } }

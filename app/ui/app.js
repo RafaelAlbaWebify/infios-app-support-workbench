@@ -477,9 +477,22 @@ async function loadEvidence() {
 
 async function loadSummary() {
   const summary = await api(`/api/cases/${state.caseId}/summary`);
-  document.querySelector('#next-action').textContent = summary.next_recommended_action;
   const complete = summary.escalation_readiness.filter((item) => item.complete).length;
-  document.querySelector('#known-summary').textContent = `${summary.evidence.length} evidence item(s), ${summary.observations.length} evidence-backed observation(s), and ${complete}/${summary.escalation_readiness.length} escalation checks complete.`;
+  const completedActions = summary.actions.filter((item) => item.actual_result).length;
+  const supportedExplanations = summary.explanations.filter((item) => ['supported', 'confirmed'].includes(item.status)).length;
+  const passedRecovery = summary.recovery_validations.filter((item) => item.outcome === 'passed').length;
+
+  document.querySelector('#case-evidence-summary').textContent = `${summary.evidence.length} item${summary.evidence.length === 1 ? '' : 's'}`;
+  document.querySelector('#known-summary').textContent = `${summary.observations.length} evidence-backed observation${summary.observations.length === 1 ? '' : 's'} recorded.`;
+  document.querySelector('#case-investigation-summary').textContent = `${summary.observations.length} observations · ${completedActions} completed actions`;
+  document.querySelector('#case-escalation-summary').textContent = summary.escalations.length
+    ? `${summary.escalations.length} package${summary.escalations.length === 1 ? '' : 's'} ready`
+    : 'Not packaged';
+  document.querySelector('#case-readiness-summary').textContent = `${complete}/${summary.escalation_readiness.length} readiness checks complete · ${supportedExplanations} supported hypotheses`;
+  document.querySelector('#case-recovery-summary').textContent = passedRecovery
+    ? `${passedRecovery} passed validation${passedRecovery === 1 ? '' : 's'}`
+    : 'Not validated';
+  document.querySelector('#next-action').textContent = summary.next_recommended_action;
   return summary;
 }
 
