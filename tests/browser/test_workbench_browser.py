@@ -258,7 +258,7 @@ def test_n2_portfolio_demo_exposes_complete_investigation_chain(runtime_clean_pa
     expect(page.get_by_text(re.compile(r"do not prove root cause", re.I)).first).to_be_visible()
 
     navigation.get_by_role("link", name="Lifecycle & recovery", exact=True).click()
-    expect(page.get_by_text(re.compile(r"Both validation runs completed successfully", re.I)).to_be_visible()
+    expect(page.get_by_text(re.compile(r"Both validation runs completed successfully", re.I)).first).to_be_visible()
     _capture(page, "desktop-n2-portfolio-demo.png")
 
 def test_mobile_layout_has_no_horizontal_overflow(page: Page) -> None:
