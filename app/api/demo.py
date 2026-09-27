@@ -1,0 +1,198 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+from app.api.cases import DEFAULT_CASE_DATABASE
+from app.domain.models import (
+    ActionSafetyLevel,
+    ActionStatus,
+    CaseStatus,
+    CertaintyLevel,
+    DiagnosticAction,
+    EvidenceItem,
+    EvidenceSensitivity,
+    ExplanationStatus,
+    Observation,
+    PossibleExplanation,
+    SupportCase,
+)
+from app.persistence.sqlite_action_repository import SQLiteActionRepository
+from app.persistence.sqlite_case_repository import SQLiteCaseRepository
+from app.persistence.sqlite_evidence_repository import SQLiteEvidenceRepository
+from app.persistence.sqlite_explanation_repository import SQLiteExplanationRepository
+from app.persistence.sqlite_observation_repository import SQLiteObservationRepository
+
+router = APIRouter(prefix="/api/demo", tags=["demo"])
+
+
+class DemoSeedResponse(BaseModel):
+    primary_case_id: str
+    case_ids: list[str]
+    created_or_refreshed: int
+
+
+def _repositories():
+    return (
+        SQLiteCaseRepository(DEFAULT_CASE_DATABASE),
+        SQLiteEvidenceRepository(DEFAULT_CASE_DATABASE),
+        SQLiteObservationRepository(DEFAULT_CASE_DATABASE),
+        SQLiteActionRepository(DEFAULT_CASE_DATABASE),
+        SQLiteExplanationRepository(DEFAULT_CASE_DATABASE),
+    )
+
+
+@router.post("/seed", response_model=DemoSeedResponse)
+def seed_portfolio_demo() -> DemoSeedResponse:
+    """Create a deterministic, sanitized portfolio dataset.
+
+    Re-running the endpoint refreshes the same records rather than creating
+    duplicate demo incidents.
+    """
+    cases, evidence, observations, actions, explanations = _repositories()
+    now = datetime.now(timezone.utc)
+
+    sql_case = SupportCase(
+        case_id="case-demo-sql-timeout",
+        title="Daily order report returns HTTP 500 after SQL timeout",
+        application="Order Reporting Portal",
+        environment="Production-like demo",
+        status=CaseStatus.INVESTIGATION,
+        severity="P2",
+        impact="Daily operational reporting unavailable for business users",
+        owner="Application Support L2",
+        affected_scope="Multiple reporting users",
+        is_demo=True,
+        created_at=now,
+        updated_at=now,
+    )
+    log_case = SupportCase(
+        case_id="case-demo-checkout-correlation",
+        title="Intermittent checkout failure after deployment",
+        application="Checkout Service",
+        environment="Production-like demo",
+        status=CaseStatus.WAITING_FOR_ESCALATION,
+        severity="P2",
+        impact="Intermittent customer checkout failures",
+        owner="Application Support L2",
+        affected_scope="Subset of checkout requests",
+        is_demo=True,
+        created_at=now,
+        updated_at=now,
+    )
+    cases.save(sql_case)
+    cases.save(log_case)
+
+    sql_http = evidence.save(EvidenceItem(
+        evidence_id="evidence-demo-sql-http",
+        case_id=sql_case.case_id,
+        evidence_type="http_observation",
+        source="Sanitized browser/API capture",
+        content="POST /reports/orders/daily returned HTTP 500 at 09:05 UTC. correlationId=demo-sql-0905.",
+        certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+        sensitivity=EvidenceSensitivity.PUBLIC_SAMPLE,
+        redacted=True,
+    ))
+    sql_log = evidence.save(EvidenceItem(
+        evidence_id="evidence-demo-sql-log",
+        case_id=sql_case.case_id,
+        evidence_type="log_sample",
+        source="Sanitized application log",
+        content="correlationId=demo-sql-0905 report=DailyOrders procedure=sample_sp_daily_order_report error=Execution Timeout Expired duration=30s",
+        certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+        sensitivity=EvidenceSensitivity.PUBLIC_SAMPLE,
+        redacted=True,
+    ))
+    sql_compare = evidence.save(EvidenceItem(
+        evidence_id="evidence-demo-sql-compare",
+        case_id=sql_case.case_id,
+        evidence_type="reproduction_result",
+        source="Approved sample-data reproduction",
+        content="7-day range completed successfully; 90-day range reproduced the timeout. No database writes or configuration changes performed.",
+        certainty=CertaintyLevel.REPRODUCED,
+        sensitivity=EvidenceSensitivity.PUBLIC_SAMPLE,
+        redacted=True,
+    ))
+    obs_timeout = observations.save(Observation(
+        observation_id="observation-demo-sql-timeout",
+        case_id=sql_case.case_id,
+        statement="The HTTP 500 and SQL timeout share correlation ID demo-sql-0905.",
+        category="http_api",
+        evidence_ids=[sql_http.evidence_id, sql_log.evidence_id],
+        certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+    ))
+    obs_range = observations.save(Observation(
+        observation_id="observation-demo-sql-range",
+        case_id=sql_case.case_id,
+        statement="A 7-day sample succeeds while a 90-day sample reproduces the timeout.",
+        category="performance",
+        evidence_ids=[sql_compare.evidence_id],
+        certainty=CertaintyLevel.REPRODUCED,
+    ))
+    action = actions.save(DiagnosticAction(
+        action_id="action-demo-sql-compare",
+        case_id=sql_case.case_id,
+        name="Compare safe report ranges",
+        purpose="Determine whether failure correlates with the requested data range without changing production data.",
+        safety_level=ActionSafetyLevel.L1_SAFE,
+        status=ActionStatus.COMPLETED,
+        expected_result="Record whether small and large sample ranges behave differently.",
+        actual_result="7-day range succeeded; 90-day range reproduced the 30-second timeout.",
+        conclusion="Failure is reproducible for the larger range; database root cause remains unconfirmed.",
+        evidence_ids=[sql_compare.evidence_id],
+        performed_by="Application Support L2",
+        started_at=now,
+        completed_at=now,
+    ))
+    explanations.save(PossibleExplanation(
+        explanation_id="explanation-demo-sql-volume",
+        case_id=sql_case.case_id,
+        statement="The reporting path may have a data-volume or execution-plan regression affecting larger ranges.",
+        status=ExplanationStatus.SUPPORTED,
+        supporting_observation_ids=[obs_timeout.observation_id, obs_range.observation_id],
+        validation_action_ids=[action.action_id],
+    ))
+
+    log_http = evidence.save(EvidenceItem(
+        evidence_id="evidence-demo-log-http",
+        case_id=log_case.case_id,
+        evidence_type="http_observation",
+        source="Sanitized request trace",
+        content="POST /checkout/submit intermittently returned HTTP 500; correlationId=demo-checkout-441.",
+        certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+        sensitivity=EvidenceSensitivity.PUBLIC_SAMPLE,
+        redacted=True,
+    ))
+    log_pattern = evidence.save(EvidenceItem(
+        evidence_id="evidence-demo-log-pattern",
+        case_id=log_case.case_id,
+        evidence_type="log_sample",
+        source="Sanitized application logs",
+        content="18 occurrences of SamplePaymentMappingException on instance app-02 after deployment; correlationId=demo-checkout-441.",
+        certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+        sensitivity=EvidenceSensitivity.PUBLIC_SAMPLE,
+        redacted=True,
+    ))
+    log_obs = observations.save(Observation(
+        observation_id="observation-demo-log-pattern",
+        case_id=log_case.case_id,
+        statement="The repeated exception is concentrated on app-02 and appears in the same request correlation chain as the HTTP 500.",
+        category="application_behavior",
+        evidence_ids=[log_http.evidence_id, log_pattern.evidence_id],
+        certainty=CertaintyLevel.TECHNICALLY_CONFIRMED,
+    ))
+    explanations.save(PossibleExplanation(
+        explanation_id="explanation-demo-log-deployment",
+        case_id=log_case.case_id,
+        statement="A deployment-specific application path may be contributing to the repeated mapping exception on app-02.",
+        status=ExplanationStatus.SUPPORTED,
+        supporting_observation_ids=[log_obs.observation_id],
+    ))
+
+    return DemoSeedResponse(
+        primary_case_id=sql_case.case_id,
+        case_ids=[sql_case.case_id, log_case.case_id],
+        created_or_refreshed=2,
+    )
