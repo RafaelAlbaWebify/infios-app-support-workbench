@@ -234,6 +234,33 @@ def test_full_l1_to_l2_recovery_and_export_workflow(runtime_clean_page: Page) ->
     _capture(page, "desktop-full-lifecycle-resolved.png")
 
 
+
+def test_n2_portfolio_demo_exposes_complete_investigation_chain(runtime_clean_page: Page) -> None:
+    page = runtime_clean_page
+    page.goto(BASE_URL)
+    page.get_by_role("button", name="Load N2 demo").click()
+
+    expect(page.get_by_role("heading", name="Daily order report returns HTTP 500 after SQL timeout")).to_be_visible()
+    expect(page.get_by_text("Reporting Portal", exact=True)).to_be_visible()
+    expect(page.get_by_text(re.compile(r"demo-sql-0905", re.I)).first).to_be_visible()
+    expect(page.get_by_text(re.compile(r"90-day range", re.I)).first).to_be_visible()
+
+    navigation = page.get_by_role("navigation", name="Case work areas")
+    expect(navigation).to_be_visible()
+    for label in ("Evidence", "Observations", "Safe checks", "Timeline", "Hypotheses", "Escalation", "Lifecycle & recovery"):
+        expect(navigation.get_by_role("link", name=label, exact=True)).to_be_visible()
+
+    navigation.get_by_role("link", name="Hypotheses", exact=True).click()
+    expect(page.get_by_text(re.compile(r"data-volume or execution-plan regression", re.I)).first).to_be_visible()
+
+    navigation.get_by_role("link", name="Escalation", exact=True).click()
+    expect(page.get_by_role("heading", name="Handover for DBA / Application Engineering")).to_be_visible()
+    expect(page.get_by_text(re.compile(r"do not prove root cause", re.I)).first).to_be_visible()
+
+    navigation.get_by_role("link", name="Lifecycle & recovery", exact=True).click()
+    expect(page.get_by_text(re.compile(r"Both validation runs completed successfully", re.I)).to_be_visible()
+    _capture(page, "desktop-n2-portfolio-demo.png")
+
 def test_mobile_layout_has_no_horizontal_overflow(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     _create_case(page, "Mobile navigation check")
