@@ -101,7 +101,7 @@ def _create_case(page: Page, title: str = "Orders page fails after login") -> No
 
 def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     page.goto(BASE_URL)
-    expect(page.get_by_role("heading", name="Recent incidents")).to_be_visible()
+    expect(page.get_by_role("heading", name="Application support queue")).to_be_visible()
     expect(page.get_by_text("Unknown is valid")).to_be_visible()
 
     page.get_by_role("button", name="New incident").click()
@@ -124,7 +124,7 @@ def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     _capture(page, "desktop-new-case-compact.png")
 
 
-def test_case_work_navigation_opens_and_focuses_advanced_area(page: Page) -> None:
+def test_case_work_navigation_focuses_operational_area(page: Page) -> None:
     _create_case(page, "Navigation quality check")
     navigation = page.get_by_role("navigation", name="Case work areas")
     expect(navigation).to_be_visible()
