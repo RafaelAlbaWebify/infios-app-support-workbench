@@ -102,7 +102,7 @@ def _create_case(page: Page, title: str = "Orders page fails after login") -> No
 def test_first_time_l1_workflow_is_usable(page: Page) -> None:
     page.goto(BASE_URL)
     expect(page.get_by_role("heading", name="Application support queue")).to_be_visible()
-    expect(page.get_by_text("Facts, hypotheses and actions remain separate. Production changes require explicit approval.")).to_be_visible()
+    expect(page.get_by_text("Context and patterns do not prove cause. Backend validation remains authoritative.")).to_be_visible()
 
     page.get_by_role("button", name="New incident").click()
     page.get_by_label("Application or service").fill("Order Management")
@@ -241,7 +241,7 @@ def test_n2_portfolio_demo_exposes_complete_investigation_chain(runtime_clean_pa
     page.get_by_role("button", name="Load N2 demo").click()
 
     expect(page.get_by_role("heading", name="Daily order report returns HTTP 500 after SQL timeout")).to_be_visible()
-    expect(page.get_by_text("Reporting Portal", exact=True)).to_be_visible()
+    expect(page.get_by_text("Order Reporting Portal", exact=True).first).to_be_visible()
     expect(page.get_by_text(re.compile(r"demo-sql-0905", re.I)).first).to_be_visible()
     expect(page.get_by_text(re.compile(r"90-day range", re.I)).first).to_be_visible()
 
